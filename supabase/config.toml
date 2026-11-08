@@ -1,0 +1,29 @@
+project_id = "ridesentinel"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public"]
+max_rows = 1000
+
+[db]
+port = 54322
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+
+[auth]
+enabled = true
+# SPEC.md §2 decision: email confirmation off for the pilot (Supabase free-tier email sending is limited).
+enable_confirmations = false
+minimum_password_length = 8
+
+[storage]
+enabled = true
+file_size_limit = "5MiB"
+
+[realtime]
+enabled = true
