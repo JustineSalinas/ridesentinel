@@ -1,33 +1,31 @@
 # RideSentinel
 
-Mobile-first PWA so two people meeting for an informal motorcycle ride can check who they're meeting, with reputation built only from confirmed meetings. See **[docs/SPEC.md](docs/SPEC.md)** for the full spec — product rules, domain model, RLS policy, Edge Function contracts, routes, and the build plan. Decisions made while building are logged in **[docs/DECISIONS.md](docs/DECISIONS.md)**.
+Mobile-first PWA so two people meeting for an informal motorcycle ride can check who they're meeting, with reputation built only from confirmed meetings. See **[docs/SPEC.md](docs/SPEC.md)** for the full spec — product rules, domain model, authorization rules, backend function contracts, routes, and the build plan. Decisions made while building are logged in **[docs/DECISIONS.md](docs/DECISIONS.md)**.
 
 A clickable design prototype of every screen is linked from `docs/SPEC.md` §18.
 
 ## Stack
 
-React + Vite (TS) · Tailwind CSS v4 · React Router · TanStack Query · React Hook Form + Zod · Supabase (Auth/Postgres/Storage/Realtime/Edge Functions) · Vercel hosting. See `docs/SPEC.md` §2 for the fixed list — don't add dependencies without a reason in the PR.
+React + Vite (TS) · Tailwind CSS v4 · React Router · TanStack Query · React Hook Form + Zod · **Convex** (database, reactive queries/mutations, Convex Auth, file storage, scheduled functions) · Vercel hosting (front end). See `docs/SPEC.md` §2 for the fixed list — don't add dependencies without a reason in the PR.
+
+Convex has **no Row-Level Security** — authorization is hand-written in `convex/lib/authz.ts` and called explicitly by every function. See `docs/SPEC.md` §5 before adding a new query or mutation.
 
 ## Getting started
 
 ```bash
 pnpm install
-cp .env.example .env.local   # fill in VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY
-pnpm dev
+npx convex dev   # interactive, one-time: opens a browser login, creates convex/_generated/*
+                  # and writes VITE_CONVEX_URL to .env.local — leave it running in a terminal
+pnpm dev          # in a second terminal
 ```
 
-### Local Supabase (from M1 onward)
-
-```bash
-supabase start
-supabase db reset     # applies supabase/migrations/* + supabase/seed.sql
-supabase test db      # pgTAP RLS/policy tests
-```
+> `pnpm typecheck` / `pnpm build` will fail with "Cannot find module '../../convex/_generated/api'" until `npx convex dev` has run at least once — that folder is gitignored and generated on demand, same as any other codegen output.
 
 ## Scripts
 
 | Command | What it does |
 |---|---|
+| `npx convex dev` | Convex dev deployment — watches `convex/*.ts`, regenerates types |
 | `pnpm dev` | Vite dev server |
 | `pnpm build` | Typecheck + production build |
 | `pnpm typecheck` | `tsc -b --noEmit` |
@@ -36,6 +34,10 @@ supabase test db      # pgTAP RLS/policy tests
 | `pnpm test` | Vitest (unit/component) |
 | `pnpm test:e2e` | Playwright (two-browser-context flows) |
 
+## CI
+
+GitHub Actions needs a `CONVEX_DEPLOY_KEY` repo secret (Convex dashboard → Settings → Deploy keys) and a `VITE_CONVEX_URL` secret before lint/typecheck/build will pass there — see `.github/workflows/ci.yml`.
+
 ## Status
 
-Currently at **M0 — Foundations** (see `docs/SPEC.md` §14): repo scaffold, routing skeleton, CI, PWA shell. No feature logic yet — every route renders a placeholder naming the milestone that implements it.
+**Auth (login/register), the Home dashboard, and the Admin dashboard are wired to real Convex data** — everything else still renders a placeholder naming the milestone that implements it (`docs/SPEC.md` §14).

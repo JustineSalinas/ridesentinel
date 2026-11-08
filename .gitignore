@@ -28,6 +28,5 @@ coverage
 playwright-report
 test-results
 
-# Supabase local dev
-supabase/.temp
-supabase/.branches
+# Convex — generated on `npx convex dev`, never hand-edited or committed
+convex/_generated

@@ -22,6 +22,12 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # Needs the CONVEX_DEPLOY_KEY repo secret (Convex dashboard → Settings
+      # → Deploy keys) before this works — see docs/DECISIONS.md.
+      - run: npx convex codegen --typecheck disable
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+
       - run: pnpm lint
 
       - run: pnpm typecheck
@@ -29,3 +35,5 @@ jobs:
       - run: pnpm test
 
       - run: pnpm build
+        env:
+          VITE_CONVEX_URL: ${{ secrets.VITE_CONVEX_URL }}

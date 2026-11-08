@@ -43,18 +43,20 @@ Ride matching/booking, payments, live GPS/location, navigation, social feed/comm
 
 | Area | Choice |
 |---|---|
-| Language | TypeScript everywhere (front end + Edge Functions); SQL for DB |
+| Language | TypeScript everywhere — front end and backend functions share one codebase |
 | Front end | React + Vite, built as PWA (`vite-plugin-pwa`) |
 | UI | Tailwind CSS, shadcn/ui, Lucide React, Framer Motion (small animations only) |
-| Routing / data / forms | React Router, TanStack Query, React Hook Form + Zod |
+| Routing / data / forms | React Router, TanStack Query (for non-Convex async state only — Convex data uses its own `useQuery`/`useMutation`), React Hook Form + Zod |
 | QR | `qrcode.react` (display), `html5-qrcode` (camera scan) |
-| Backend | Supabase: Auth (email + password), PostgreSQL with RLS, Storage (private bucket), Realtime, Edge Functions (Deno) |
-| Hosting | Vercel Hobby (HTTPS required for camera) |
-| CI | GitHub Actions: lint, typecheck, unit tests, policy tests, e2e |
-| Tests | Vitest, React Testing Library, Playwright (two browser contexts), Supabase CLI (`supabase test db` / pgTAP for policy tests) |
+| Backend | **Convex**: database + reactive queries/mutations/actions, Convex Auth (email + password), Convex file storage, Convex scheduled functions (cron) |
+| Hosting | Vercel Hobby for the front end (HTTPS required for camera); Convex's own cloud hosts the backend |
+| CI | GitHub Actions: lint, typecheck, unit tests, e2e |
+| Tests | Vitest, React Testing Library, Playwright (two browser contexts), `convex-test` for backend authorization/business-logic unit tests |
 | Package manager | `pnpm` (**DECISION**) |
 
-Supabase quirks to respect: free projects pause after ~1 week of inactivity; default email sending is limited. **DECISION:** turn email confirmation **off** for the pilot; compress images to ~1 MB in the browser before upload.
+**DECISION (2026-11-08):** backend switched from Supabase/Postgres to Convex at the user's request — see `docs/DECISIONS.md` for the tradeoffs considered. The load-bearing consequence: **Convex has no Row-Level Security.** Every authorization check that used to live in a SQL policy now lives in hand-written code in `convex/lib/authz.ts`, called at the top of every query/mutation. There is no database-level safety net if a function forgets to call it — review new functions against this file specifically.
+
+Convex quirks to respect: free-tier projects are generous but still finite (check current limits before the pilot); `npx convex dev` needs an interactive browser login once per machine, so `convex/_generated/*` cannot be produced in a headless/CI context without a `CONVEX_DEPLOY_KEY`; compress images to ~1 MB in the browser before upload to Convex file storage. **DECISION:** Convex Auth's Password provider sends no verification email unless one is explicitly configured, so "email confirmation off for the pilot" is the default, not a setting we had to flip.
 
 ---
 
@@ -80,21 +82,14 @@ ridesentinel/
 │  │  └─ admin/                  # review queue, report queue, audit log
 │  ├─ components/ui/             # shadcn
 │  └─ hooks/
-├─ supabase/
-│  ├─ config.toml
-│  ├─ migrations/                # 0001_schema.sql, 0002_rls.sql, 0003_functions.sql, ...
-│  ├─ functions/
-│  │  ├─ _shared/                # cors, auth helper, token signing, audit helper
-│  │  ├─ issue-qr/
-│  │  ├─ scan-qr/
-│  │  ├─ confirm-meeting/
-│  │  ├─ cancel-interaction/
-│  │  ├─ admin-get-file-url/
-│  │  ├─ admin-review-verification/
-│  │  ├─ admin-handle-report/
-│  │  └─ purge-expired-files/
-│  ├─ tests/                     # pgTAP policy tests
-│  └─ seed.sql                   # dev admin + sample users
+├─ convex/
+│  ├─ schema.ts                  # every table + index — the migration, there is no separate file per change
+│  ├─ auth.ts, auth.config.ts, http.ts   # Convex Auth (email+password) wiring
+│  ├─ lib/
+│  │  └─ authz.ts                # requireProfile / requireAdmin / isVerified — the whole authorization layer
+│  ├─ profiles.ts, verification.ts, qr.ts, interactions.ts, ratings.ts, reports.ts, admin.ts
+│  ├─ crons.ts                   # purge-expired-files equivalent, on a schedule
+│  └─ _generated/                # written by `npx convex dev` — gitignored, never hand-edited
 ├─ e2e/                          # Playwright
 └─ .github/workflows/ci.yml
 ```
@@ -102,18 +97,22 @@ ridesentinel/
 Environment variables (never commit; provide `.env.example`):
 
 ```
-VITE_SUPABASE_URL=
-VITE_SUPABASE_ANON_KEY=
-# Edge Function secrets (supabase secrets set ...):
-QR_SIGNING_SECRET=          # >=32 random bytes, base64; the phone never sees it
-PURGE_CRON_SECRET=          # shared secret for the scheduled purge call
+VITE_CONVEX_URL=            # printed by `npx convex dev`, written to .env.local automatically
+# CI only (GitHub repo secret), not a local env var:
+CONVEX_DEPLOY_KEY=          # Convex dashboard → Settings → Deploy keys
 ```
 
 ---
 
-## 4. Domain model (database)
+## 4. Domain model
 
-Seven data stores (D1–D7) from the paper, plus two support tables (`app_config`, `scan_events`) needed for the daily cap and for measuring evaluation targets. All tables have RLS **enabled**; default is deny.
+Seven data stores (D1–D7) from the paper, plus two support tables (`appConfig`, `scanEvents`) needed for the daily cap and for measuring evaluation targets. **`convex/schema.ts` is the living source of truth** — it's a migration and a schema doc in one file, versioned by `npx convex dev` automatically. The SQL below is kept only as the original design reference; don't hand-translate it back, read `convex/schema.ts`.
+
+There is **no RLS**. Nothing below is enforced by the database — every guarantee here only holds because the function in `convex/` that touches the table actually calls the right helper from `convex/lib/authz.ts`. Treat each "hard rule" as a checklist item for code review on every new mutation, not a fact you can assume.
+
+### 4.0 Reference SQL (superseded — see `convex/schema.ts`)
+
+The tables, enums, and rules below are the original Postgres design this app was first speced against. They're kept for context on *why* each field exists, but the authoritative shape is the Convex schema.
 
 ### 4.1 Enums
 
@@ -281,74 +280,85 @@ Users may read a rating row only if they are the rater, **or** `rating_is_reveal
 
 **`submit_rating(p_interaction uuid, p_stars int)` (SECURITY DEFINER) must verify:** caller is A or B of the interaction; `status='confirmed'`; `now() < rating_window_ends_at`; no existing rating from caller; caller not suspended. Rated user = the other party. Raises distinct errors for each failure (used by tests).
 
-**Interaction expiry.** An interaction stuck in `scanned` for > 10 minutes is treated as `expired` (**DECISION**): lazily in the Edge Function (`confirm-meeting` checks `scanned_at`) plus a `purge-expired-files` side job that flips old `scanned` rows to `expired`.
+**Interaction expiry.** An interaction stuck in `scanned` for > 10 minutes is treated as `expired` (**DECISION**): lazily, checked inside `confirmMeeting` against `scannedAt`, plus a scheduled `purgeExpiredFiles`-equivalent cron (`convex/crons.ts`) that flips old `scanned` rows to `expired`.
+
+### 4.5 How §4.3/§4.4 map onto Convex
+
+No triggers, no SECURITY DEFINER, no views — same guarantees, different mechanism:
+
+- "Users cannot change `role`/`tier`/`suspended_at`/`consentAt`" → there is simply no mutation that accepts those as arguments from the client. `convex/profiles.ts`'s `updateProfile` only takes `displayName`/`phone`/`rideRole`.
+- `auditLog` append-only → no `update`/`delete` mutation exists for it anywhere in the codebase, full stop. If you ever need to "fix" an audit row, you can't — that's the point.
+- `submit_rating`'s checks (confirmed status, window open, no duplicate, caller is a party, not suspended, 7-day pair cooldown, daily cap) → all become `if` checks inside a single `ratings.submitRating` mutation, same order, same distinct errors, implemented with indexed queries (`by_interaction_rater`, `by_raterId`) instead of SQL `WHERE`.
+- `rating_is_revealed` / `rating_summary` → plain Convex query functions (`ratings.getRevealed`, `ratings.getSummaryFor`) that recompute on every call; Convex's reactivity means the client re-renders automatically when the underlying rows change, no polling needed.
+- QR token HMAC signing → **dropped** (see `docs/DECISIONS.md`). A `qrTokens` row can only be created by `qr.issueQr` and consumed by `qr.scanQr`; the client never sees anything it could forge, so there's nothing left for a signature to protect against.
 
 ---
 
-## 5. Row-level security (policy matrix)
+## 5. Authorization matrix (enforced in code, not the database)
+
+Same shape as a policy matrix, but every cell below is a promise about what a **Convex function** checks, not a database policy. There is no enforcement if the function doesn't check it — this table is what code review holds every new `convex/*.ts` export to.
 
 | Table | `user` can | `admin` can |
 |---|---|---|
-| `profiles` | SELECT own row; UPDATE own `display_name`, `phone`, `avatar_path`, `ride_role` only. Other users' profiles are **never** selectable directly (scan returns a limited projection via Edge Function). | SELECT all; UPDATE only through admin Edge Functions |
-| `verification_requests` | INSERT own (status pending); SELECT own row **without** file paths being usable (paths are useless without signed URLs; storage policy blocks reads) | SELECT all; update only through `admin-review-verification` |
-| `qr_tokens` | nothing | nothing (service role only) |
-| `interactions` | SELECT where `user_a = auth.uid() or user_b = auth.uid()` | SELECT all |
-| `ratings` | SELECT own given; SELECT received only when revealed & not removed; no direct writes | SELECT all (moderation) |
-| `reports` | INSERT own; SELECT own | SELECT all; update through `admin-handle-report` |
-| `audit_log` | nothing | SELECT only |
-| `app_config` | SELECT | SELECT |
-| `scan_events` | nothing | SELECT (for evaluation export) |
+| `profiles` | Read own row (`profiles.getMe`); update own `displayName`/`phone`/`rideRole` only (`profiles.updateProfile`). No query ever returns another user's row — a scan returns a hand-picked projection from a dedicated function, never the row itself. | Read any profile only through an admin-gated query; mutate `role`/`tier`/`suspendedAt` only through admin mutations that call `requireAdmin` |
+| `verificationRequests` | Insert own (`status: 'pending'`, blocked if one is already pending); read own row — file storage ids are present but **unusable directly**, there is no public query that turns a storage id into a URL | Read all via an admin query; decide only through a mutation that calls `requireAdmin` |
+| `qrTokens` | Nothing — no public query or mutation touches this table directly | Nothing — internal to `qr.issueQr`/`qr.scanQr` |
+| `interactions` | Read only rows where they're `userA` or `userB` (query filters by caller's id, never trusts a client-supplied id) | Read all via an admin query |
+| `ratings` | Read own given ratings; read received ratings only when revealed (§4.4) and not removed; no mutation accepts a direct insert — only `ratings.submitRating` | Read all (moderation) |
+| `reports` | Insert own; read own | Read all; update only through a mutation that calls `requireAdmin` |
+| `auditLog` | Nothing | Read-only query; **no update/delete mutation exists in the codebase, for anyone** |
+| `appConfig` | Read-only query | Same |
+| `scanEvents` | Nothing | Read-only query (evaluation export) |
 
-Admin check helper: `create function is_admin() returns boolean ... select exists(select 1 from profiles where id = auth.uid() and role='admin' and suspended_at is null)` (SECURITY DEFINER, stable, `set search_path = public`).
+`requireAdmin` (`convex/lib/authz.ts`) is the one place "is this caller an admin" gets decided: it loads the caller's own profile and checks `role === 'admin' && !suspendedAt`. Every admin-only function calls it first.
 
-**Storage**
-- Bucket `verification` — **private**. Path pattern: `{user_id}/{request_id}/id.jpg`, `.../selfie.jpg`. Policy: user may `INSERT` into their own folder only; **nobody** (including the owner) can `SELECT`; admins read only via signed URL created by `admin-get-file-url`.
-- Bucket `avatars` — profile photos. **DECISION:** private bucket; scan results and profile screens use short-lived signed URLs (e.g., 5 min) generated server-side.
-- Short-lived signed URLs: 60 seconds for admin ID/selfie views.
+**File storage (Convex)**
+- ID photos and selfies upload to Convex file storage via a short-lived upload URL (`ctx.storage.generateUploadUrl()`), never a signed PUT to a bucket the client can address directly.
+- **Nobody** gets a direct storage URL for an ID/selfie file except through an admin mutation that (a) calls `requireAdmin`, (b) writes the `file.view` audit log entry, and only then (c) calls `ctx.storage.getUrl()`. If the audit write fails, no URL is returned — same ordering as the old `admin-get-file-url` Edge Function.
+- Avatar/profile photos: same pattern, but any authenticated user's own avatar is resolvable by them, and a scan result resolves the *other* party's avatar URL server-side inside the scan function — the client never calls `ctx.storage.getUrl()` for someone else's file directly.
 
 ---
 
-## 6. Edge Functions (API contract)
+## 6. Backend functions (Convex)
 
-All functions: verify the Supabase JWT (`Authorization: Bearer`), use the service-role client **inside** the function only, validate input with Zod, return JSON `{ ok: true, data }` or `{ ok: false, error: { code, message } }`, handle CORS. Never trust client-sent user IDs — use `auth.uid()` from the JWT.
+All of the below are Convex `mutation`/`query`/`action` exports, not HTTP endpoints — the client calls them through `useMutation`/`useQuery`, Convex handles the transport. Every one starts by calling the relevant `convex/lib/authz.ts` helper; **never** trust a client-supplied user id — always derive the caller from `ctx.auth.getUserIdentity()`. Validate args with Convex's `v` validators (already enforced at the function boundary) and, where the shape is non-trivial, Zod on top. There's no CORS to configure and no service-role key to protect — Convex functions always run server-side with full database access by construction, which is exactly why `authz.ts` is the only thing standing between a bug and an IDOR.
 
-### 6.1 `issue-qr` — POST `{}`
-- Caller must be `is_verified` and not suspended, else `403 NOT_VERIFIED` / `SUSPENDED`.
-- Create `nonce = uuid`, `expires_at = now() + 60s`; insert `qr_tokens`.
-- Build token: `base64url(payload) + "." + base64url(HMAC-SHA256(QR_SIGNING_SECRET, payload))`, payload `{ sub: userId, iat, exp, nonce }`.
-- Return `{ token, expires_at }`. The client renders the QR from `token`.
-- Client auto-refreshes ~15 s before expiry (so a new token every ~45 s). Old nonces simply expire. Rate limit: max 20 issues/min/user.
+### 6.1 `qr.issueQr` — mutation, no args
+- Caller must be `isVerified(profile)` and not suspended, else throws `NOT_VERIFIED` / `SUSPENDED`.
+- Insert a `qrTokens` row: `nonce = crypto.randomUUID()` (available in Convex's runtime), `expiresAt = now() + 60s`.
+- Return `{ nonce, expiresAt }`. The client renders the QR from `nonce` directly — no signing needed (§4.5: only this mutation can ever create one).
+- Client auto-refreshes ~15 s before expiry (so a new token every ~45 s). Old nonces simply expire. Rate limit: enforce max 20 issues/min/user inside the mutation by counting recent rows.
 
-### 6.2 `scan-qr` — POST `{ token }` (caller = User B)
-Checks in order (record `scan_events.outcome` for each failure):
+### 6.2 `qr.scanQr` — mutation, `{ nonce }` (caller = User B)
+Checks in order (record a `scanEvents` row with the outcome for each failure):
 1. Caller verified & not suspended (`not_verified`/`suspended`).
-2. Signature valid (`bad_signature`), `exp` not passed (`expired`), nonce row exists, `used_at is null` (`reused`).
-3. `sub != caller` (`self_scan`).
-4. Atomically mark nonce `used_at = now(), used_by = caller` (UPDATE ... WHERE used_at IS NULL, check rows = 1 → prevents races).
-5. Insert `interactions` row (`user_a = sub`, `user_b = caller`, status `scanned`).
-6. Return **only**: `{ interaction_id, profile: { display_name, ride_role, tier, photo_url (signed, 5 min), rating_summary: { score|null, count, confirmed_meetings } } }`. **Never** phone, email, ID details, address, or any other field.
-- Target: profile on screen ≤ 3 s on 4G. Do a single round trip and a single DB transaction where possible.
-- Realtime: A is subscribed to `interactions` changes where `user_a = me`; the insert triggers A's "Someone scanned you" prompt.
+2. Nonce row exists, `expiresAt` not passed (`expired`), `usedAt` is unset (`reused`).
+3. `qrToken.userId !== caller` (`self_scan`).
+4. Atomically claim it: patch the row (`usedAt`, `usedBy`) only inside this mutation — Convex mutations are serializable transactions, so a second concurrent call reading the same row before the first commits will conflict and retry, never double-claim it. This is the Convex equivalent of the Postgres `UPDATE ... WHERE used_at IS NULL` race guard.
+5. Insert an `interactions` row (`userA = qrToken.userId`, `userB = caller`, status `scanned`).
+6. Return **only**: `{ interactionId, profile: { displayName, rideRole, tier, photoUrl, ratingSummary: { score|null, count, confirmedMeetings } } }` — resolved server-side inside this same mutation via `ctx.storage.getUrl()` on the owner's avatar, never exposing their storage id to the caller. **Never** phone, email, ID details, address, or any other field.
+- Target: profile on screen ≤ 3 s on 4G.
+- Convex queries are reactive by default — A's `useQuery` on "my open interactions" updates live the moment this mutation inserts, no manual realtime subscription needed (that's the Supabase Realtime subscription, built in).
 
-### 6.3 `confirm-meeting` — POST `{ interaction_id }`
-- Caller must be A or B of that interaction; interaction `status='scanned'` and not older than 10 min.
-- If caller = B: set `b_confirmed_at` (B's "This is the person").
-- If caller = A: allowed **only after** `b_confirmed_at` is set? **DECISION:** A may confirm only after B has confirmed (matches the flowchart: B taps first, then A's screen shows B's profile and asks A to confirm). Before that return `409 WAIT_FOR_OTHER`.
-- When both timestamps are set: `status='confirmed'`, `rating_window_ends_at = now() + 48h`. Return the interaction.
-- A's screen must show **B's verified profile** (photo first) before A can confirm: provide `get-interaction-profile` behaviour inside this function or `scan-qr` response for A via an RPC/GET variant returning the same limited projection for the *other party*.
+### 6.3 `interactions.confirmMeeting` — mutation, `{ interactionId }`
+- Caller must be A or B of that interaction; interaction `status === 'scanned'` and not older than 10 min.
+- If caller = B: set `bConfirmedAt` (B's "This is the person").
+- If caller = A: allowed **only after** `bConfirmedAt` is set (**DECISION**, unchanged from the original design — matches the flowchart: B taps first, then A's screen shows B's profile and asks A to confirm). Before that, throw `WAIT_FOR_OTHER`.
+- When both timestamps are set: `status = 'confirmed'`, `ratingWindowEndsAt = now() + 48h`.
+- A's screen must show **B's verified profile** (photo first) before A can confirm: a paired `interactions.getOtherPartyProfile` query returns the same limited projection as `scanQr`, reactively, for whichever side is waiting.
 
-### 6.4 `cancel-interaction` — POST `{ interaction_id, reason: 'face_mismatch'|'other', report?: boolean }`
-- Either party, status `scanned` only → `cancelled`. If `face_mismatch` and `report=true`, also inserts a `reports` row (`reason='impersonation'`, `interaction_id`, `reported_user_id` = the other party). No interaction record counted.
+### 6.4 `interactions.cancelInteraction` — mutation, `{ interactionId, reason: 'face_mismatch'|'other', report?: boolean }`
+- Either party, status `scanned` only → `cancelled`. If `face_mismatch` and `report=true`, also inserts a `reports` row (`reason: 'impersonation'`, `interactionId`, `reportedUserId` = the other party). No interaction record counted.
 
-### 6.5 Admin functions (caller must be `is_admin()`)
-- `admin-get-file-url` `{ request_id, kind: 'id'|'selfie' }` → writes `audit_log('file.view')` **before** returning a 60-s signed URL. If the audit insert fails, return no URL.
-- `admin-review-verification` `{ request_id, decision: 'approve'|'reject', reason, confirmed_18_plus }`:
-  - Reject requires non-empty `reason`. Approve requires `confirmed_18_plus=true`.
-  - Approve: `tier='id_verified'`, `tier_expires_at = now()+12 months`, `files_delete_after = now()+30d`.
-  - Reject: user sees reason and may resubmit; `files_delete_after = now()+30d`.
-  - Writes `audit_log` (`verification.approve|reject`, actor, target, reason).
-- `admin-handle-report` `{ report_id, action: 'dismiss'|'warn'|'remove_rating'|'suspend'|'revoke_tier', reason }`: reason mandatory; effects: `remove_rating` → set `removed_at/removed_reason`; `suspend` → `suspended_at=now()`; `revoke_tier` → `tier='unverified'`; update report status; write audit. Revoking a tier cancels nothing already confirmed. An admin cannot act on a report about themselves.
-- `purge-expired-files` (called daily by GitHub Actions cron or Supabase scheduled function with `PURGE_CRON_SECRET`): delete storage objects for requests where `files_delete_after < now()` and **no open dispute** on that user (open report on that user extends retention until closed); set `*_path = null`, `files_deleted_at`; write `audit_log('files.purge', actor null)`; also flips stale `scanned` interactions to `expired`.
+### 6.5 Admin functions (every one calls `requireAdmin` first)
+- `admin.getFileUrl` `{ requestId, kind: 'id'|'selfie' }` → inserts the `auditLog` row (`file.view`) **before** calling `ctx.storage.getUrl()`. If the audit insert throws, no URL is returned (just let the mutation throw — Convex rolls the whole transaction back, so there's no risk of the audit write succeeding while the URL return fails independently).
+- `admin.reviewVerification` `{ requestId, decision: 'approve'|'reject', reason, confirmed18Plus }`:
+  - Reject requires non-empty `reason`. Approve requires `confirmed18Plus === true`.
+  - Approve: `tier: 'id_verified'`, `tierExpiresAt = now() + 12 months`, `filesDeleteAfter = now() + 30d`.
+  - Reject: user sees reason and may resubmit; `filesDeleteAfter = now() + 30d`.
+  - Inserts `auditLog` (`verification.approve|reject`, actor, target, reason).
+- `admin.handleReport` `{ reportId, action: 'dismiss'|'warn'|'remove_rating'|'suspend'|'revoke_tier', reason }`: reason mandatory; effects: `remove_rating` → set `removedAt`/`removedReason`; `suspend` → `suspendedAt = now()`; `revoke_tier` → `tier: 'unverified'`; update report status; insert audit row. Revoking a tier cancels nothing already confirmed. An admin cannot act on a report about themselves (check `report.reportedUserId !== caller`).
+- `crons.purgeExpiredFiles` — a Convex **scheduled function** (`convex/crons.ts`, registered with `crons.interval`/`crons.daily`, no secret needed since it's not an HTTP endpoint anyone can call): deletes storage files for requests where `filesDeleteAfter < now()` and **no open dispute** on that user (an open report on that user extends retention until closed); clears the storage id fields, sets `filesDeletedAt`; inserts `auditLog` (`files.purge`, no actor); also flips stale `scanned` interactions to `expired`.
 
 ---
 
@@ -452,7 +462,7 @@ Also: validate all inputs with Zod on both client and Edge Functions; use `set s
 | Compatibility | Current Chrome on Android (test on a low-end phone); iPhone Safari if available; admin can use desktop browser |
 | Connectivity | Needs data connection; clear offline message; no QR caching |
 | Auditability | Every admin action logged; log immutable from the app |
-| Maintainability | Lint + typecheck + tests on every PR; migrations only; typed Supabase client (`supabase gen types typescript`) |
+| Maintainability | Lint + typecheck + tests on every PR; `convex/schema.ts` is the single migration source; types flow end-to-end from it via `convex/_generated/api` — no separate codegen step to remember |
 
 ---
 
@@ -460,12 +470,14 @@ Also: validate all inputs with Zod on both client and Edge Functions; use `set s
 
 **Unit / component (Vitest + RTL):** QR token build/verify (valid, expired, tampered, wrong secret), tier effectiveness logic (expiry), rating summary rule (<3 raters ⇒ "New"), rating window countdown, form validation (Zod), photo-first result screen rendering order (photo before text).
 
-**Database / policy tests (pgTAP via `supabase test db`):** these must **fail to read/write**:
-- user reads another user's `profiles`, `verification_requests`, ID/selfie storage object, interactions they aren't in;
-- user reads a rating before reveal; user inserts into `ratings`/`interactions`/`qr_tokens`/`audit_log` directly;
-- user updates own `role`, `tier`, `suspended_at`;
-- anyone updates/deletes `audit_log`;
-- `submit_rating` rejects: not a party, interaction not confirmed, window closed, duplicate, suspended caller.
+**Backend authorization/business-logic tests (`convex-test`, replacing pgTAP since Convex has no RLS to test against the database directly — these call the actual functions with a fake identity instead):** these must **throw**:
+- a user calling a query/mutation with another user's data in scope (`profiles`, `verificationRequests`, an interaction they aren't `userA`/`userB` of);
+- a user reading a rating before `rating_is_revealed`-equivalent logic says it's revealed;
+- a non-admin calling any `admin.*` function;
+- `ratings.submitRating` called by someone who isn't a party, on an interaction that isn't `confirmed`, after the window closed, twice by the same rater, or by a suspended caller;
+- `profiles.updateProfile` attempting to smuggle a `role`/`tier`/`suspendedAt` field through (this one can't actually throw since those args don't exist on the validator — the test should assert the function signature has no such argument, i.e. a type-level check, not just a runtime one).
+
+There is deliberately no test that checks "the database refuses this" — there is no database-level refusal mechanism anymore. The test *is* "calling this function with the wrong identity throws," full stop. That makes `convex/lib/authz.ts` the single highest-value file to keep well covered.
 
 **Security tests (QR replay):** expired token rejected; reused nonce rejected; token scanned but never confirmed by A ⇒ no `confirmed` interaction; self-scan rejected; unverified scanner rejected; race: two simultaneous scans of the same nonce ⇒ exactly one succeeds. **Target: 100% of expired/reused/unconfirmed tokens rejected.**
 
@@ -523,8 +535,8 @@ Target dates from the paper's schedule (Oct 5–24, 2026; feature freeze Oct 17;
 
 | # | Milestone | Scope | Target |
 |---|---|---|---|
-| M0 | Foundations | Repo, Vite+TS+Tailwind+shadcn, Supabase project, Vercel deploy of empty app, CI, `.env.example`, PWA shell, typed client | Oct 6–7 |
-| M1 | Schema + RLS + audit | Migrations for all tables, enums, helper functions (`is_admin`, `is_verified`), RLS policies, storage buckets/policies, seed (dev admin), pgTAP policy tests | Oct 7 |
+| M0 | Foundations | Repo, Vite+TS+Tailwind+shadcn, Convex project, Vercel deploy of empty app, CI, `.env.example`, PWA shell, typed client | Oct 6–7 |
+| M1 | Schema + authz + audit | `convex/schema.ts` for all tables, `convex/lib/authz.ts` helpers (`requireAdmin`, `isVerified`), Convex Auth wiring, seed (dev admin), `convex-test` authorization tests | Oct 7 |
 | M2 | Iteration 1: accounts + verification | Register/login, consent gate, profile, ID+selfie upload with compression, status screen, admin review queue/detail with audited signed URLs, tier assignment + expiry, audit log recording + viewer, admin dashboard | Oct 8–11 |
 | M3 | Iteration 2: QR handshake (**highest risk — build early, test on real phones**) | `issue-qr`, My QR with auto-refresh, scanner, `scan-qr`, photo-first result, `confirm-meeting`, `cancel-interaction`, realtime prompt, `scan_events` logging, replay tests | Oct 12–14 |
 | — | **Checkpoint Oct 14** | Product Owner confirms or cuts the remaining scope (cut order below) | Oct 14 |

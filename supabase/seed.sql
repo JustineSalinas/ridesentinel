@@ -1,2 +1,0 @@
--- Local dev seed data. Runs after migrations via `supabase db reset`.
--- Real schema/tables land in M1 (docs/SPEC.md §14) — intentionally empty until then.

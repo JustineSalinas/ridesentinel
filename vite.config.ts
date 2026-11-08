@@ -28,12 +28,13 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // Never cache Supabase API/auth/realtime calls or anything dynamic —
+        // Never cache Convex API/auth/realtime calls or anything dynamic —
         // QR tokens, scan results and ratings must always hit the network (SPEC.md §7).
         navigateFallbackDenylist: [/^\/api/],
         runtimeCaching: [
           {
-            urlPattern: ({ url }: { url: URL }) => url.hostname.endsWith('supabase.co'),
+            urlPattern: ({ url }: { url: URL }) =>
+              url.hostname.endsWith('convex.cloud') || url.hostname.endsWith('convex.site'),
             handler: 'NetworkOnly',
           },
         ],
