@@ -40,4 +40,4 @@ GitHub Actions needs a `CONVEX_DEPLOY_KEY` repo secret (Convex dashboard → Set
 
 ## Status
 
-**Auth (login/register), the Home dashboard, and the Admin dashboard are wired to real Convex data** — everything else still renders a placeholder naming the milestone that implements it (`docs/SPEC.md` §14).
+M0–M4 are built: accounts, consent, ID verification + admin review, the QR handshake (issue/scan/confirm, replay-protected — see `convex/qr.test.ts`), ratings (blind reveal, anti-abuse), reports, and admin moderation + audit log. **Only My Profile (M2) is still a placeholder.** `pnpm test:convex` runs the backend authorization/replay test suite; a Playwright two-browser-context e2e suite (SPEC.md §12) hasn't been written yet.

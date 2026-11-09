@@ -50,5 +50,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./src/test/setup.ts'],
+    // convex/*.test.ts run under convex/vitest.config.ts (edge-runtime) instead.
+    exclude: ['node_modules/**', 'convex/**'],
   },
 })

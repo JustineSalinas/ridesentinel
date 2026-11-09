@@ -1,4 +1,4 @@
-import { v } from 'convex/values'
+import { v, ConvexError } from 'convex/values'
 import { mutation, query } from './_generated/server'
 import { requireAdmin } from './lib/authz'
 
@@ -99,5 +99,102 @@ export const reviewVerification = mutation({
       reason: args.reason,
       createdAt: now,
     })
+  },
+})
+
+export const listOpenReports = query({
+  args: {},
+  handler: async (ctx) => {
+    await requireAdmin(ctx)
+    return await ctx.db.query('reports').withIndex('by_status', (q) => q.eq('status', 'open')).order('asc').take(50)
+  },
+})
+
+export const getReportDetail = query({
+  args: { reportId: v.id('reports') },
+  handler: async (ctx, args) => {
+    await requireAdmin(ctx)
+    const report = await ctx.db.get(args.reportId)
+    if (!report) return null
+    const reporter = await ctx.db
+      .query('profiles')
+      .withIndex('by_userId', (q) => q.eq('userId', report.reporterId))
+      .unique()
+    const reported = report.reportedUserId
+      ? await ctx.db
+          .query('profiles')
+          .withIndex('by_userId', (q) => q.eq('userId', report.reportedUserId!))
+          .unique()
+      : null
+    return {
+      report,
+      reporterName: reporter?.displayName ?? 'Unknown',
+      reportedName: reported?.displayName ?? null,
+    }
+  },
+})
+
+// handleReport: reason mandatory for every action (SPEC.md §6.5); an admin
+// can never act on a report about themselves.
+export const handleReport = mutation({
+  args: {
+    reportId: v.id('reports'),
+    action: v.union(
+      v.literal('dismiss'),
+      v.literal('warn'),
+      v.literal('remove_rating'),
+      v.literal('suspend'),
+      v.literal('revoke_tier'),
+    ),
+    reason: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const admin = await requireAdmin(ctx)
+    const report = await ctx.db.get(args.reportId)
+    if (!report) throw new ConvexError('NOT_FOUND')
+    if (!args.reason.trim()) throw new ConvexError('REASON_REQUIRED')
+    if (report.reportedUserId === admin.userId) throw new ConvexError('CANNOT_ACT_ON_SELF')
+
+    const now = Date.now()
+    const status = args.action === 'dismiss' ? 'dismissed' : args.action === 'warn' ? 'warned' : 'upheld'
+
+    await ctx.db.patch(args.reportId, {
+      status,
+      action: args.action,
+      handlerId: admin.userId,
+      handlerReason: args.reason,
+      handledAt: now,
+    })
+
+    if (args.action === 'remove_rating' && report.ratingId) {
+      await ctx.db.patch(report.ratingId, { removedAt: now, removedReason: args.reason })
+    }
+    if (report.reportedUserId) {
+      const profile = await ctx.db
+        .query('profiles')
+        .withIndex('by_userId', (q) => q.eq('userId', report.reportedUserId!))
+        .unique()
+      if (profile) {
+        if (args.action === 'suspend') await ctx.db.patch(profile._id, { suspendedAt: now })
+        if (args.action === 'revoke_tier') await ctx.db.patch(profile._id, { tier: 'unverified' })
+      }
+    }
+
+    await ctx.db.insert('auditLog', {
+      actorId: admin.userId,
+      action: `report.${status === 'upheld' ? args.action : status}`,
+      targetType: 'reports',
+      targetId: args.reportId,
+      reason: args.reason,
+      createdAt: now,
+    })
+  },
+})
+
+export const listAuditLog = query({
+  args: {},
+  handler: async (ctx) => {
+    await requireAdmin(ctx)
+    return await ctx.db.query('auditLog').withIndex('by_createdAt').order('desc').take(100)
   },
 })

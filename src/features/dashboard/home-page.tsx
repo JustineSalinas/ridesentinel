@@ -5,6 +5,7 @@ import { api } from '../../../convex/_generated/api'
 
 export function HomePage() {
   const me = useQuery(api.profiles.getMe)
+  const summary = useQuery(api.ratings.getMySummary)
 
   if (me === undefined) {
     return <div className="flex flex-1 items-center justify-center text-sm text-slate">Loading…</div>
@@ -52,6 +53,23 @@ export function HomePage() {
           </Link>
         )}
 
+        {summary && (
+          <div className="flex items-center justify-between rounded-xl border border-mist bg-paper px-4 py-3">
+            <div>
+              <div className="text-[20px] font-extrabold">
+                {summary.score ? summary.score.toFixed(1) : 'New'}
+              </div>
+              <div className="text-[12px] text-slate">{summary.confirmedMeetings} confirmed meetings</div>
+            </div>
+            <Link
+              to="/interactions"
+              className="font-mono text-[11px] font-bold text-brand-dark"
+            >
+              INTERACTIONS →
+            </Link>
+          </div>
+        )}
+
         <div className="flex gap-3">
           <Link
             to="/qr"
@@ -67,11 +85,6 @@ export function HomePage() {
             <ScanLine size={20} strokeWidth={1.8} />
             <span className="text-sm font-bold">Scan</span>
           </Link>
-        </div>
-
-        <div className="mt-auto flex items-center gap-2 pb-2 font-mono text-[10.5px] font-bold tracking-widest text-slate-400">
-          <span className="h-1 w-1 rounded-full bg-slate-300" />
-          QR, RATINGS, REPORTS — SHIPPING M3/M4
         </div>
       </div>
     </div>

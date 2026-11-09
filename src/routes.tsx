@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { createBrowserRouter } from 'react-router-dom'
 import { AppShell } from '@/components/app-shell'
 import { PlaceholderScreen } from '@/components/placeholder-screen'
@@ -7,12 +8,24 @@ import { AuthPage } from '@/features/auth/auth-page'
 import { ConsentPage } from '@/features/auth/consent-page'
 import { VerifyPage } from '@/features/verification/verify-page'
 import { HomePage } from '@/features/dashboard/home-page'
+import { MyQrPage } from '@/features/qr/my-qr-page'
+import { ScanResultPage } from '@/features/qr/scan-result-page'
+
+// html5-qrcode is the single biggest dependency in the bundle and only
+// ScanPage needs it — lazy-load it so /home's first load doesn't pay for it.
+const ScanPage = lazy(() => import('@/features/qr/scan-page').then((m) => ({ default: m.ScanPage })))
+import { InteractionsPage } from '@/features/interactions/interactions-page'
+import { RatePage } from '@/features/ratings/rate-page'
+import { ReportPage } from '@/features/reports/report-page'
 import { AdminHomePage } from '@/features/admin/admin-home-page'
 import { AdminVerificationsPage } from '@/features/admin/admin-verifications-page'
+import { AdminReportsPage } from '@/features/admin/admin-reports-page'
+import { AdminAuditPage } from '@/features/admin/admin-audit-page'
 
-// Routing for docs/SPEC.md §7. Landing, Auth, Consent, Home and the Admin
-// dashboard are built; everything else is still a placeholder until the
-// milestone named in §14 builds it.
+// Routing for docs/SPEC.md §7. Everything is built now except My Profile
+// (M2) — see docs/DECISIONS.md. My QR/Scan/Scan Result/Rate/Report live
+// outside AppShell: they're full-screen flows with their own back
+// navigation, not tab-bar destinations, matching the approved prototype.
 
 export const router = createBrowserRouter([
   { path: '/', element: <LandingPage /> },
@@ -24,17 +37,24 @@ export const router = createBrowserRouter([
       { path: '/consent', element: <ConsentPage /> },
       { path: '/verify', element: <VerifyPage /> },
       { path: '/verify/status', element: <VerifyPage /> },
+      { path: '/qr', element: <MyQrPage /> },
+      {
+        path: '/scan',
+        element: (
+          <Suspense fallback={<div className="flex flex-1 items-center justify-center bg-ink text-slate-400">Loading…</div>}>
+            <ScanPage />
+          </Suspense>
+        ),
+      },
+      { path: '/scan/result/:id', element: <ScanResultPage /> },
+      { path: '/interactions', element: <InteractionsPage /> },
+      { path: '/rate/:interactionId', element: <RatePage /> },
+      { path: '/report', element: <ReportPage /> },
       {
         element: <AppShell />,
         children: [
           { path: '/home', element: <HomePage /> },
-          { path: '/qr', element: <PlaceholderScreen title="My QR" milestone="M3" /> },
-          { path: '/scan', element: <PlaceholderScreen title="Scan" milestone="M3" /> },
-          { path: '/scan/result/:id', element: <PlaceholderScreen title="Scanned Profile" milestone="M3" /> },
-          { path: '/interactions', element: <PlaceholderScreen title="Interactions" milestone="M3" /> },
-          { path: '/rate/:interactionId', element: <PlaceholderScreen title="Rate" milestone="M4" /> },
           { path: '/profile', element: <PlaceholderScreen title="My Profile" milestone="M2" /> },
-          { path: '/report', element: <PlaceholderScreen title="Report" milestone="M4" /> },
         ],
       },
     ],
@@ -45,9 +65,8 @@ export const router = createBrowserRouter([
     children: [
       { path: '/admin', element: <AdminHomePage /> },
       { path: '/admin/verifications', element: <AdminVerificationsPage /> },
-      { path: '/admin/reports', element: <PlaceholderScreen title="Admin: Reports" milestone="M4" /> },
-      { path: '/admin/reports/:id', element: <PlaceholderScreen title="Admin: Report Detail" milestone="M4" /> },
-      { path: '/admin/audit', element: <PlaceholderScreen title="Admin: Audit Log" milestone="M2" /> },
+      { path: '/admin/reports', element: <AdminReportsPage /> },
+      { path: '/admin/audit', element: <AdminAuditPage /> },
     ],
   },
 
