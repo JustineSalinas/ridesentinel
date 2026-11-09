@@ -1,7 +1,7 @@
 import { useQuery } from 'convex/react'
 import { Link, Navigate } from 'react-router-dom'
+import { QrCode, ScanLine } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
-import { Badge } from '@/components/ui/badge'
 
 export function HomePage() {
   const me = useQuery(api.profiles.getMe)
@@ -14,57 +14,64 @@ export function HomePage() {
     return <Navigate to="/register" replace />
   }
 
+  const initials = me.displayName
+    .split(' ')
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
+
   return (
     <div className="flex flex-1 flex-col">
       <div className="flex items-center justify-between border-b border-mist bg-paper px-6 py-5">
         <div>
           <div className="text-[13px] text-slate">Hey, {me.displayName.split(' ')[0]}</div>
-          <div className="mt-0.5">
-            {me.verified ? (
-              <Badge tone="verified">✓ ID-verified</Badge>
-            ) : (
-              <Badge tone="pending">Not yet verified</Badge>
-            )}
+          <div
+            className={
+              'mt-1 flex items-center gap-1.5 font-mono text-[11px] font-bold tracking-widest ' +
+              (me.verified ? 'text-verified' : 'text-pending')
+            }
+          >
+            <span className={'h-1.5 w-1.5 rounded-full ' + (me.verified ? 'bg-verified' : 'bg-pending')} />
+            {me.verified ? 'ID-VERIFIED' : 'NOT VERIFIED'}
           </div>
         </div>
-        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-mist text-[15px] font-bold text-slate">
-          {me.displayName
-            .split(' ')
-            .map((p) => p[0])
-            .slice(0, 2)
-            .join('')
-            .toUpperCase()}
+        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-ink text-[14px] font-bold text-white">
+          {initials}
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col gap-4 px-6 py-4">
+      <div className="flex flex-1 flex-col gap-4 px-6 py-5">
         {!me.verified && (
           <Link
             to="/verify"
-            className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] font-semibold text-pending"
+            className="flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] font-semibold text-pending"
           >
-            Get ID-verified to start scanning and showing your QR →
+            Get ID-verified to scan and show your QR
+            <span>→</span>
           </Link>
         )}
 
         <div className="flex gap-3">
           <Link
             to="/qr"
-            className="flex flex-1 flex-col items-center gap-2 rounded-2xl border border-mist bg-paper py-[18px]"
+            className="flex flex-1 flex-col items-center gap-2 rounded-2xl border border-mist bg-paper py-5"
           >
+            <QrCode size={20} strokeWidth={1.8} className="text-ink" />
             <span className="text-sm font-bold">My QR</span>
           </Link>
           <Link
             to="/scan"
-            className="flex flex-1 flex-col items-center gap-2 rounded-2xl bg-brand py-[18px] text-white"
+            className="flex flex-1 flex-col items-center gap-2 rounded-2xl bg-ink py-5 text-white"
           >
+            <ScanLine size={20} strokeWidth={1.8} />
             <span className="text-sm font-bold">Scan</span>
           </Link>
         </div>
 
-        <div className="rounded-xl border border-dashed border-mist bg-paper/60 px-4 py-3 text-[12.5px] text-slate">
-          Interactions, ratings and the QR handshake ship in M3/M4 (docs/SPEC.md §14) — this dashboard
-          is wired to your real account already.
+        <div className="mt-auto flex items-center gap-2 pb-2 font-mono text-[10.5px] font-bold tracking-widest text-slate-400">
+          <span className="h-1 w-1 rounded-full bg-slate-300" />
+          QR, RATINGS, REPORTS — SHIPPING M3/M4
         </div>
       </div>
     </div>

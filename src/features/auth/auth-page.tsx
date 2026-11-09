@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import { useAuthActions } from '@convex-dev/auth/react'
 import { useMutation } from 'convex/react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../../../convex/_generated/api'
 import { cn } from '@/lib/utils'
 
 type Tab = 'login' | 'register'
 
-export function AuthPage() {
-  const [tab, setTab] = useState<Tab>('login')
+export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
+  const [tab, setTab] = useState<Tab>(initialTab)
   const { signIn } = useAuthActions()
   const completeRegistration = useMutation(api.profiles.completeRegistration)
   const navigate = useNavigate()
@@ -64,9 +64,14 @@ export function AuthPage() {
           }}
           aria-hidden="true"
         />
-        <div className="relative flex items-center gap-2 font-mono text-[11px] font-bold tracking-[0.18em] text-pending">
-          <span className="h-1.5 w-1.5 rounded-full bg-pending" />
-          PILOT · ILOILO CITY
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center gap-2 font-mono text-[11px] font-bold tracking-[0.18em] text-pending">
+            <span className="h-1.5 w-1.5 rounded-full bg-pending" />
+            PILOT · ILOILO CITY
+          </div>
+          <Link to="/" className="font-mono text-[11px] font-bold tracking-wide text-slate-400">
+            ← BACK
+          </Link>
         </div>
         <h1 className="relative mt-3 text-[34px] font-extrabold leading-[1.05] tracking-tight text-white">
           Ride<span className="text-brand">Sentinel</span>

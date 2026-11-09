@@ -1,19 +1,20 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { createBrowserRouter } from 'react-router-dom'
 import { AppShell } from '@/components/app-shell'
 import { PlaceholderScreen } from '@/components/placeholder-screen'
 import { RequireAuth, RequireAdmin } from '@/components/require-auth'
+import { LandingPage } from '@/features/marketing/landing-page'
 import { AuthPage } from '@/features/auth/auth-page'
 import { HomePage } from '@/features/dashboard/home-page'
 import { AdminHomePage } from '@/features/admin/admin-home-page'
 
-// Routing for docs/SPEC.md §7. Auth, Home and the Admin dashboard are wired
-// to real Convex data; everything else is still a placeholder until the
-// milestone named in §14 builds it.
+// Routing for docs/SPEC.md §7. Landing, Auth, Home and the Admin dashboard
+// are built; everything else is still a placeholder until the milestone
+// named in §14 builds it.
 
 export const router = createBrowserRouter([
-  { path: '/', element: <Navigate to="/login" replace /> },
-  { path: '/login', element: <AuthPage /> },
-  { path: '/register', element: <AuthPage /> },
+  { path: '/', element: <LandingPage /> },
+  { path: '/login', element: <AuthPage initialTab="login" /> },
+  { path: '/register', element: <AuthPage initialTab="register" /> },
   { path: '/consent', element: <PlaceholderScreen title="Consent & Terms" milestone="M2" /> },
   { path: '/verify', element: <PlaceholderScreen title="Verify ID + Selfie" milestone="M2" /> },
   { path: '/verify/status', element: <PlaceholderScreen title="Verification Status" milestone="M2" /> },
