@@ -24,7 +24,9 @@ export function AdminVerificationsPage() {
           className="flex items-center justify-between bg-slate-800 px-5 py-2.5 text-[13.5px] font-semibold text-white"
         >
           Verifications
-          <span className="rounded-full bg-brand px-1.5 font-mono text-[11px]">{pending?.length ?? 0}</span>
+          {!!pending?.length && (
+            <span className="rounded-full bg-brand px-1.5 font-mono text-[11px]">{pending.length}</span>
+          )}
         </Link>
         <Link to="/admin" className="px-5 py-2.5 text-[13.5px] font-semibold text-slate-400">
           Overview

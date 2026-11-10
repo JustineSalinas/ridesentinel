@@ -26,7 +26,9 @@ export function AdminReportsPage() {
           className="flex items-center justify-between bg-slate-800 px-5 py-2.5 text-[13.5px] font-semibold text-white"
         >
           Reports
-          <span className="rounded-full bg-danger px-1.5 font-mono text-[11px]">{reports?.length ?? 0}</span>
+          {!!reports?.length && (
+            <span className="rounded-full bg-danger px-1.5 font-mono text-[11px]">{reports.length}</span>
+          )}
         </Link>
         <Link to="/admin/audit" className="px-5 py-2.5 text-[13.5px] font-semibold text-slate-400">
           Audit log
