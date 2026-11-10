@@ -7,6 +7,19 @@ import { cn } from '@/lib/utils'
 
 type Tab = 'login' | 'register'
 
+async function retryOnUnauthenticated<T>(fn: () => Promise<T>, attempts = 5, delayMs = 200): Promise<T> {
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn()
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e)
+      if (i === attempts - 1 || !message.includes('UNAUTHENTICATED')) throw e
+      await new Promise((resolve) => setTimeout(resolve, delayMs))
+    }
+  }
+  throw new Error('unreachable')
+}
+
 export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
   const [tab, setTab] = useState<Tab>(initialTab)
   const { signIn } = useAuthActions()
@@ -43,7 +56,13 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
     setSubmitting(true)
     try {
       await signIn('password', { email, password, flow: 'signUp' })
-      await completeRegistration({ displayName, rideRole, phone: phone || undefined })
+      // `signIn` resolving doesn't guarantee the Convex client has finished
+      // propagating the new auth token to its WebSocket connection yet — the
+      // very next mutation call can race it and fail with UNAUTHENTICATED.
+      // Retry briefly instead of failing a registration that actually worked.
+      await retryOnUnauthenticated(() =>
+        completeRegistration({ displayName, rideRole, phone: phone || undefined }),
+      )
       navigate('/consent')
     } catch {
       setError('Could not create your account. The email may already be in use.')
