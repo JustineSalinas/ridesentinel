@@ -75,6 +75,12 @@ export function MyQrPage() {
       {token && (
         <div className="rounded-2xl bg-white p-5">
           <QRCodeSVG value={token.nonce} size={200} />
+          {/* e2e-only: lets a test read the nonce without decoding the QR image (SPEC.md §12) */}
+          {import.meta.env.DEV && (
+            <span data-testid="qr-nonce" className="hidden">
+              {token.nonce}
+            </span>
+          )}
         </div>
       )}
 
