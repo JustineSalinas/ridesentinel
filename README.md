@@ -32,7 +32,8 @@ pnpm dev          # in a second terminal
 | `pnpm lint` | ESLint |
 | `pnpm format` | Prettier, writes in place |
 | `pnpm test` | Vitest (unit/component) |
-| `pnpm test:e2e` | Playwright (two-browser-context flows) |
+| `pnpm test:convex` | `convex-test` backend authorization/replay tests |
+| `pnpm test:e2e` | Playwright — needs `npx convex dev` running in another terminal first |
 
 ## CI
 
@@ -40,4 +41,13 @@ GitHub Actions needs a `CONVEX_DEPLOY_KEY` repo secret (Convex dashboard → Set
 
 ## Status
 
-M0–M4 are built: accounts, consent, ID verification + admin review, the QR handshake (issue/scan/confirm, replay-protected — see `convex/qr.test.ts`), ratings (blind reveal, anti-abuse), reports, and admin moderation + audit log. **Only My Profile (M2) is still a placeholder.** `pnpm test:convex` runs the backend authorization/replay test suite; a Playwright two-browser-context e2e suite (SPEC.md §12) hasn't been written yet.
+M0–M4 are fully built: accounts, profile (incl. account deletion with rating anonymization), consent, ID verification + admin review, the QR handshake (issue/scan/confirm, replay-protected), ratings (blind reveal, anti-abuse), reports, and admin moderation + audit log, plus a pilot-metrics panel on the admin dashboard. No screen in `docs/SPEC.md` §7 is still a placeholder.
+
+Verified via `gstack /qa` (real browser testing against the running app) and `pnpm test:e2e` (`e2e/full-ride.spec.ts` drives three browser contexts — admin + two riders — through the whole critical path, including replay rejection). `pnpm test:convex` covers backend authorization directly.
+
+**Bootstrapping an admin** (there's no self-promotion by design):
+```bash
+npx convex run admin:makeAdmin '{"displayName":"Your Name"}'
+```
+
+**Still needs a human:** a `CONVEX_DEPLOY_KEY` for Vercel/CI to actually deploy, a real device/browser pass on your end, and the `docs/SPEC.md` §17 decisions (pilot community name, data protection contact, final branding).
