@@ -3,6 +3,8 @@ import { mutation } from './_generated/server'
 import { requireProfile, isVerified } from './lib/authz'
 
 const QR_TTL_MS = 60 * 1000
+const ISSUE_RATE_LIMIT = 20
+const ISSUE_RATE_WINDOW_MS = 60 * 1000
 
 // issueQr: the nonce is a plain random string, not an HMAC-signed token
 // (docs/DECISIONS.md) — only this mutation can ever create a qrTokens row,
@@ -12,6 +14,14 @@ export const issueQr = mutation({
   handler: async (ctx) => {
     const profile = await requireProfile(ctx)
     if (!isVerified(profile)) throw new ConvexError('NOT_VERIFIED')
+
+    const recent = await ctx.db
+      .query('qrTokens')
+      .withIndex('by_userId', (q) => q.eq('userId', profile.userId))
+      .order('desc')
+      .take(ISSUE_RATE_LIMIT)
+    const issuedInWindow = recent.filter((t) => Date.now() - t.issuedAt < ISSUE_RATE_WINDOW_MS).length
+    if (issuedInWindow >= ISSUE_RATE_LIMIT) throw new ConvexError('RATE_LIMITED')
 
     const issuedAt = Date.now()
     const nonce = crypto.randomUUID()

@@ -79,3 +79,55 @@ export const updateProfile = mutation({
     await ctx.db.patch(profile._id, patch)
   },
 })
+
+// A standing tombstone row that deleted users' ratings get repointed to, so
+// other people's scores stay accurate (SPEC.md §10) without the rating
+// table needing an optional raterId/ratedId.
+async function getOrCreateTombstone(ctx: import('./_generated/server').MutationCtx) {
+  const existing = await ctx.db
+    .query('appConfig')
+    .withIndex('by_key', (q) => q.eq('key', 'tombstoneUserId'))
+    .unique()
+  if (existing) return existing.value as import('./_generated/dataModel').Id<'users'>
+
+  const userId = await ctx.db.insert('users', {})
+  await ctx.db.insert('profiles', {
+    userId,
+    role: 'user',
+    rideRole: 'passenger',
+    displayName: 'Deleted user',
+    tier: 'unverified',
+    createdAt: Date.now(),
+  })
+  await ctx.db.insert('appConfig', { key: 'tombstoneUserId', value: userId })
+  return userId
+}
+
+// deleteMyAccount: anonymizes rather than hard-deletes ratings (SPEC.md
+// §10) — the stars stay, so other users' scores don't silently change,
+// but the rater/rated identity is gone. Interactions themselves are left
+// alone (otherPartyProjection already handles a missing profile).
+export const deleteMyAccount = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const profile = await requireProfile(ctx)
+    const tombstone = await getOrCreateTombstone(ctx)
+
+    const [given, received] = await Promise.all([
+      ctx.db.query('ratings').withIndex('by_raterId', (q) => q.eq('raterId', profile.userId)).take(500),
+      ctx.db.query('ratings').withIndex('by_ratedId', (q) => q.eq('ratedId', profile.userId)).take(500),
+    ])
+    for (const r of given) await ctx.db.patch(r._id, { raterId: tombstone })
+    for (const r of received) await ctx.db.patch(r._id, { ratedId: tombstone })
+
+    await ctx.db.insert('auditLog', {
+      actorId: profile.userId,
+      action: 'account.delete',
+      targetType: 'users',
+      targetId: profile.userId,
+      createdAt: Date.now(),
+    })
+
+    await ctx.db.delete(profile._id)
+  },
+})

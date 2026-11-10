@@ -62,7 +62,9 @@ export default defineSchema({
     expiresAt: v.number(),
     usedAt: v.optional(v.number()),
     usedBy: v.optional(v.id('users')),
-  }).index('by_nonce', ['nonce']),
+  })
+    .index('by_nonce', ['nonce'])
+    .index('by_userId', ['userId']),
 
   // D4 — interactions.
   interactions: defineTable({

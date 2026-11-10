@@ -17,15 +17,16 @@ const ScanPage = lazy(() => import('@/features/qr/scan-page').then((m) => ({ def
 import { InteractionsPage } from '@/features/interactions/interactions-page'
 import { RatePage } from '@/features/ratings/rate-page'
 import { ReportPage } from '@/features/reports/report-page'
+import { ProfilePage } from '@/features/profile/profile-page'
 import { AdminHomePage } from '@/features/admin/admin-home-page'
 import { AdminVerificationsPage } from '@/features/admin/admin-verifications-page'
 import { AdminReportsPage } from '@/features/admin/admin-reports-page'
 import { AdminAuditPage } from '@/features/admin/admin-audit-page'
 
-// Routing for docs/SPEC.md §7. Everything is built now except My Profile
-// (M2) — see docs/DECISIONS.md. My QR/Scan/Scan Result/Rate/Report live
-// outside AppShell: they're full-screen flows with their own back
-// navigation, not tab-bar destinations, matching the approved prototype.
+// Routing for docs/SPEC.md §7 — every screen is built. My QR/Scan/Scan
+// Result/Rate/Report live outside AppShell: they're full-screen flows with
+// their own back navigation, not tab-bar destinations, matching the
+// approved prototype.
 
 export const router = createBrowserRouter([
   { path: '/', element: <LandingPage /> },
@@ -54,7 +55,7 @@ export const router = createBrowserRouter([
         element: <AppShell />,
         children: [
           { path: '/home', element: <HomePage /> },
-          { path: '/profile', element: <PlaceholderScreen title="My Profile" milestone="M2" /> },
+          { path: '/profile', element: <ProfilePage /> },
         ],
       },
     ],

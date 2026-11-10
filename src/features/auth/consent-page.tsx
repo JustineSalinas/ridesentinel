@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useMutation } from 'convex/react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../../../convex/_generated/api'
+import { TERMS_OF_USE, COMMUNITY_GUIDELINES } from './terms'
 
 const POINTS = [
   [
@@ -25,6 +26,7 @@ export function ConsentPage() {
   const setConsent = useMutation(api.profiles.setConsent)
   const navigate = useNavigate()
   const [submitting, setSubmitting] = useState(false)
+  const [showTerms, setShowTerms] = useState(false)
 
   async function agree() {
     setSubmitting(true)
@@ -66,6 +68,24 @@ export function ConsentPage() {
           A badge is not a safety guarantee. RideSentinel doesn&apos;t arrange, price, or operate rides
           &mdash; you&apos;re responsible for your own judgment and conduct.
         </div>
+
+        <button
+          type="button"
+          onClick={() => setShowTerms((v) => !v)}
+          className="mt-4 self-start font-mono text-[11px] font-bold tracking-wide text-brand-dark"
+        >
+          {showTerms ? '← HIDE FULL TERMS' : 'READ FULL TERMS →'}
+        </button>
+
+        {showTerms && (
+          <div className="mt-3 max-h-[220px] overflow-y-auto rounded-xl border border-mist bg-mist/40 p-4">
+            <pre className="whitespace-pre-wrap text-[11.5px] leading-relaxed text-slate">
+              {TERMS_OF_USE}
+              {'\n\n'}
+              {COMMUNITY_GUIDELINES}
+            </pre>
+          </div>
+        )}
 
         <div className="mt-auto flex flex-col gap-2.5 pb-8 pt-10">
           <button
