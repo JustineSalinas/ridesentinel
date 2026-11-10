@@ -90,6 +90,7 @@ export function VerifyPage() {
         </div>
 
         <UploadField
+          id="id-photo-input"
           label="Photo of your ID"
           file={idPhoto}
           inputRef={idInputRef}
@@ -97,6 +98,7 @@ export function VerifyPage() {
           hint="No ID number is read or stored."
         />
         <UploadField
+          id="selfie-input"
           label="Selfie"
           file={selfie}
           inputRef={selfieInputRef}
@@ -118,12 +120,14 @@ export function VerifyPage() {
 }
 
 function UploadField({
+  id,
   label,
   file,
   inputRef,
   onPick,
   hint,
 }: {
+  id: string
   label: string
   file: File | null
   inputRef: React.RefObject<HTMLInputElement | null>
@@ -132,9 +136,9 @@ function UploadField({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="font-mono text-[10.5px] font-bold uppercase tracking-widest text-slate-400">
+      <label htmlFor={id} className="font-mono text-[10.5px] font-bold uppercase tracking-widest text-slate-400">
         {label}
-      </span>
+      </label>
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
@@ -147,6 +151,7 @@ function UploadField({
         )}
       </button>
       <input
+        id={id}
         ref={inputRef}
         type="file"
         accept="image/*"

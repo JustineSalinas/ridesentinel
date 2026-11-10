@@ -60,7 +60,7 @@ export function ProfilePage() {
         <div className="mt-2 flex w-full max-w-[280px] gap-2">
           <button
             onClick={() => setConfirmingDelete(false)}
-            className="flex-1 rounded-full border border-mist py-3 text-[13.5px] font-bold"
+            className="flex-1 rounded-full border border-mist bg-paper py-3 text-[13.5px] font-bold"
           >
             Keep account
           </button>
@@ -84,14 +84,14 @@ export function ProfilePage() {
           <input
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            className="h-11 rounded-lg border border-mist px-3 text-[14px]"
+            className="h-11 rounded-lg border border-mist bg-paper px-3 text-[14px]"
           />
         </Field>
         <Field label="Phone">
           <input
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            className="h-11 rounded-lg border border-mist px-3 text-[14px]"
+            className="h-11 rounded-lg border border-mist bg-paper px-3 text-[14px]"
           />
         </Field>
         <Field label="I usually ride as">
@@ -117,7 +117,7 @@ export function ProfilePage() {
           </div>
         </Field>
         <div className="mt-2 flex gap-2">
-          <button onClick={() => setEditing(false)} className="flex-1 rounded-full border border-mist py-3 text-[14px] font-bold">
+          <button onClick={() => setEditing(false)} className="flex-1 rounded-full border border-mist bg-paper py-3 text-[14px] font-bold">
             Cancel
           </button>
           <button
@@ -163,20 +163,20 @@ export function ProfilePage() {
         />
       </div>
 
-      <button onClick={startEdit} className="rounded-full border border-mist py-3 text-[14px] font-bold">
+      <button onClick={startEdit} className="rounded-full border border-mist bg-paper py-3 text-[14px] font-bold">
         Edit profile
       </button>
 
       <div className="mt-auto flex flex-col gap-2 pb-4">
         <button
           onClick={() => signOut()}
-          className="rounded-full border border-mist py-3 text-[14px] font-bold text-slate"
+          className="rounded-full border border-mist bg-paper py-3 text-[14px] font-bold text-slate"
         >
           Log out
         </button>
         <button
           onClick={() => setConfirmingDelete(true)}
-          className="rounded-full border border-danger py-3 text-[14px] font-bold text-danger"
+          className="rounded-full border border-danger bg-paper py-3 text-[14px] font-bold text-danger"
         >
           Delete my account
         </button>

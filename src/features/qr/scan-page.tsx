@@ -19,7 +19,24 @@ export function ScanPage() {
   const containerRef = useRef<HTMLDivElement>(null)
   const scannerRef = useRef<Html5Qrcode | null>(null)
   const busyRef = useRef(false)
+  // html5-qrcode's stop() throws synchronously (not just a rejected promise)
+  // when the camera never actually started — which is the common case in
+  // headless/no-camera environments, and whenever the user navigates away
+  // before the permission prompt resolves. Track readiness explicitly
+  // instead of assuming .catch() will see it.
+  const startedRef = useRef(false)
+  const cancelledRef = useRef(false)
   const [error, setError] = useState<string | null>(null)
+
+  async function safeStop(scanner: Html5Qrcode) {
+    if (!startedRef.current) return
+    startedRef.current = false
+    try {
+      await scanner.stop()
+    } catch {
+      // already stopped or never running — nothing to clean up
+    }
+  }
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -35,7 +52,7 @@ export function ScanPage() {
           busyRef.current = true
           try {
             const { interactionId } = await scanQr({ nonce: text })
-            await scanner.stop()
+            await safeStop(scanner)
             navigate(`/scan/result/${interactionId}`)
           } catch (e) {
             const code = e instanceof ConvexError ? (e.data as string) : undefined
@@ -45,10 +62,17 @@ export function ScanPage() {
         },
         () => {},
       )
+      .then(() => {
+        startedRef.current = true
+        // Unmounted while start() was still pending — stop it now, nothing
+        // else will.
+        if (cancelledRef.current) void safeStop(scanner)
+      })
       .catch(() => setError('Camera access was denied or is unavailable.'))
 
     return () => {
-      scannerRef.current?.stop().catch(() => {})
+      cancelledRef.current = true
+      void safeStop(scanner)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
