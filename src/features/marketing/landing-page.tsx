@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { motion, useReducedMotion } from 'framer-motion'
 
 const RULES = [
   {
@@ -26,6 +27,8 @@ const STEPS = [
 ] as const
 
 export function LandingPage() {
+  const reduceMotion = useReducedMotion()
+
   return (
     <div className="min-h-dvh bg-ink text-white">
       {/* Hero */}
@@ -38,7 +41,12 @@ export function LandingPage() {
           }}
           aria-hidden="true"
         />
-        <div className="relative mx-auto max-w-md">
+        <motion.div
+          initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: 'easeOut' }}
+          className="relative mx-auto max-w-md"
+        >
           <div className="flex items-center gap-2 font-mono text-[11px] font-bold tracking-[0.18em] text-pending">
             <span className="h-1.5 w-1.5 rounded-full bg-pending" />
             PILOT · ILOILO CITY
@@ -76,7 +84,7 @@ export function LandingPage() {
               Log in
             </Link>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Rules */}

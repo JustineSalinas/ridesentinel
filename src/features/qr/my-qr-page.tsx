@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useMutation, useQuery } from 'convex/react'
 import { Link, useNavigate } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { api } from '../../../convex/_generated/api'
 
 export function MyQrPage() {
@@ -16,6 +17,7 @@ export function MyQrPage() {
   const [secondsLeft, setSecondsLeft] = useState(60)
   const [error, setError] = useState<string | null>(null)
   const [confirming, setConfirming] = useState(false)
+  const reduceMotion = useReducedMotion()
 
   async function refresh() {
     try {
@@ -85,7 +87,11 @@ export function MyQrPage() {
       )}
 
       <div className="flex items-center gap-2 rounded-full bg-slate-800 px-4 py-2">
-        <span className="h-2 w-2 rounded-full bg-verified" />
+        <motion.span
+          className="h-2 w-2 rounded-full bg-verified"
+          animate={reduceMotion ? undefined : { opacity: [1, 0.4, 1] }}
+          transition={reduceMotion ? undefined : { duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+        />
         <span className="font-mono text-[13px] font-bold">Refreshes in {secondsLeft}s</span>
       </div>
 
@@ -95,49 +101,64 @@ export function MyQrPage() {
 
       {error && <div className="text-[12px] text-danger">{error}</div>}
 
-      {openScan && (
-        <div className="absolute inset-0 flex items-center justify-center bg-ink/90 p-6">
-          <div className="w-full max-w-[320px] rounded-2xl bg-paper p-6 text-ink">
-            <div className="text-center">
-              <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                Someone scanned your QR
-              </div>
-              <div className="mt-2 text-[18px] font-extrabold">{openScan.other?.displayName}</div>
-            </div>
-
-            {!openScan.interaction.bConfirmedAt ? (
-              <div className="mt-4 rounded-lg bg-mist px-4 py-3 text-center text-[13px] text-slate">
-                Waiting for them to confirm it&apos;s you…
-              </div>
-            ) : (
-              <>
-                <p className="mt-4 text-center text-[13px] text-slate">
-                  Is this the person in front of you?
-                </p>
-                <div className="mt-4 flex gap-2">
-                  <button
-                    onClick={() => cancelInteraction({ interactionId: openScan.interaction._id, reason: 'other' })}
-                    className="flex-1 rounded-full border border-danger py-3 text-[14px] font-bold text-danger"
-                  >
-                    Not them
-                  </button>
-                  <button
-                    disabled={confirming}
-                    onClick={async () => {
-                      setConfirming(true)
-                      await confirmMeeting({ interactionId: openScan.interaction._id })
-                      navigate(`/rate/${openScan.interaction._id}`)
-                    }}
-                    className="flex-1 rounded-full bg-verified py-3 text-[14px] font-bold text-white disabled:opacity-40"
-                  >
-                    Confirm
-                  </button>
+      <AnimatePresence>
+        {openScan && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: reduceMotion ? 0 : 0.15 }}
+            className="absolute inset-0 flex items-center justify-center bg-ink/90 p-6"
+          >
+            <motion.div
+              initial={reduceMotion ? false : { opacity: 0, scale: 0.94, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+              className="w-full max-w-[320px] rounded-2xl bg-paper p-6 text-ink"
+            >
+              <div className="text-center">
+                <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                  Someone scanned your QR
                 </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+                <div className="mt-2 text-[18px] font-extrabold">{openScan.other?.displayName}</div>
+              </div>
+
+              {!openScan.interaction.bConfirmedAt ? (
+                <div className="mt-4 rounded-lg bg-mist px-4 py-3 text-center text-[13px] text-slate">
+                  Waiting for them to confirm it&apos;s you…
+                </div>
+              ) : (
+                <>
+                  <p className="mt-4 text-center text-[13px] text-slate">
+                    Is this the person in front of you?
+                  </p>
+                  <div className="mt-4 flex gap-2">
+                    <motion.button
+                      whileTap={reduceMotion ? undefined : { scale: 0.96 }}
+                      onClick={() => cancelInteraction({ interactionId: openScan.interaction._id, reason: 'other' })}
+                      className="flex-1 rounded-full border border-danger py-3 text-[14px] font-bold text-danger"
+                    >
+                      Not them
+                    </motion.button>
+                    <motion.button
+                      whileTap={reduceMotion ? undefined : { scale: 0.96 }}
+                      disabled={confirming}
+                      onClick={async () => {
+                        setConfirming(true)
+                        await confirmMeeting({ interactionId: openScan.interaction._id })
+                        navigate(`/rate/${openScan.interaction._id}`)
+                      }}
+                      className="flex-1 rounded-full bg-verified py-3 text-[14px] font-bold text-white disabled:opacity-40"
+                    >
+                      Confirm
+                    </motion.button>
+                  </div>
+                </>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

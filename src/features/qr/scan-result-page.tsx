@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from 'convex/react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 
@@ -10,6 +11,7 @@ export function ScanResultPage() {
   const confirmMeeting = useMutation(api.interactions.confirmMeeting)
   const cancelInteraction = useMutation(api.interactions.cancelInteraction)
   const navigate = useNavigate()
+  const reduceMotion = useReducedMotion()
 
   if (data === undefined) {
     return <div className="flex min-h-dvh items-center justify-center bg-ink text-slate-400">Loading…</div>
@@ -39,9 +41,14 @@ export function ScanResultPage() {
 
       <div className="flex flex-1 flex-col items-center gap-4 px-6 pb-8">
         {/* Photo first — the one non-negotiable layout rule (SPEC.md §3.4) */}
-        <div className="h-[220px] w-[220px] overflow-hidden rounded-3xl bg-slate-700">
+        <motion.div
+          initial={reduceMotion ? false : { opacity: 0, scale: 0.92 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.25, ease: 'easeOut' }}
+          className="h-[220px] w-[220px] overflow-hidden rounded-3xl bg-slate-700"
+        >
           {other.photoUrl && <img src={other.photoUrl} alt="" className="h-full w-full object-cover" />}
-        </div>
+        </motion.div>
 
         <div className="text-center">
           <div className="text-[22px] font-extrabold">{other.displayName}</div>
@@ -89,20 +96,27 @@ export function ScanResultPage() {
           </div>
         )}
 
-        {status === 'confirmed' && (
-          <div className="mt-4 flex w-full flex-col items-center gap-3 rounded-xl bg-green-900/20 px-4 py-5">
-            <div className="font-mono text-[11px] font-bold tracking-widest text-verified">CONFIRMED</div>
-            <p className="text-center text-[12.5px] text-slate-300">
-              You can both rate each other within the next 48 hours.
-            </p>
-            <Link
-              to={`/rate/${interactionId}`}
-              className="w-full rounded-full bg-brand py-3 text-center text-[14px] font-bold text-white"
+        <AnimatePresence>
+          {status === 'confirmed' && (
+            <motion.div
+              initial={reduceMotion ? false : { opacity: 0, scale: 0.9, y: 8 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="mt-4 flex w-full flex-col items-center gap-3 rounded-xl bg-green-900/20 px-4 py-5"
             >
-              Rate now
-            </Link>
-          </div>
-        )}
+              <div className="font-mono text-[11px] font-bold tracking-widest text-verified">CONFIRMED</div>
+              <p className="text-center text-[12.5px] text-slate-300">
+                You can both rate each other within the next 48 hours.
+              </p>
+              <Link
+                to={`/rate/${interactionId}`}
+                className="w-full rounded-full bg-brand py-3 text-center text-[14px] font-bold text-white"
+              >
+                Rate now
+              </Link>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {(status === 'cancelled' || status === 'expired') && (
           <div className="mt-4 text-center text-[13px] text-slate-400">

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useMutation, useQuery } from 'convex/react'
 import { ConvexError } from 'convex/values'
 import { Link, useParams } from 'react-router-dom'
+import { motion, useReducedMotion } from 'framer-motion'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 
@@ -17,6 +18,7 @@ export function RatePage() {
   const [stars, setStars] = useState(0)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const reduceMotion = useReducedMotion()
 
   if (data === undefined || mine === undefined) return null
   if (data === null || !data.other) {
@@ -51,7 +53,12 @@ export function RatePage() {
       </div>
 
       {alreadyRated ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 px-8 text-center">
+        <motion.div
+          initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+          className="flex flex-1 flex-col items-center justify-center gap-3 px-8 text-center"
+        >
           <div className="font-mono text-[11px] font-bold tracking-widest text-brand">SUBMITTED</div>
           <h1 className="text-[20px] font-extrabold">Rating recorded</h1>
           <p className="max-w-[260px] text-[13px] text-slate-300">
@@ -60,7 +67,7 @@ export function RatePage() {
           <Link to="/home" className="mt-2 font-mono text-[12px] font-bold text-brand">
             HOME →
           </Link>
-        </div>
+        </motion.div>
       ) : (
         <div className="flex flex-1 flex-col items-center gap-5 px-8">
           <div className="h-[72px] w-[72px] overflow-hidden rounded-full bg-slate-700">
@@ -72,7 +79,13 @@ export function RatePage() {
 
           <div className="flex gap-2">
             {[1, 2, 3, 4, 5].map((n) => (
-              <button key={n} onClick={() => setStars(n)} aria-label={`${n} stars`}>
+              <motion.button
+                key={n}
+                onClick={() => setStars(n)}
+                aria-label={`${n} stars`}
+                animate={!reduceMotion && n === stars ? { scale: [1, 1.25, 1] } : { scale: 1 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+              >
                 <svg width="36" height="36" viewBox="0 0 24 24" fill={n <= stars ? '#D97706' : 'none'}>
                   <path
                     d="M12 2l2.9 6.3L22 9l-5 5 1.3 7L12 17.8 5.7 21 7 14 2 9l7.1-.7L12 2z"
@@ -80,10 +93,18 @@ export function RatePage() {
                     strokeWidth="1"
                   />
                 </svg>
-              </button>
+              </motion.button>
             ))}
           </div>
-          <div className="h-5 font-mono text-[12px] font-bold text-pending">{LABELS[stars]}</div>
+          <motion.div
+            key={stars}
+            initial={reduceMotion ? false : { opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.15 }}
+            className="h-5 font-mono text-[12px] font-bold text-pending"
+          >
+            {LABELS[stars]}
+          </motion.div>
 
           {error && <div className="text-[12.5px] text-danger">{error}</div>}
 
