@@ -50,7 +50,7 @@ const FEATURE_ROWS = [
 
 function PhoneMock({ kind }: { kind: 'qr' | 'confirm' | 'rate' }) {
   return (
-    <div className="relative mx-auto h-[280px] w-[160px] rounded-[26px] border-[6px] border-ink bg-paper shadow-[0_20px_40px_-20px_rgba(15,23,42,0.35)]">
+    <div className="relative mx-auto h-[300px] w-[172px] rounded-[26px] border-[6px] border-ink bg-paper shadow-[0_20px_40px_-20px_rgba(15,23,42,0.35)]">
       <div className="absolute left-1/2 top-0 h-4 w-16 -translate-x-1/2 rounded-b-xl bg-ink" />
       <div className="flex h-full flex-col items-center justify-center gap-2 px-4 pt-3">
         {kind === 'qr' && (
@@ -135,7 +135,7 @@ export function LandingPage() {
   return (
     <div className="min-h-dvh bg-ink text-white">
       {/* Hero */}
-      <div className="relative overflow-hidden px-7 pb-16 pt-14">
+      <div className="relative overflow-hidden px-7 pb-16 pt-14 md:px-16 md:pb-24 md:pt-20">
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.07]"
           style={{
@@ -148,55 +148,61 @@ export function LandingPage() {
           initial={reduceMotion ? false : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: 'easeOut' }}
-          className="relative mx-auto max-w-md"
+          className="relative mx-auto flex max-w-6xl flex-col items-center gap-10 md:flex-row md:items-center md:justify-between md:gap-16"
         >
-          <div className="flex items-center gap-2 font-mono text-[11px] font-bold tracking-[0.18em] text-pending">
-            <span className="h-1.5 w-1.5 rounded-full bg-pending" />
-            PILOT · ILOILO CITY
-          </div>
-          <h1 className="mt-3 text-[38px] font-extrabold leading-[1.05] tracking-tight">
-            Ride<span className="text-brand">Sentinel</span>
-          </h1>
-          <p className="mt-3 max-w-[300px] text-[15px] leading-snug text-slate-300">
-            A motorcycle ride is arranged in a chat. Before you get on, know who you&apos;re actually
-            meeting.
-          </p>
+          <div className="w-full max-w-md md:max-w-lg">
+            <div className="flex items-center justify-center gap-2 font-mono text-[11px] font-bold tracking-[0.18em] text-pending md:justify-start">
+              <span className="h-1.5 w-1.5 rounded-full bg-pending" />
+              PILOT · ILOILO CITY
+            </div>
+            <h1 className="mt-3 text-center text-[38px] font-extrabold leading-[1.05] tracking-tight md:text-left md:text-[54px]">
+              Ride<span className="text-brand">Sentinel</span>
+            </h1>
+            <p className="mx-auto mt-3 max-w-[300px] text-center text-[15px] leading-snug text-slate-300 md:mx-0 md:max-w-[420px] md:text-left md:text-[17px]">
+              A motorcycle ride is arranged in a chat. Before you get on, know who you&apos;re actually
+              meeting.
+            </p>
 
-          <div className="mt-8 flex flex-col gap-2.5">
-            <Link
-              to="/register"
-              className="group flex h-[54px] items-center justify-between rounded-full bg-brand px-6 text-[15px] font-bold text-white transition-colors hover:bg-brand-dark"
-            >
-              Register
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15 transition-transform group-hover:translate-x-0.5">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path
-                    d="M5 12h14M13 6l6 6-6 6"
-                    stroke="#FFFFFF"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </span>
-            </Link>
-            <Link
-              to="/login"
-              className="flex h-[54px] items-center justify-center rounded-full border border-white/15 text-[15px] font-bold text-white"
-            >
-              Log in
-            </Link>
+            <div className="mt-8 flex flex-col gap-2.5 md:flex-row">
+              <Link
+                to="/register"
+                className="group flex h-[54px] items-center justify-between rounded-full bg-brand px-6 text-[15px] font-bold text-white transition-colors hover:bg-brand-dark md:flex-1"
+              >
+                Register
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15 transition-transform group-hover:translate-x-0.5">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path
+                      d="M5 12h14M13 6l6 6-6 6"
+                      stroke="#FFFFFF"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+              </Link>
+              <Link
+                to="/login"
+                className="flex h-[54px] items-center justify-center rounded-full border border-white/15 text-[15px] font-bold text-white md:flex-1"
+              >
+                Log in
+              </Link>
+            </div>
+          </div>
+
+          <div className="hidden md:block">
+            <PhoneMock kind="confirm" />
           </div>
         </motion.div>
       </div>
 
       {/* Rules */}
-      <div className="border-t border-white/10 bg-ink px-7 py-10">
-        <div className="mx-auto max-w-md">
+      <div className="border-t border-white/10 bg-ink px-7 py-10 md:px-16 md:py-14">
+        <div className="mx-auto max-w-6xl">
           <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-slate-500">
             Three rules, no exceptions
           </div>
-          <div className="mt-5 flex flex-col gap-5">
+          <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-8">
             {RULES.map((r) => (
               <div key={r.title} className="flex gap-4">
                 <span className="mt-0.5 flex h-7 w-10 flex-shrink-0 items-center justify-center rounded-md border border-white/15 font-mono text-[11px] font-bold text-brand">
@@ -213,8 +219,8 @@ export function LandingPage() {
       </div>
 
       {/* Feature rows — alternating mock + copy, on the paper sheet */}
-      <div className="rounded-t-[28px] bg-paper px-7 pb-4 pt-12 text-ink">
-        <div className="mx-auto flex max-w-md flex-col gap-16">
+      <div className="rounded-t-[28px] bg-paper px-7 pb-4 pt-12 text-ink md:px-16 md:pt-20">
+        <div className="mx-auto flex max-w-5xl flex-col gap-16 md:gap-24">
           {FEATURE_ROWS.map((row, i) => (
             <motion.div
               key={row.tag}
@@ -222,17 +228,19 @@ export function LandingPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-60px' }}
               transition={{ duration: 0.35 }}
-              className={`flex flex-col items-center gap-6 ${i % 2 === 1 ? 'sm:flex-row-reverse' : 'sm:flex-row'}`}
+              className={`flex flex-col items-center gap-6 md:gap-16 ${i % 2 === 1 ? 'md:flex-row-reverse' : 'md:flex-row'}`}
             >
               <div className="flex-1">
                 <PhoneMock kind={row.mock} />
               </div>
-              <div className="flex-1 text-center sm:text-left">
+              <div className="flex-1 text-center md:text-left">
                 <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-brand">
                   {row.tag}
                 </div>
-                <h3 className="mt-2 text-[20px] font-extrabold leading-snug">{row.title}</h3>
-                <p className="mt-2 text-[14px] leading-relaxed text-slate">{row.body}</p>
+                <h3 className="mt-2 text-[20px] font-extrabold leading-snug md:text-[28px]">{row.title}</h3>
+                <p className="mt-2 text-[14px] leading-relaxed text-slate md:max-w-[420px] md:text-[16px]">
+                  {row.body}
+                </p>
               </div>
             </motion.div>
           ))}
@@ -240,25 +248,24 @@ export function LandingPage() {
       </div>
 
       {/* How it works — on the paper sheet, Operate-style, same as the rest of the app */}
-      <div className="bg-paper px-7 pb-16 pt-10 text-ink">
-        <div className="mx-auto max-w-md">
+      <div className="bg-paper px-7 pb-16 pt-10 text-ink md:px-16 md:pb-24 md:pt-20">
+        <div className="mx-auto max-w-6xl">
           <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-slate-400">
             How it works
           </div>
-          <div className="mt-5 flex flex-col">
-            {STEPS.map(([num, title, body], i) => (
+          <div className="mt-5 grid grid-cols-1 md:grid-cols-2 md:gap-x-12">
+            {STEPS.map(([num, title, body]) => (
               <div key={num} className="flex gap-4 border-b border-mist py-4 last:border-0">
                 <span className="font-mono text-[13px] font-bold text-slate-400">{num}</span>
                 <div>
                   <div className="text-[15px] font-bold">{title}</div>
                   <div className="mt-0.5 text-[13px] leading-snug text-slate">{body}</div>
                 </div>
-                <span className="ml-auto self-center text-slate-300">{i < STEPS.length - 1 ? '↓' : ''}</span>
               </div>
             ))}
           </div>
 
-          <div className="mt-8 rounded-xl bg-mist px-4 py-3 text-[12.5px] leading-snug text-slate">
+          <div className="mt-8 max-w-3xl rounded-xl bg-mist px-4 py-3 text-[12.5px] leading-snug text-slate">
             This isn&apos;t a ride-hailing app. There&apos;s no matching, booking, or payment &mdash; you
             still arrange rides yourselves. &ldquo;ID-verified&rdquo; means an administrator checked a
             government or school ID. It is not a safety guarantee.
@@ -271,8 +278,8 @@ export function LandingPage() {
       </div>
 
       {/* Manifesto */}
-      <div className="bg-paper px-7 py-14 text-ink">
-        <div className="mx-auto flex max-w-md flex-col gap-8">
+      <div className="bg-paper px-7 py-14 text-ink md:px-16 md:py-24">
+        <div className="mx-auto flex max-w-3xl flex-col gap-8">
           <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-slate-400">
             Why RideSentinel
           </div>
@@ -283,7 +290,11 @@ export function LandingPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: '-80px' }}
               transition={{ duration: 0.3, delay: i * 0.05 }}
-              className={i === MANIFESTO.length - 1 ? 'text-[20px] font-bold leading-snug' : 'text-[16px] leading-relaxed text-slate'}
+              className={
+                i === MANIFESTO.length - 1
+                  ? 'text-[20px] font-bold leading-snug md:text-[26px]'
+                  : 'text-[16px] leading-relaxed text-slate md:text-[19px]'
+              }
             >
               {line}
             </motion.p>
@@ -292,8 +303,8 @@ export function LandingPage() {
       </div>
 
       {/* FAQ */}
-      <div className="border-t border-mist bg-paper px-7 py-14 text-ink">
-        <div className="mx-auto max-w-md">
+      <div className="border-t border-mist bg-paper px-7 py-14 text-ink md:px-16 md:py-24">
+        <div className="mx-auto max-w-3xl">
           <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-slate-400">
             Questions
           </div>
@@ -307,7 +318,7 @@ export function LandingPage() {
                     className="flex w-full items-center justify-between text-left"
                     aria-expanded={open}
                   >
-                    <span className="text-[15px] font-bold">{q}</span>
+                    <span className="text-[15px] font-bold md:text-[17px]">{q}</span>
                     <span className={'ml-4 flex-shrink-0 text-slate-400 transition-transform' + (open ? ' rotate-45' : '')}>
                       +
                     </span>
@@ -317,7 +328,7 @@ export function LandingPage() {
                       initial={reduceMotion ? false : { opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                       transition={{ duration: 0.18 }}
-                      className="mt-2 text-[13.5px] leading-snug text-slate"
+                      className="mt-2 text-[13.5px] leading-snug text-slate md:text-[15px]"
                     >
                       {a}
                     </motion.p>
@@ -330,20 +341,24 @@ export function LandingPage() {
       </div>
 
       {/* Closing CTA */}
-      <div className="bg-ink px-7 py-16 text-center text-white">
-        <div className="mx-auto max-w-md">
-          <h2 className="text-[26px] font-extrabold leading-tight">Know who you&apos;re meeting.</h2>
-          <p className="mt-2 text-[14px] text-slate-400">Takes a day to verify. Takes a minute to confirm.</p>
-          <div className="mt-7 flex flex-col gap-2.5">
+      <div className="bg-ink px-7 py-16 text-center text-white md:px-16 md:py-24">
+        <div className="mx-auto max-w-2xl">
+          <h2 className="text-[26px] font-extrabold leading-tight md:text-[36px]">
+            Know who you&apos;re meeting.
+          </h2>
+          <p className="mt-2 text-[14px] text-slate-400 md:text-[16px]">
+            Takes a day to verify. Takes a minute to confirm.
+          </p>
+          <div className="mx-auto mt-7 flex max-w-sm flex-col gap-2.5 md:max-w-none md:flex-row">
             <Link
               to="/register"
-              className="flex h-[54px] items-center justify-center rounded-full bg-brand text-[15px] font-bold text-white transition-colors hover:bg-brand-dark"
+              className="flex h-[54px] items-center justify-center rounded-full bg-brand text-[15px] font-bold text-white transition-colors hover:bg-brand-dark md:flex-1"
             >
               Register
             </Link>
             <Link
               to="/login"
-              className="flex h-[54px] items-center justify-center rounded-full border border-white/15 text-[15px] font-bold text-white"
+              className="flex h-[54px] items-center justify-center rounded-full border border-white/15 text-[15px] font-bold text-white md:flex-1"
             >
               Log in
             </Link>
@@ -352,8 +367,8 @@ export function LandingPage() {
       </div>
 
       {/* Footer */}
-      <div className="border-t border-white/10 bg-ink px-7 py-10 text-slate-500">
-        <div className="mx-auto flex max-w-md flex-col gap-4">
+      <div className="border-t border-white/10 bg-ink px-7 py-10 text-slate-500 md:px-16">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-semibold">
             <Link to="/consent" className="hover:text-white">
               Privacy &amp; Terms
