@@ -135,62 +135,107 @@ export function LandingPage() {
   return (
     <div className="min-h-dvh bg-ink text-white">
       {/* Hero */}
-      <div className="relative overflow-hidden px-7 pb-16 pt-14 md:px-16 md:pb-24 md:pt-20">
+      <div className="relative overflow-hidden px-5 pb-20 pt-6 md:px-10 md:pb-28">
+        {/* Glow + diagonal light streaks, no imagery needed */}
         <div
-          className="pointer-events-none absolute inset-0 opacity-[0.07]"
+          className="pointer-events-none absolute left-1/2 top-[-10%] h-[520px] w-[720px] -translate-x-1/2 rounded-full opacity-40 blur-[110px]"
+          style={{ background: 'radial-gradient(closest-side, #2563EB, transparent)' }}
+          aria-hidden="true"
+        />
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.5]"
           style={{
-            backgroundImage:
-              'repeating-linear-gradient(0deg, #fff 0 1px, transparent 1px 28px), repeating-linear-gradient(90deg, #fff 0 1px, transparent 1px 28px)',
+            background:
+              'repeating-linear-gradient(115deg, rgba(37,99,235,0.12) 0px, rgba(37,99,235,0.12) 2px, transparent 2px, transparent 90px)',
           }}
           aria-hidden="true"
         />
+
+        {/* Nav */}
+        <nav className="relative mx-auto flex max-w-6xl items-center justify-between rounded-full border border-white/10 bg-white/5 px-5 py-3 backdrop-blur-md">
+          <div className="flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M12 2L3 7v6c0 5 4 8 9 9 5-1 9-4 9-9V7l-9-5z" fill="#FFFFFF" />
+              </svg>
+            </div>
+            <span className="text-[14px] font-extrabold tracking-tight">RideSentinel</span>
+          </div>
+          <div className="hidden items-center gap-7 text-[13px] font-semibold text-slate-300 md:flex">
+            <a href="#how-it-works" className="hover:text-white">
+              How it works
+            </a>
+            <a href="#faq" className="hover:text-white">
+              FAQ
+            </a>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/login"
+              className="hidden h-9 items-center rounded-full px-4 text-[13px] font-bold text-white md:flex"
+            >
+              Log in
+            </Link>
+            <Link
+              to="/register"
+              className="flex h-9 items-center rounded-full bg-brand px-4 text-[13px] font-bold text-white transition-colors hover:bg-brand-dark"
+            >
+              Register
+            </Link>
+          </div>
+        </nav>
+
         <motion.div
           initial={reduceMotion ? false : { opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: 'easeOut' }}
-          className="relative mx-auto flex max-w-6xl flex-col items-center gap-10 md:flex-row md:items-center md:justify-between md:gap-16"
+          className="relative mx-auto mt-16 max-w-2xl text-center md:mt-24"
         >
-          <div className="w-full max-w-md md:max-w-lg">
-            <div className="flex items-center justify-center gap-2 font-mono text-[11px] font-bold tracking-[0.18em] text-pending md:justify-start">
-              <span className="h-1.5 w-1.5 rounded-full bg-pending" />
-              PILOT · ILOILO CITY
-            </div>
-            <h1 className="mt-3 text-center text-[38px] font-extrabold leading-[1.05] tracking-tight md:text-left md:text-[54px]">
-              Ride<span className="text-brand">Sentinel</span>
-            </h1>
-            <p className="mx-auto mt-3 max-w-[300px] text-center text-[15px] leading-snug text-slate-300 md:mx-0 md:max-w-[420px] md:text-left md:text-[17px]">
-              A motorcycle ride is arranged in a chat. Before you get on, know who you&apos;re actually
-              meeting.
-            </p>
-
-            <div className="mt-8 flex flex-col gap-2.5 md:flex-row">
-              <Link
-                to="/register"
-                className="group flex h-[54px] items-center justify-between rounded-full bg-brand px-6 text-[15px] font-bold text-white transition-colors hover:bg-brand-dark md:flex-1"
-              >
-                Register
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/15 transition-transform group-hover:translate-x-0.5">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path
-                      d="M5 12h14M13 6l6 6-6 6"
-                      stroke="#FFFFFF"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </span>
-              </Link>
-              <Link
-                to="/login"
-                className="flex h-[54px] items-center justify-center rounded-full border border-white/15 text-[15px] font-bold text-white md:flex-1"
-              >
-                Log in
-              </Link>
-            </div>
+          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 font-mono text-[11px] font-bold tracking-[0.18em] text-pending">
+            <span className="h-1.5 w-1.5 rounded-full bg-pending" />
+            PILOT · ILOILO CITY
           </div>
+          <h1 className="mt-5 text-[38px] font-bold leading-[1.1] tracking-tight text-slate-400 md:text-[58px]">
+            Know who you&apos;re <span className="font-extrabold text-white">meeting</span>
+            <br />
+            <span className="font-extrabold text-white">before you ride.</span>
+          </h1>
+          <p className="mx-auto mt-5 max-w-[440px] text-[15px] leading-snug text-slate-400 md:text-[17px]">
+            A motorcycle ride is arranged in a chat. RideSentinel confirms, with a verified photo and a
+            live QR handshake, that the person who shows up is actually them.
+          </p>
 
-          <div className="hidden md:block">
+          <div className="mx-auto mt-8 flex max-w-sm flex-col gap-2.5 sm:flex-row sm:justify-center">
+            <Link
+              to="/register"
+              className="flex h-[52px] items-center justify-center rounded-full bg-brand px-8 text-[15px] font-bold text-white transition-colors hover:bg-brand-dark"
+            >
+              Register
+            </Link>
+            <Link
+              to="/login"
+              className="flex h-[52px] items-center justify-center rounded-full border border-white/15 bg-white/5 px-8 text-[15px] font-bold text-white backdrop-blur-md"
+            >
+              Log in
+            </Link>
+          </div>
+        </motion.div>
+
+        <motion.div
+          initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1, ease: 'easeOut' }}
+          className="relative mx-auto mt-16 flex max-w-4xl items-center justify-center md:mt-20"
+        >
+          <div className="relative">
+            <div className="hidden -translate-x-6 translate-y-6 rounded-2xl border border-white/10 bg-white/5 px-5 py-4 backdrop-blur-md sm:absolute sm:left-0 sm:top-10 sm:block">
+              <div className="text-[11px] text-slate-400">Confirmed meetings</div>
+              <div className="mt-1 text-[22px] font-extrabold">4.9 ★</div>
+            </div>
+            <div className="hidden translate-x-6 -translate-y-6 rounded-2xl border border-white/10 bg-white/5 px-5 py-4 backdrop-blur-md sm:absolute sm:right-0 sm:top-24 sm:block">
+              <div className="text-[11px] text-slate-400">QR expires in</div>
+              <div className="mt-1 text-[22px] font-extrabold text-brand">60s</div>
+            </div>
             <PhoneMock kind="confirm" />
           </div>
         </motion.div>
@@ -248,7 +293,7 @@ export function LandingPage() {
       </div>
 
       {/* How it works — on the paper sheet, Operate-style, same as the rest of the app */}
-      <div className="bg-paper px-7 pb-16 pt-10 text-ink md:px-16 md:pb-24 md:pt-20">
+      <div id="how-it-works" className="bg-paper px-7 pb-16 pt-10 text-ink md:px-16 md:pb-24 md:pt-20">
         <div className="mx-auto max-w-6xl">
           <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-slate-400">
             How it works
@@ -303,7 +348,7 @@ export function LandingPage() {
       </div>
 
       {/* FAQ */}
-      <div className="border-t border-mist bg-paper px-7 py-14 text-ink md:px-16 md:py-24">
+      <div id="faq" className="border-t border-mist bg-paper px-7 py-14 text-ink md:px-16 md:py-24">
         <div className="mx-auto max-w-3xl">
           <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-slate-400">
             Questions
