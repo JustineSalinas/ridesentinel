@@ -1,20 +1,25 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion } from 'framer-motion'
+import { Shield, QrCode, UserCheck, Star, Clock, ServerCog, Plus, ArrowRight } from 'lucide-react'
+import { buttonVariants } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
+import { useReveal } from '@/hooks/use-reveal'
 
 const RULES = [
   {
-    tag: '60S',
+    icon: Clock,
     title: 'QR codes expire',
     body: 'Every code is one-time and dies in a minute. A screenshot is useless.',
   },
   {
-    tag: 'x2',
+    icon: UserCheck,
     title: 'Ratings need a confirmed meeting',
     body: 'Both people have to confirm, in person, before either can rate the other.',
   },
   {
-    tag: 'DB',
+    icon: ServerCog,
     title: 'The server decides what’s true',
     body: 'Tier, verification, and ratings are never decided by your phone.',
   },
@@ -55,10 +60,8 @@ function PhoneMock({ kind }: { kind: 'qr' | 'confirm' | 'rate' }) {
       <div className="flex h-full flex-col items-center justify-center gap-2 px-4 pt-3">
         {kind === 'qr' && (
           <>
-            <div className="grid h-20 w-20 grid-cols-4 grid-rows-4 gap-[3px] rounded-md bg-ink p-2">
-              {Array.from({ length: 16 }).map((_, i) => (
-                <span key={i} className={i % 3 === 0 ? 'rounded-[1px] bg-white' : 'rounded-[1px] bg-transparent'} />
-              ))}
+            <div className="flex h-20 w-20 items-center justify-center rounded-md bg-ink">
+              <QrCode size={48} strokeWidth={1.5} className="text-white" />
             </div>
             <div className="rounded-full bg-mist px-2.5 py-1 text-[9px] font-bold text-slate">Refreshes in 42s</div>
           </>
@@ -67,8 +70,9 @@ function PhoneMock({ kind }: { kind: 'qr' | 'confirm' | 'rate' }) {
           <>
             <div className="h-16 w-16 rounded-full bg-mist" />
             <div className="text-[11px] font-bold text-ink">Marco D.</div>
-            <div className="rounded-full bg-green-50 px-2 py-0.5 text-[9px] font-bold text-verified">
-              ✓ ID-verified
+            <div className="flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[9px] font-bold text-verified">
+              <UserCheck size={10} strokeWidth={2.2} />
+              ID-verified
             </div>
             <div className="mt-1 w-full rounded-md bg-brand py-1.5 text-center text-[9px] font-bold text-white">
               This is the person
@@ -80,13 +84,7 @@ function PhoneMock({ kind }: { kind: 'qr' | 'confirm' | 'rate' }) {
             <div className="text-[10.5px] font-bold text-ink">How was the ride?</div>
             <div className="flex gap-0.5">
               {Array.from({ length: 5 }).map((_, i) => (
-                <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill={i < 4 ? '#D97706' : 'none'}>
-                  <path
-                    d="M12 2l2.9 6.3L22 9l-5 5 1.3 7L12 17.8 5.7 21 7 14 2 9l7.1-.7L12 2z"
-                    stroke="#D97706"
-                    strokeWidth="1"
-                  />
-                </svg>
+                <Star key={i} size={14} className="text-pending" fill={i < 4 ? '#D97706' : 'none'} />
               ))}
             </div>
             <div className="mt-1 w-full rounded-md bg-mist py-1.5 text-center text-[9px] text-slate">
@@ -128,8 +126,27 @@ const FAQ = [
   ],
 ] as const
 
+function Reveal({
+  as: Tag = 'div',
+  delay,
+  className,
+  children,
+}: {
+  as?: 'div' | 'p'
+  delay?: number
+  className?: string
+  children: React.ReactNode
+}) {
+  const { ref, motionProps } = useReveal({ delay })
+  const MotionTag = Tag === 'p' ? motion.p : motion.div
+  return (
+    <MotionTag ref={ref as never} className={className} {...motionProps}>
+      {children}
+    </MotionTag>
+  )
+}
+
 export function LandingPage() {
-  const reduceMotion = useReducedMotion()
   const [openFaq, setOpenFaq] = useState<number | null>(0)
 
   return (
@@ -155,9 +172,7 @@ export function LandingPage() {
         <nav className="relative mx-auto flex max-w-6xl items-center justify-between rounded-full border border-white/10 bg-white/5 px-5 py-3 backdrop-blur-md">
           <div className="flex items-center gap-2">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M12 2L3 7v6c0 5 4 8 9 9 5-1 9-4 9-9V7l-9-5z" fill="#FFFFFF" />
-              </svg>
+              <Shield size={15} strokeWidth={2.2} className="text-white" fill="#FFFFFF" />
             </div>
             <span className="text-[14px] font-extrabold tracking-tight">RideSentinel</span>
           </div>
@@ -170,31 +185,20 @@ export function LandingPage() {
             </a>
           </div>
           <div className="flex items-center gap-2">
-            <Link
-              to="/login"
-              className="hidden h-9 items-center rounded-full px-4 text-[13px] font-bold text-white md:flex"
-            >
+            <Link to="/login" className={cn(buttonVariants({ variant: 'ghost', size: 'pill' }), 'hidden text-white hover:bg-white/10 md:flex')}>
               Log in
             </Link>
-            <Link
-              to="/register"
-              className="flex h-9 items-center rounded-full bg-brand px-4 text-[13px] font-bold text-white transition-colors hover:bg-brand-dark"
-            >
+            <Link to="/register" className={cn(buttonVariants({ variant: 'heroPrimary', size: 'pill' }))}>
               Register
             </Link>
           </div>
         </nav>
 
-        <motion.div
-          initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, ease: 'easeOut' }}
-          className="relative mx-auto mt-16 max-w-2xl text-center md:mt-24"
-        >
-          <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 font-mono text-[11px] font-bold tracking-[0.18em] text-pending">
+        <Reveal className="relative mx-auto mt-16 max-w-2xl text-center md:mt-24">
+          <Badge tone="pending" className="gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 font-mono tracking-[0.18em]">
             <span className="h-1.5 w-1.5 rounded-full bg-pending" />
             PILOT · ILOILO CITY
-          </div>
+          </Badge>
           <h1 className="mt-5 text-[38px] font-bold leading-[1.1] tracking-tight text-slate-400 md:text-[58px]">
             Know who you&apos;re <span className="font-extrabold text-white">meeting</span>
             <br />
@@ -206,31 +210,22 @@ export function LandingPage() {
           </p>
 
           <div className="mx-auto mt-8 flex max-w-sm flex-col gap-2.5 sm:flex-row sm:justify-center">
-            <Link
-              to="/register"
-              className="flex h-[52px] items-center justify-center rounded-full bg-brand px-8 text-[15px] font-bold text-white transition-colors hover:bg-brand-dark"
-            >
+            <Link to="/register" className={cn(buttonVariants({ variant: 'heroPrimary', size: 'lg' }), 'px-8')}>
               Register
             </Link>
-            <Link
-              to="/login"
-              className="flex h-[52px] items-center justify-center rounded-full border border-white/15 bg-white/5 px-8 text-[15px] font-bold text-white backdrop-blur-md"
-            >
+            <Link to="/login" className={cn(buttonVariants({ variant: 'heroOutline', size: 'lg' }), 'px-8')}>
               Log in
             </Link>
           </div>
-        </motion.div>
+        </Reveal>
 
-        <motion.div
-          initial={reduceMotion ? false : { opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.1, ease: 'easeOut' }}
-          className="relative mx-auto mt-16 flex max-w-4xl items-center justify-center md:mt-20"
-        >
+        <Reveal delay={0.1} className="relative mx-auto mt-16 flex max-w-4xl items-center justify-center md:mt-20">
           <div className="relative">
             <div className="hidden -translate-x-6 translate-y-6 rounded-2xl border border-white/10 bg-white/5 px-5 py-4 backdrop-blur-md sm:absolute sm:left-0 sm:top-10 sm:block">
               <div className="text-[11px] text-slate-400">Confirmed meetings</div>
-              <div className="mt-1 text-[22px] font-extrabold">4.9 ★</div>
+              <div className="mt-1 flex items-center gap-1 text-[22px] font-extrabold">
+                4.9 <Star size={16} className="text-pending" fill="#D97706" />
+              </div>
             </div>
             <div className="hidden translate-x-6 -translate-y-6 rounded-2xl border border-white/10 bg-white/5 px-5 py-4 backdrop-blur-md sm:absolute sm:right-0 sm:top-24 sm:block">
               <div className="text-[11px] text-slate-400">QR expires in</div>
@@ -238,7 +233,7 @@ export function LandingPage() {
             </div>
             <PhoneMock kind="confirm" />
           </div>
-        </motion.div>
+        </Reveal>
       </div>
 
       {/* Rules */}
@@ -248,16 +243,16 @@ export function LandingPage() {
             Three rules, no exceptions
           </div>
           <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-8">
-            {RULES.map((r) => (
-              <div key={r.title} className="flex gap-4">
-                <span className="mt-0.5 flex h-7 w-10 flex-shrink-0 items-center justify-center rounded-md border border-white/15 font-mono text-[11px] font-bold text-brand">
-                  {r.tag}
+            {RULES.map((r, i) => (
+              <Reveal key={r.title} delay={i * 0.05} className="flex gap-4">
+                <span className="mt-0.5 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-brand">
+                  <r.icon size={18} strokeWidth={1.8} />
                 </span>
                 <div>
                   <div className="text-[15px] font-bold">{r.title}</div>
                   <div className="mt-0.5 text-[13px] leading-snug text-slate-400">{r.body}</div>
                 </div>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -267,12 +262,8 @@ export function LandingPage() {
       <div className="rounded-t-[28px] bg-paper px-7 pb-4 pt-12 text-ink md:px-16 md:pt-20">
         <div className="mx-auto flex max-w-5xl flex-col gap-16 md:gap-24">
           {FEATURE_ROWS.map((row, i) => (
-            <motion.div
+            <Reveal
               key={row.tag}
-              initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-60px' }}
-              transition={{ duration: 0.35 }}
               className={`flex flex-col items-center gap-6 md:gap-16 ${i % 2 === 1 ? 'md:flex-row-reverse' : 'md:flex-row'}`}
             >
               <div className="flex-1">
@@ -287,7 +278,7 @@ export function LandingPage() {
                   {row.body}
                 </p>
               </div>
-            </motion.div>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -316,8 +307,8 @@ export function LandingPage() {
             government or school ID. It is not a safety guarantee.
           </div>
 
-          <Link to="/register" className="mt-6 inline-block font-mono text-[12px] font-bold text-brand-dark">
-            REGISTER →
+          <Link to="/register" className="mt-6 inline-flex items-center gap-1 text-[12px] font-bold text-brand-dark">
+            Register <ArrowRight size={14} strokeWidth={2.2} />
           </Link>
         </div>
       </div>
@@ -329,12 +320,10 @@ export function LandingPage() {
             Why RideSentinel
           </div>
           {MANIFESTO.map((line, i) => (
-            <motion.p
-              key={i}
-              initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-80px' }}
-              transition={{ duration: 0.3, delay: i * 0.05 }}
+            <Reveal
+              as="p"
+              key={line}
+              delay={i * 0.05}
               className={
                 i === MANIFESTO.length - 1
                   ? 'text-[20px] font-bold leading-snug md:text-[26px]'
@@ -342,7 +331,7 @@ export function LandingPage() {
               }
             >
               {line}
-            </motion.p>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -364,13 +353,14 @@ export function LandingPage() {
                     aria-expanded={open}
                   >
                     <span className="text-[15px] font-bold md:text-[17px]">{q}</span>
-                    <span className={'ml-4 flex-shrink-0 text-slate-400 transition-transform' + (open ? ' rotate-45' : '')}>
-                      +
-                    </span>
+                    <Plus
+                      size={18}
+                      className={cn('flex-shrink-0 text-slate-400 transition-transform', open && 'rotate-45')}
+                    />
                   </button>
                   {open && (
                     <motion.p
-                      initial={reduceMotion ? false : { opacity: 0, height: 0 }}
+                      initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                       transition={{ duration: 0.18 }}
                       className="mt-2 text-[13.5px] leading-snug text-slate md:text-[15px]"
@@ -397,13 +387,13 @@ export function LandingPage() {
           <div className="mx-auto mt-7 flex max-w-sm flex-col gap-2.5 md:max-w-none md:flex-row">
             <Link
               to="/register"
-              className="flex h-[54px] items-center justify-center rounded-full bg-brand text-[15px] font-bold text-white transition-colors hover:bg-brand-dark md:flex-1"
+              className={cn(buttonVariants({ variant: 'heroPrimary', size: 'lg' }), 'md:flex-1')}
             >
               Register
             </Link>
             <Link
               to="/login"
-              className="flex h-[54px] items-center justify-center rounded-full border border-white/15 text-[15px] font-bold text-white md:flex-1"
+              className={cn(buttonVariants({ variant: 'heroOutline', size: 'lg' }), 'md:flex-1')}
             >
               Log in
             </Link>
