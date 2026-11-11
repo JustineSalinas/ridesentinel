@@ -27,6 +27,78 @@ const STEPS = [
   ['04', 'Rate within 48h', 'Ratings stay hidden until you both rate, or the window closes.'],
 ] as const
 
+const FEATURE_ROWS = [
+  {
+    tag: 'Verify',
+    title: 'A code that expires before it can be screenshotted',
+    body: 'Every QR is single-use and dies in 60 seconds. There is nothing to forward, save, or reuse — only a live code the server just issued.',
+    mock: 'qr' as const,
+  },
+  {
+    tag: 'Confirm',
+    title: 'See a photo before you get on the bike',
+    body: 'Scanning pulls up the other rider’s verified photo, name, and rating. You both tap confirm, in person, before anything counts.',
+    mock: 'confirm' as const,
+  },
+  {
+    tag: 'Rate',
+    title: 'Ratings that can’t be gamed by whoever rates first',
+    body: 'Scores stay hidden until both of you rate each other, or 48 hours pass. No reason to rush, no reason to retaliate.',
+    mock: 'rate' as const,
+  },
+]
+
+function PhoneMock({ kind }: { kind: 'qr' | 'confirm' | 'rate' }) {
+  return (
+    <div className="relative mx-auto h-[280px] w-[160px] rounded-[26px] border-[6px] border-ink bg-paper shadow-[0_20px_40px_-20px_rgba(15,23,42,0.35)]">
+      <div className="absolute left-1/2 top-0 h-4 w-16 -translate-x-1/2 rounded-b-xl bg-ink" />
+      <div className="flex h-full flex-col items-center justify-center gap-2 px-4 pt-3">
+        {kind === 'qr' && (
+          <>
+            <div className="grid h-20 w-20 grid-cols-4 grid-rows-4 gap-[3px] rounded-md bg-ink p-2">
+              {Array.from({ length: 16 }).map((_, i) => (
+                <span key={i} className={i % 3 === 0 ? 'rounded-[1px] bg-white' : 'rounded-[1px] bg-transparent'} />
+              ))}
+            </div>
+            <div className="rounded-full bg-mist px-2.5 py-1 text-[9px] font-bold text-slate">Refreshes in 42s</div>
+          </>
+        )}
+        {kind === 'confirm' && (
+          <>
+            <div className="h-16 w-16 rounded-full bg-mist" />
+            <div className="text-[11px] font-bold text-ink">Marco D.</div>
+            <div className="rounded-full bg-green-50 px-2 py-0.5 text-[9px] font-bold text-verified">
+              ✓ ID-verified
+            </div>
+            <div className="mt-1 w-full rounded-md bg-brand py-1.5 text-center text-[9px] font-bold text-white">
+              This is the person
+            </div>
+          </>
+        )}
+        {kind === 'rate' && (
+          <>
+            <div className="text-[10.5px] font-bold text-ink">How was the ride?</div>
+            <div className="flex gap-0.5">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill={i < 4 ? '#D97706' : 'none'}>
+                  <path
+                    d="M12 2l2.9 6.3L22 9l-5 5 1.3 7L12 17.8 5.7 21 7 14 2 9l7.1-.7L12 2z"
+                    stroke="#D97706"
+                    strokeWidth="1"
+                  />
+                </svg>
+              ))}
+            </div>
+            <div className="mt-1 w-full rounded-md bg-mist py-1.5 text-center text-[9px] text-slate">
+              Hidden until you both rate
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
 const MANIFESTO = [
   "Arranging a ride over a group chat means showing up to meet someone you've never actually seen.",
   "A verified name and a photo you can check against the person in front of you fixes that. Not a background check — just confirmation that who shows up is who said they would.",
@@ -140,8 +212,35 @@ export function LandingPage() {
         </div>
       </div>
 
+      {/* Feature rows — alternating mock + copy, on the paper sheet */}
+      <div className="rounded-t-[28px] bg-paper px-7 pb-4 pt-12 text-ink">
+        <div className="mx-auto flex max-w-md flex-col gap-16">
+          {FEATURE_ROWS.map((row, i) => (
+            <motion.div
+              key={row.tag}
+              initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-60px' }}
+              transition={{ duration: 0.35 }}
+              className={`flex flex-col items-center gap-6 ${i % 2 === 1 ? 'sm:flex-row-reverse' : 'sm:flex-row'}`}
+            >
+              <div className="flex-1">
+                <PhoneMock kind={row.mock} />
+              </div>
+              <div className="flex-1 text-center sm:text-left">
+                <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-brand">
+                  {row.tag}
+                </div>
+                <h3 className="mt-2 text-[20px] font-extrabold leading-snug">{row.title}</h3>
+                <p className="mt-2 text-[14px] leading-relaxed text-slate">{row.body}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+
       {/* How it works — on the paper sheet, Operate-style, same as the rest of the app */}
-      <div className="rounded-t-[28px] bg-paper px-7 pb-16 pt-10 text-ink">
+      <div className="bg-paper px-7 pb-16 pt-10 text-ink">
         <div className="mx-auto max-w-md">
           <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-slate-400">
             How it works
