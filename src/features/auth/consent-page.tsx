@@ -6,17 +6,14 @@ import { TERMS_OF_USE, COMMUNITY_GUIDELINES } from './terms'
 
 const POINTS = [
   [
-    'DATA',
     'What we collect',
     'Your name, an ID photo, and a selfie. No ID number, ever. No location, ever.',
   ],
   [
-    'SEES',
     'Who sees it',
     'Only a named administrator reviews your ID. Other riders only ever see your name, photo, tier, and rating.',
   ],
   [
-    'DELETE',
     'Deletion',
     'ID and selfie photos are deleted 30 days after review. You can delete your account anytime.',
   ],
@@ -39,43 +36,49 @@ export function ConsentPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-ink text-white">
-      <div className="px-7 pb-8 pt-12">
-        <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-slate-500">
+    <div className="flex min-h-dvh flex-col bg-page">
+      <div className="border-b border-mist bg-paper px-6 py-5">
+        <div className="text-[11px] font-bold uppercase tracking-widest text-slate">
           Before you continue
         </div>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-tight">
-          Your data, in three lines
+        <h1 className="mt-1 text-[21px] font-extrabold tracking-tight text-ink">
+          Your data &amp; consent
         </h1>
       </div>
 
-      <div className="flex flex-1 flex-col rounded-t-[28px] bg-paper px-7 pt-8 text-ink">
-        <div className="flex flex-col gap-5">
-          {POINTS.map(([tag, title, body]) => (
-            <div key={tag} className="flex gap-4">
-              <span className="mt-0.5 flex h-7 w-14 flex-shrink-0 items-center justify-center rounded-md border border-mist font-mono text-[10.5px] font-bold text-brand-dark">
-                {tag}
-              </span>
-              <div>
-                <div className="text-[15px] font-bold">{title}</div>
-                <div className="mt-0.5 text-[13px] leading-snug text-slate">{body}</div>
+      <div className="flex flex-1 flex-col px-6 py-6">
+        <div className="flex flex-col gap-3">
+          {POINTS.map(([title, body]) => (
+            <div key={title} className="rounded-[14px] border border-mist bg-paper p-4">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M12 2L4 6v6c0 5.5 3.5 8.5 8 10 4.5-1.5 8-4.5 8-10V6l-8-4z"
+                    stroke="#2563EB"
+                    strokeWidth="1.8"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </div>
+              <div className="mt-2.5 text-[15px] font-bold text-ink">{title}</div>
+              <div className="mt-0.5 text-[13px] leading-snug text-slate">{body}</div>
             </div>
           ))}
         </div>
 
-        <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[12.5px] leading-snug text-pending">
-          A badge is not a safety guarantee. RideSentinel doesn&apos;t arrange, price, or operate rides
-          &mdash; you&apos;re responsible for your own judgment and conduct.
+        <div className="mt-4 rounded-xl border border-[#FDE68A] bg-[#FFFBEB] px-4 py-3 text-[12.5px] leading-snug text-[#92400E]">
+          <span className="font-bold">A badge is not a safety guarantee.</span> RideSentinel
+          doesn&apos;t arrange, price, or operate rides &mdash; you&apos;re responsible for your own
+          judgment and conduct.
         </div>
 
-        <button
-          type="button"
-          onClick={() => setShowTerms((v) => !v)}
-          className="mt-4 self-start font-mono text-[11px] font-bold tracking-wide text-brand-dark"
-        >
-          {showTerms ? '← HIDE FULL TERMS' : 'READ FULL TERMS →'}
-        </button>
+        <p className="mt-4 text-[13px] leading-snug text-slate">
+          By continuing you agree to our{' '}
+          <button type="button" onClick={() => setShowTerms((v) => !v)} className="font-semibold text-brand">
+            Terms of Use and Community Guidelines
+          </button>
+          .
+        </p>
 
         {showTerms && (
           <div className="mt-3 max-h-[220px] overflow-y-auto rounded-xl border border-mist bg-mist/40 p-4">
@@ -86,24 +89,24 @@ export function ConsentPage() {
             </pre>
           </div>
         )}
+      </div>
 
-        <div className="mt-auto flex flex-col gap-2.5 pb-8 pt-10">
-          <button
-            type="button"
-            onClick={agree}
-            disabled={submitting}
-            className="flex h-[54px] items-center justify-center rounded-full bg-ink text-[15px] font-bold text-white disabled:opacity-40"
-          >
-            {submitting ? 'Saving…' : 'I agree — continue'}
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/home')}
-            className="flex h-[44px] items-center justify-center text-[13px] font-semibold text-slate"
-          >
-            Not now
-          </button>
-        </div>
+      <div className="sticky bottom-0 flex flex-col gap-2 border-t border-mist bg-paper px-6 py-4">
+        <button
+          type="button"
+          onClick={agree}
+          disabled={submitting}
+          className="flex h-[52px] items-center justify-center rounded-xl bg-brand text-[16px] font-bold text-white disabled:opacity-60"
+        >
+          {submitting ? 'Saving…' : 'I agree — continue'}
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate('/home')}
+          className="flex h-11 items-center justify-center text-[13px] font-semibold text-slate"
+        >
+          Not now
+        </button>
       </div>
     </div>
   )

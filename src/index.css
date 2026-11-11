@@ -7,9 +7,12 @@
      "this is a verification token" register the Inter body text can't give. */
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
-  /* Palette from the approved design prototype (docs/SPEC.md §18) */
+  /* Palette from the approved design prototype (docs/SPEC.md §18) — two
+     grays: --color-page is the lighter page background, --color-mist is
+     the slightly darker tone used for borders and inactive fills. */
   --color-ink: #0f172a;
   --color-slate: #475569;
+  --color-page: #f1f5f9;
   --color-mist: #e2e8f0;
   --color-paper: #ffffff;
   --color-brand: #2563eb;
@@ -27,7 +30,7 @@
   }
 
   body {
-    background: var(--color-mist);
+    background: var(--color-page);
     color: var(--color-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;

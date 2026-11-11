@@ -53,8 +53,8 @@ export function MyQrPage() {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 bg-ink p-8 text-center text-white">
         <div className="text-[15px] font-bold">Get verified to show your QR</div>
-        <Link to="/verify" className="font-mono text-[12px] font-bold text-brand">
-          VERIFY →
+        <Link to="/verify" className="text-[13px] font-bold text-brand">
+          Verify →
         </Link>
       </div>
     )
@@ -62,16 +62,13 @@ export function MyQrPage() {
 
   return (
     <div className="relative flex flex-1 flex-col items-center justify-center gap-6 bg-ink px-6 text-white">
-      <Link
-        to="/home"
-        className="absolute left-6 top-6 font-mono text-[11px] font-bold tracking-wide text-slate-400"
-      >
-        ← HOME
+      <Link to="/home" className="absolute left-6 top-6 text-[13px] font-semibold text-slate-400">
+        ← Home
       </Link>
 
       <div className="flex flex-col items-center gap-1">
         <div className="text-[15px] font-bold">{me.displayName}</div>
-        <div className="font-mono text-[11px] font-bold tracking-widest text-verified">ID-VERIFIED</div>
+        <div className="text-[12px] font-bold text-verified">✓ ID-verified</div>
       </div>
 
       {token && (
@@ -92,7 +89,7 @@ export function MyQrPage() {
           animate={reduceMotion ? undefined : { opacity: [1, 0.4, 1] }}
           transition={reduceMotion ? undefined : { duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
         />
-        <span className="font-mono text-[13px] font-bold">Refreshes in {secondsLeft}s</span>
+        <span className="text-[13px] font-bold">Refreshes in {secondsLeft}s</span>
       </div>
 
       <p className="max-w-[260px] text-center text-[12.5px] text-slate-400">
@@ -117,7 +114,7 @@ export function MyQrPage() {
               className="w-full max-w-[320px] rounded-2xl bg-paper p-6 text-ink"
             >
               <div className="text-center">
-                <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
                   Someone scanned your QR
                 </div>
                 <div className="mt-2 text-[18px] font-extrabold">{openScan.other?.displayName}</div>

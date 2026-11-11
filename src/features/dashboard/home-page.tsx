@@ -1,6 +1,6 @@
 import { useQuery } from 'convex/react'
 import { Link, Navigate } from 'react-router-dom'
-import { QrCode, ScanLine } from 'lucide-react'
+import { QrCode, ScanLine, Star } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
 
 export function HomePage() {
@@ -24,20 +24,20 @@ export function HomePage() {
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex items-center justify-between border-b border-mist bg-paper px-6 py-5">
+      <div className="flex items-center justify-between border-b border-mist bg-paper px-6 py-4">
         <div>
-          <div className="text-[13px] text-slate">Hey, {me.displayName.split(' ')[0]}</div>
-          <div
-            className={
-              'mt-1 flex items-center gap-1.5 font-mono text-[11px] font-bold tracking-widest ' +
-              (me.verified ? 'text-verified' : 'text-pending')
-            }
-          >
-            <span className={'h-1.5 w-1.5 rounded-full ' + (me.verified ? 'bg-verified' : 'bg-pending')} />
-            {me.verified ? 'ID-VERIFIED' : 'NOT VERIFIED'}
-          </div>
+          <div className="text-[15px] font-bold text-ink">Hey, {me.displayName.split(' ')[0]}</div>
+          {me.verified ? (
+            <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-bold text-verified">
+              ✓ ID-verified
+            </div>
+          ) : (
+            <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-pending">
+              Not verified
+            </div>
+          )}
         </div>
-        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-ink text-[14px] font-bold text-white">
+        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-mist text-[14px] font-bold text-ink">
           {initials}
         </div>
       </div>
@@ -54,19 +54,20 @@ export function HomePage() {
         )}
 
         {summary && (
-          <div className="flex items-center justify-between rounded-xl border border-mist bg-paper px-4 py-3">
-            <div>
-              <div className="text-[20px] font-extrabold">
-                {summary.score ? summary.score.toFixed(1) : 'New'}
-              </div>
-              <div className="text-[12px] text-slate">{summary.confirmedMeetings} confirmed meetings</div>
+          <div
+            className="rounded-2xl px-5 py-5 text-white"
+            style={{ background: 'linear-gradient(135deg, #2563EB, #1D4ED8)' }}
+          >
+            <div className="flex items-center gap-1.5 text-[13px] text-white/80">
+              <Star size={14} fill="currentColor" strokeWidth={0} />
+              Your rating
             </div>
-            <Link
-              to="/interactions"
-              className="font-mono text-[11px] font-bold text-brand-dark"
-            >
-              INTERACTIONS →
-            </Link>
+            <div className="mt-1 text-[32px] font-extrabold leading-none">
+              {summary.score ? summary.score.toFixed(1) : 'New'}
+            </div>
+            <div className="mt-1 text-[12.5px] text-white/80">
+              from {summary.confirmedMeetings} confirmed meetings
+            </div>
           </div>
         )}
 
@@ -76,16 +77,26 @@ export function HomePage() {
             className="flex flex-1 flex-col items-center gap-2 rounded-2xl border border-mist bg-paper py-5"
           >
             <QrCode size={20} strokeWidth={1.8} className="text-ink" />
-            <span className="text-sm font-bold">My QR</span>
+            <span className="text-sm font-bold text-ink">My QR</span>
           </Link>
           <Link
             to="/scan"
-            className="flex flex-1 flex-col items-center gap-2 rounded-2xl bg-ink py-5 text-white"
+            className="flex flex-1 flex-col items-center gap-2 rounded-2xl bg-brand py-5 text-white"
           >
             <ScanLine size={20} strokeWidth={1.8} />
             <span className="text-sm font-bold">Scan</span>
           </Link>
         </div>
+
+        {summary && (
+          <Link
+            to="/interactions"
+            className="flex items-center justify-between rounded-xl border border-mist bg-paper px-4 py-3"
+          >
+            <span className="text-[13px] font-semibold text-ink">Recent interactions</span>
+            <span className="text-[12px] font-semibold text-brand">See all →</span>
+          </Link>
+        )}
       </div>
     </div>
   )

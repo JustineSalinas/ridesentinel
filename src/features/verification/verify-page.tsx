@@ -43,7 +43,7 @@ export function VerifyPage() {
   }
 
   if (request === undefined) {
-    return <div className="flex min-h-dvh items-center justify-center bg-ink text-sm text-slate-400">Loading…</div>
+    return <div className="flex min-h-dvh items-center justify-center bg-page text-sm text-slate">Loading…</div>
   }
 
   if (request && request.status !== 'rejected') {
@@ -51,23 +51,16 @@ export function VerifyPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-ink text-white">
-      <div className="px-7 pb-8 pt-12">
-        <Link to="/home" className="font-mono text-[11px] font-bold tracking-wide text-slate-400">
-          ← HOME
-        </Link>
-        <div className="mt-4 font-mono text-[11px] font-bold uppercase tracking-widest text-slate-500">
-          Verification
-        </div>
-        <h1 className="mt-2 text-[26px] font-extrabold leading-tight tracking-tight">Get ID-verified</h1>
+    <div className="flex min-h-dvh flex-col bg-page">
+      <div className="border-b border-mist bg-paper px-6 py-5">
+        <div className="text-[11px] font-bold uppercase tracking-widest text-slate">Verification</div>
+        <h1 className="mt-1 text-[21px] font-extrabold tracking-tight text-ink">Get ID-verified</h1>
       </div>
 
-      <div className="flex flex-1 flex-col gap-5 rounded-t-[28px] bg-paper px-7 pt-8 pb-10 text-ink">
+      <div className="flex flex-1 flex-col gap-4 px-6 py-6">
         {request?.status === 'rejected' && (
           <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
-            <div className="font-mono text-[10.5px] font-bold uppercase tracking-widest text-danger">
-              Not approved — resubmit
-            </div>
+            <div className="text-[12px] font-bold uppercase tracking-wide text-danger">Not approved — resubmit</div>
             <div className="mt-1 text-[13px] leading-snug text-ink">{request.reason}</div>
           </div>
         )}
@@ -75,13 +68,11 @@ export function VerifyPage() {
         {error && <div className="rounded-xl bg-red-50 px-4 py-3 text-[13px] text-danger">{error}</div>}
 
         <div className="flex flex-col gap-1.5">
-          <span className="font-mono text-[10.5px] font-bold uppercase tracking-widest text-slate-400">
-            ID type
-          </span>
+          <label className="text-[13px] font-semibold text-[#334155]">ID type</label>
           <select
             value={idType}
             onChange={(e) => setIdType(e.target.value)}
-            className="h-12 rounded-xl border border-mist bg-paper px-3 text-[15px] text-ink"
+            className="h-12 rounded-[10px] border border-[#CBD5E1] bg-paper px-3 text-[15px] text-ink"
           >
             {ID_TYPES.map((t) => (
               <option key={t}>{t}</option>
@@ -110,7 +101,7 @@ export function VerifyPage() {
           type="button"
           onClick={handleSubmit}
           disabled={!idPhoto || !selfie || submitting}
-          className="mt-2 flex h-[54px] items-center justify-center rounded-full bg-ink text-[15px] font-bold text-white disabled:opacity-40"
+          className="mt-2 flex h-[52px] items-center justify-center rounded-xl bg-brand text-[16px] font-bold text-white disabled:opacity-60"
         >
           {submitting ? 'Submitting…' : 'Submit for review'}
         </button>
@@ -136,13 +127,13 @@ function UploadField({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="font-mono text-[10.5px] font-bold uppercase tracking-widest text-slate-400">
+      <label htmlFor={id} className="text-[13px] font-semibold text-[#334155]">
         {label}
       </label>
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
-        className="flex h-[110px] flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-mist text-center"
+        className="flex h-[120px] flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-[#94A3B8] text-center"
       >
         {file ? (
           <span className="text-[13px] font-semibold text-verified">✓ {file.name}</span>
@@ -159,7 +150,7 @@ function UploadField({
         className="hidden"
         onChange={(e) => e.target.files?.[0] && onPick(e.target.files[0])}
       />
-      <span className="text-[11.5px] text-slate-400">{hint}</span>
+      <span className="text-[11.5px] text-slate">{hint}</span>
     </div>
   )
 }
@@ -167,26 +158,37 @@ function UploadField({
 function StatusView({ status, reason }: { status: 'pending' | 'approved'; reason?: string }) {
   const copy =
     status === 'approved'
-      ? { tag: 'APPROVED', title: "You're ID-verified", body: 'An administrator checked your ID.' }
-      : { tag: 'PENDING', title: 'Pending review', body: 'Usually decided within 24 hours.' }
+      ? { title: "You're ID-verified", body: 'An administrator checked your ID.' }
+      : { title: 'Pending review', body: 'Usually decided within 24 hours.' }
+
+  const circleClass = status === 'approved' ? 'bg-green-50' : 'bg-amber-50'
+  const iconColor = status === 'approved' ? '#16A34A' : '#D97706'
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-ink px-7 text-center text-white">
-      <span
-        className={
-          'font-mono text-[11px] font-bold tracking-widest ' +
-          (status === 'approved' ? 'text-verified' : 'text-pending')
-        }
-      >
-        {copy.tag}
-      </span>
-      <h1 className="text-[24px] font-extrabold tracking-tight">{copy.title}</h1>
-      <p className="max-w-[260px] text-[13.5px] leading-snug text-slate-300">
-        {reason ?? copy.body}
-      </p>
+    <div className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-page px-7 text-center">
+      <div className={`flex h-16 w-16 items-center justify-center rounded-full ${circleClass}`}>
+        {status === 'approved' ? (
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M5 13l4 4L19 7"
+              stroke={iconColor}
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        ) : (
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" stroke={iconColor} strokeWidth="1.8" />
+            <path d="M12 7v5l3 3" stroke={iconColor} strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
+        )}
+      </div>
+      <h1 className="text-[20px] font-extrabold tracking-tight text-ink">{copy.title}</h1>
+      <p className="max-w-[260px] text-[13.5px] leading-snug text-slate">{reason ?? copy.body}</p>
       <Link
         to="/home"
-        className="mt-4 flex h-[48px] w-full max-w-[280px] items-center justify-center rounded-full bg-brand text-[14px] font-bold text-white"
+        className="mt-4 flex h-12 w-full max-w-[280px] items-center justify-center rounded-xl bg-brand text-[14px] font-bold text-white"
       >
         Back to home
       </Link>

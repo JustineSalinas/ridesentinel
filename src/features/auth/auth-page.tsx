@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAuthActions } from '@convex-dev/auth/react'
 import { useMutation } from 'convex/react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { api } from '../../../convex/_generated/api'
 import { cn } from '@/lib/utils'
 
@@ -72,237 +72,196 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-ink">
-      {/* Night-ride hero — the thing a lending/checklist app would never use, which is the point */}
-      <div className="relative overflow-hidden px-7 pb-14 pt-12">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.07]"
-          style={{
-            backgroundImage:
-              'repeating-linear-gradient(0deg, #fff 0 1px, transparent 1px 28px), repeating-linear-gradient(90deg, #fff 0 1px, transparent 1px 28px)',
-          }}
-          aria-hidden="true"
-        />
-        <div className="relative flex items-center justify-between">
-          <div className="flex items-center gap-2 font-mono text-[11px] font-bold tracking-[0.18em] text-pending">
-            <span className="h-1.5 w-1.5 rounded-full bg-pending" />
-            PILOT · ILOILO CITY
-          </div>
-          <Link to="/" className="font-mono text-[11px] font-bold tracking-wide text-slate-400">
-            ← BACK
-          </Link>
-        </div>
-        <h1 className="relative mt-3 text-[34px] font-extrabold leading-[1.05] tracking-tight text-white">
-          Ride<span className="text-brand">Sentinel</span>
-        </h1>
-        <p className="relative mt-2 max-w-[260px] text-[13.5px] leading-snug text-slate-300">
-          Know who you&apos;re meeting, before the ride starts.
-        </p>
-        <div className="relative mt-6 flex items-center gap-2 text-slate-500">
-          <div className="h-px flex-1 bg-[repeating-linear-gradient(90deg,currentColor_0_6px,transparent_6px_12px)]" />
-          <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-        </div>
-      </div>
-
-      {/* Content sheet rises over the hero */}
-      <div className="-mt-6 flex flex-1 flex-col rounded-t-[28px] bg-paper px-7 pt-8">
-        <div className="flex items-baseline justify-between">
-          <h2 className="text-[21px] font-extrabold tracking-tight text-ink">
-            {tab === 'login' ? 'Log in' : 'Create account'}
-          </h2>
-          <button
-            type="button"
-            onClick={() => setTab(tab === 'login' ? 'register' : 'login')}
-            className="font-mono text-[11px] font-bold tracking-wide text-brand-dark underline-offset-2 hover:underline"
-          >
-            {tab === 'login' ? 'NEW RIDER →' : '← LOG IN'}
-          </button>
-        </div>
-
-        {error && (
-          <div className="mt-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3.5 py-2.5 text-[13px] text-danger">
-            <span className="mt-[2px] font-mono text-[10px] font-bold tracking-wide">ERR</span>
-            {error}
-          </div>
-        )}
-
-        {tab === 'login' ? (
-          <form onSubmit={handleLogin} className="mt-6 flex flex-1 flex-col gap-5">
-            <Field label="Email">
-              <input
-                type="email"
-                required
-                autoFocus
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full border-0 border-b-2 border-mist bg-transparent pb-2 text-[17px] font-medium text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand"
-              />
-            </Field>
-            <Field label="Password">
-              <input
-                type="password"
-                required
-                minLength={8}
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full border-0 border-b-2 border-mist bg-transparent pb-2 text-[17px] font-medium text-ink outline-none transition-colors focus:border-brand"
-              />
-            </Field>
-
-            <SubmitButton submitting={submitting} label="Log in" submittingLabel="Logging in" />
-
-            <div className="mt-auto flex items-center justify-center gap-1.5 pb-8 pt-2 font-mono text-[10.5px] font-bold tracking-widest text-slate-400">
-              <span className="h-1 w-1 rounded-full bg-slate-300" />
-              NO SIGNAL · NO ACCESS
-            </div>
-          </form>
-        ) : (
-          <form onSubmit={handleRegister} className="mt-6 flex flex-1 flex-col gap-5 pb-8">
-            <Field label="Display name">
-              <input
-                required
-                autoFocus
-                minLength={2}
-                maxLength={60}
-                placeholder="e.g. Marco D."
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                className="w-full border-0 border-b-2 border-mist bg-transparent pb-2 text-[17px] font-medium text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand"
-              />
-            </Field>
-            <Field label="Email">
-              <input
-                type="email"
-                required
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full border-0 border-b-2 border-mist bg-transparent pb-2 text-[17px] font-medium text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand"
-              />
-            </Field>
-            <Field label="Password">
-              <input
-                type="password"
-                required
-                minLength={8}
-                placeholder="At least 8 characters"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full border-0 border-b-2 border-mist bg-transparent pb-2 text-[17px] font-medium text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand"
-              />
-            </Field>
-            <Field label="Phone — optional">
-              <input
-                type="tel"
-                placeholder="+63 9xx xxx xxxx"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full border-0 border-b-2 border-mist bg-transparent pb-2 text-[17px] font-medium text-ink outline-none transition-colors placeholder:text-slate-400 focus:border-brand"
-              />
-            </Field>
-
-            <div className="flex flex-col gap-2">
-              <span className="font-mono text-[10.5px] font-bold uppercase tracking-widest text-slate-400">
-                I usually ride as
-              </span>
-              <div className="flex gap-2">
-                <RoleButton active={rideRole === 'driver'} onClick={() => setRideRole('driver')}>
-                  Driver
-                </RoleButton>
-                <RoleButton active={rideRole === 'passenger'} onClick={() => setRideRole('passenger')}>
-                  Passenger
-                </RoleButton>
-              </div>
-            </div>
-
-            <label className="flex items-start gap-2.5 text-[13px] leading-snug text-slate">
-              <input
-                type="checkbox"
-                checked={confirmedAdult}
-                onChange={(e) => setConfirmedAdult(e.target.checked)}
-                className="mt-0.5 h-4 w-4 accent-ink"
-              />
-              I confirm that I am 18 years of age or older.
-            </label>
-
-            <SubmitButton
-              submitting={submitting}
-              disabled={!confirmedAdult}
-              label="Create account"
-              submittingLabel="Creating account"
+    <div className="flex min-h-dvh flex-col bg-page">
+      <div className="flex flex-col items-center gap-2 px-7 pb-5 pt-14">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-brand">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 2L3 7v6c0 5 4 8 9 9 5-1 9-4 9-9V7l-9-5z" fill="#FFFFFF" />
+            <path
+              d="M9 12l2 2 4-4"
+              stroke="#2563EB"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
-          </form>
-        )}
+          </svg>
+        </div>
+        <div className="text-[21px] font-extrabold tracking-tight text-ink">RideSentinel</div>
+        <div className="text-center text-[13px] text-slate">
+          Know who you&apos;re meeting before you ride
+        </div>
       </div>
-    </div>
-  )
-}
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <span className="font-mono text-[10.5px] font-bold uppercase tracking-widest text-slate-400">
-        {label}
-      </span>
-      {children}
-    </div>
-  )
-}
+      <div className="mx-6 flex gap-1 rounded-[10px] bg-mist p-1">
+        <button
+          type="button"
+          onClick={() => setTab('login')}
+          className={cn(
+            'flex-1 rounded-lg py-2.5 text-sm font-semibold text-slate',
+            tab === 'login' && 'bg-paper text-ink',
+          )}
+        >
+          Log in
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab('register')}
+          className={cn(
+            'flex-1 rounded-lg py-2.5 text-sm font-semibold text-slate',
+            tab === 'register' && 'bg-paper text-ink',
+          )}
+        >
+          Register
+        </button>
+      </div>
 
-function RoleButton({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean
-  onClick: () => void
-  children: React.ReactNode
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        'flex-1 rounded-full py-2.5 text-sm font-bold transition-colors',
-        active ? 'bg-ink text-white' : 'bg-mist text-slate',
+      {error && (
+        <div className="mx-6 mt-4 rounded-xl bg-red-50 px-4 py-3 text-[13px] text-danger" role="alert">
+          {error}
+        </div>
       )}
-    >
-      {children}
-    </button>
-  )
-}
 
-function SubmitButton({
-  submitting,
-  disabled,
-  label,
-  submittingLabel,
-}: {
-  submitting: boolean
-  disabled?: boolean
-  label: string
-  submittingLabel: string
-}) {
-  return (
-    <button
-      type="submit"
-      disabled={submitting || disabled}
-      className="group mt-1 flex h-[54px] items-center justify-between rounded-full bg-ink px-6 text-[15px] font-bold text-white transition-colors disabled:opacity-40"
-    >
-      {submitting ? submittingLabel + '…' : label}
-      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand transition-transform group-enabled:group-hover:translate-x-0.5">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path
-            d="M5 12h14M13 6l6 6-6 6"
-            stroke="#FFFFFF"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </span>
-    </button>
+      {tab === 'login' ? (
+        <form onSubmit={handleLogin} className="flex flex-1 flex-col gap-3.5 px-6 py-5">
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="email" className="text-[13px] font-semibold text-[#334155]">
+              Email
+            </label>
+            <input
+              id="email"
+              type="email"
+              required
+              autoFocus
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="h-12 rounded-[10px] border border-[#CBD5E1] bg-paper px-3.5 text-[15px] text-ink"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="password" className="text-[13px] font-semibold text-[#334155]">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              required
+              minLength={8}
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="h-12 rounded-[10px] border border-[#CBD5E1] bg-paper px-3.5 text-[15px] text-ink"
+            />
+          </div>
+          <a href="#" className="-mt-1 self-end text-[13px] text-brand">
+            Forgot password?
+          </a>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="mt-2 flex h-[52px] items-center justify-center rounded-xl bg-brand text-[16px] font-bold text-white disabled:opacity-60"
+          >
+            {submitting ? 'Logging in…' : 'Log in'}
+          </button>
+          <div className="mt-1 text-center text-[13px] text-slate">
+            A data connection is required — RideSentinel does not work offline.
+          </div>
+        </form>
+      ) : (
+        <form onSubmit={handleRegister} className="flex flex-1 flex-col gap-3 px-6 py-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[13px] font-semibold text-[#334155]">Display name</label>
+            <input
+              required
+              autoFocus
+              minLength={2}
+              maxLength={60}
+              placeholder="e.g. Marco D."
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              className="h-[46px] rounded-[10px] border border-[#CBD5E1] bg-paper px-3.5 text-[14px] text-ink"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[13px] font-semibold text-[#334155]">Email</label>
+            <input
+              type="email"
+              required
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="h-[46px] rounded-[10px] border border-[#CBD5E1] bg-paper px-3.5 text-[14px] text-ink"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[13px] font-semibold text-[#334155]">Password</label>
+            <input
+              type="password"
+              required
+              minLength={8}
+              placeholder="At least 8 characters"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="h-[46px] rounded-[10px] border border-[#CBD5E1] bg-paper px-3.5 text-[14px] text-ink"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[13px] font-semibold text-[#334155]">Phone (optional)</label>
+            <input
+              type="tel"
+              placeholder="+63 9xx xxx xxxx"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              className="h-[46px] rounded-[10px] border border-[#CBD5E1] bg-paper px-3.5 text-[14px] text-ink"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[13px] font-semibold text-[#334155]">I usually ride as</label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setRideRole('driver')}
+                className={cn(
+                  'flex-1 rounded-[10px] border py-2.5 text-sm font-semibold',
+                  rideRole === 'driver'
+                    ? 'border-2 border-brand bg-blue-50 text-brand-dark'
+                    : 'border-[#CBD5E1] bg-paper text-[#334155]',
+                )}
+              >
+                Driver
+              </button>
+              <button
+                type="button"
+                onClick={() => setRideRole('passenger')}
+                className={cn(
+                  'flex-1 rounded-[10px] border py-2.5 text-sm font-semibold',
+                  rideRole === 'passenger'
+                    ? 'border-2 border-brand bg-blue-50 text-brand-dark'
+                    : 'border-[#CBD5E1] bg-paper text-[#334155]',
+                )}
+              >
+                Passenger
+              </button>
+            </div>
+          </div>
+          <label className="mt-1 flex items-start gap-2.5 text-[12.5px] leading-tight text-[#475569]">
+            <input
+              type="checkbox"
+              checked={confirmedAdult}
+              onChange={(e) => setConfirmedAdult(e.target.checked)}
+              className="mt-0.5 h-4 w-4"
+            />
+            I confirm that I am 18 years of age or older.
+          </label>
+          <button
+            type="submit"
+            disabled={submitting || !confirmedAdult}
+            className="mt-1 flex h-[52px] items-center justify-center rounded-xl bg-brand text-[16px] font-bold text-white disabled:opacity-60"
+          >
+            {submitting ? 'Creating account…' : 'Create account'}
+          </button>
+        </form>
+      )}
+    </div>
   )
 }

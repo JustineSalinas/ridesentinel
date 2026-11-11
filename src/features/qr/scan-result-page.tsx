@@ -14,14 +14,14 @@ export function ScanResultPage() {
   const reduceMotion = useReducedMotion()
 
   if (data === undefined) {
-    return <div className="flex min-h-dvh items-center justify-center bg-ink text-slate-400">Loading…</div>
+    return <div className="flex min-h-dvh items-center justify-center bg-page text-slate">Loading…</div>
   }
   if (data === null || !data.other) {
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-ink p-8 text-center text-white">
-        <div className="text-[15px] font-bold">This meeting isn&apos;t available anymore.</div>
-        <Link to="/home" className="font-mono text-[12px] font-bold text-brand">
-          HOME →
+      <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-page p-8 text-center">
+        <div className="text-[15px] font-bold text-ink">This meeting isn&apos;t available anymore.</div>
+        <Link to="/home" className="text-[13px] font-bold text-brand">
+          Home →
         </Link>
       </div>
     )
@@ -31,12 +31,12 @@ export function ScanResultPage() {
   const status = interaction.status
 
   return (
-    <div className="flex min-h-dvh flex-col bg-ink text-white">
+    <div className="flex min-h-dvh flex-col bg-page">
       <div className="flex items-center justify-between px-6 py-5">
-        <Link to="/home" className="font-mono text-[11px] font-bold tracking-wide text-slate-400">
-          ← HOME
+        <Link to="/home" className="text-[13px] font-semibold text-slate">
+          ← Cancel
         </Link>
-        <div className="font-mono text-[11px] font-bold tracking-widest text-slate-400">MATCH FOUND</div>
+        <div className="text-[12px] font-bold uppercase tracking-wide text-slate">Match found</div>
       </div>
 
       <div className="flex flex-1 flex-col items-center gap-4 px-6 pb-8">
@@ -45,27 +45,27 @@ export function ScanResultPage() {
           initial={reduceMotion ? false : { opacity: 0, scale: 0.92 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
-          className="h-[220px] w-[220px] overflow-hidden rounded-3xl bg-slate-700"
+          className="h-[220px] w-[220px] overflow-hidden rounded-full bg-mist"
         >
           {other.photoUrl && <img src={other.photoUrl} alt="" className="h-full w-full object-cover" />}
         </motion.div>
 
         <div className="text-center">
-          <div className="text-[22px] font-extrabold">{other.displayName}</div>
-          <div className="mt-0.5 text-[13px] text-slate-400 capitalize">{other.rideRole}</div>
+          <div className="text-[22px] font-extrabold text-ink">{other.displayName}</div>
+          <div className="mt-0.5 text-[13px] text-slate capitalize">{other.rideRole}</div>
         </div>
 
-        <div className="flex gap-2 font-mono text-[11px] font-bold">
-          <span className="rounded-md bg-green-900/40 px-2 py-1 text-verified">✓ ID-VERIFIED</span>
-          <span className="rounded-md bg-slate-800 px-2 py-1 text-slate-300">
-            {other.ratingSummary.score ? `★ ${other.ratingSummary.score.toFixed(1)}` : 'NEW'} ·{' '}
+        <div className="flex gap-2 text-[12px] font-bold">
+          <span className="rounded-md bg-green-50 px-2.5 py-1 text-verified">✓ ID-verified</span>
+          <span className="rounded-md bg-mist px-2.5 py-1 text-slate">
+            {other.ratingSummary.score ? `★ ${other.ratingSummary.score.toFixed(1)}` : 'New'} ·{' '}
             {other.ratingSummary.confirmedMeetings} meetings
           </span>
         </div>
 
         {status === 'scanned' && myRole === 'B' && !interaction.bConfirmedAt && (
           <>
-            <div className="mt-2 rounded-xl bg-slate-800 px-4 py-3 text-center text-[13px] text-slate-300">
+            <div className="mt-2 rounded-xl bg-blue-50 px-4 py-3 text-center text-[13px] text-brand-dark">
               Check the photo matches the person in front of you, then confirm.
             </div>
             <div className="mt-auto flex w-full gap-3 pt-6">
@@ -74,7 +74,7 @@ export function ScanResultPage() {
                   await cancelInteraction({ interactionId, reason: 'face_mismatch', report: true })
                   navigate('/home')
                 }}
-                className="flex-1 rounded-full border border-danger py-3.5 text-[14px] font-bold text-danger"
+                className="flex-1 rounded-xl border border-danger py-3.5 text-[14px] font-bold text-danger"
               >
                 Not the person
               </button>
@@ -82,7 +82,7 @@ export function ScanResultPage() {
                 onClick={async () => {
                   await confirmMeeting({ interactionId })
                 }}
-                className="flex-[1.3] rounded-full bg-verified py-3.5 text-[14px] font-bold text-white"
+                className="flex-[1.3] rounded-xl bg-brand py-3.5 text-[14px] font-bold text-white"
               >
                 This is the person
               </button>
@@ -91,7 +91,7 @@ export function ScanResultPage() {
         )}
 
         {status === 'scanned' && interaction.bConfirmedAt && (
-          <div className="mt-4 rounded-xl bg-slate-800 px-4 py-3 text-center text-[13px] text-slate-300">
+          <div className="mt-4 rounded-xl bg-mist px-4 py-3 text-center text-[13px] text-slate">
             Waiting for {other.displayName} to confirm on their end…
           </div>
         )}
@@ -102,15 +102,15 @@ export function ScanResultPage() {
               initial={reduceMotion ? false : { opacity: 0, scale: 0.9, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
-              className="mt-4 flex w-full flex-col items-center gap-3 rounded-xl bg-green-900/20 px-4 py-5"
+              className="mt-4 flex w-full flex-col items-center gap-3 rounded-xl bg-green-50 px-4 py-5"
             >
-              <div className="font-mono text-[11px] font-bold tracking-widest text-verified">CONFIRMED</div>
-              <p className="text-center text-[12.5px] text-slate-300">
+              <div className="text-[12px] font-bold uppercase tracking-wide text-verified">Confirmed</div>
+              <p className="text-center text-[12.5px] text-slate">
                 You can both rate each other within the next 48 hours.
               </p>
               <Link
                 to={`/rate/${interactionId}`}
-                className="w-full rounded-full bg-brand py-3 text-center text-[14px] font-bold text-white"
+                className="w-full rounded-xl bg-brand py-3 text-center text-[14px] font-bold text-white"
               >
                 Rate now
               </Link>
@@ -119,7 +119,7 @@ export function ScanResultPage() {
         </AnimatePresence>
 
         {(status === 'cancelled' || status === 'expired') && (
-          <div className="mt-4 text-center text-[13px] text-slate-400">
+          <div className="mt-4 text-center text-[13px] text-slate">
             This meeting was {status === 'cancelled' ? 'cancelled' : 'not confirmed in time'}.
           </div>
         )}

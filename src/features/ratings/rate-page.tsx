@@ -22,11 +22,7 @@ export function RatePage() {
 
   if (data === undefined || mine === undefined) return null
   if (data === null || !data.other) {
-    return (
-      <div className="flex min-h-dvh items-center justify-center bg-ink p-8 text-center text-slate-400">
-        Not found.
-      </div>
-    )
+    return <div className="flex min-h-dvh items-center justify-center bg-page p-8 text-center text-slate">Not found.</div>
   }
 
   const alreadyRated = !!mine || submitted
@@ -44,12 +40,12 @@ export function RatePage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-ink text-white">
+    <div className="flex min-h-dvh flex-col bg-page">
       <div className="flex items-center justify-between px-6 py-5">
-        <Link to="/home" className="font-mono text-[11px] font-bold tracking-wide text-slate-400">
-          ← HOME
+        <Link to="/home" className="text-[13px] font-semibold text-slate">
+          ← Home
         </Link>
-        <div className="font-mono text-[11px] font-bold tracking-widest text-slate-400">RATE</div>
+        <div className="text-[12px] font-bold uppercase tracking-wide text-slate">Rate</div>
       </div>
 
       {alreadyRated ? (
@@ -59,22 +55,28 @@ export function RatePage() {
           transition={{ duration: 0.2 }}
           className="flex flex-1 flex-col items-center justify-center gap-3 px-8 text-center"
         >
-          <div className="font-mono text-[11px] font-bold tracking-widest text-brand">SUBMITTED</div>
-          <h1 className="text-[20px] font-extrabold">Rating recorded</h1>
-          <p className="max-w-[260px] text-[13px] text-slate-300">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-50">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M5 13l4 4L19 7" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <h1 className="text-[20px] font-extrabold text-ink">Rating submitted</h1>
+          <p className="max-w-[260px] text-[13px] text-slate">
             Hidden until {data.other.displayName} rates you too, or the window closes.
           </p>
-          <Link to="/home" className="mt-2 font-mono text-[12px] font-bold text-brand">
-            HOME →
+          <Link to="/home" className="mt-2 text-[13px] font-bold text-brand">
+            Back to home
           </Link>
         </motion.div>
       ) : (
         <div className="flex flex-1 flex-col items-center gap-5 px-8">
-          <div className="h-[72px] w-[72px] overflow-hidden rounded-full bg-slate-700">
+          <div className="h-[72px] w-[72px] overflow-hidden rounded-full bg-mist">
             {data.other.photoUrl && <img src={data.other.photoUrl} alt="" className="h-full w-full object-cover" />}
           </div>
           <div className="text-center">
-            <div className="text-[17px] font-bold">How was your meeting with {data.other.displayName}?</div>
+            <div className="text-[17px] font-bold text-ink">
+              How was your meeting with {data.other.displayName}?
+            </div>
           </div>
 
           <div className="flex gap-2">
@@ -101,26 +103,30 @@ export function RatePage() {
             initial={reduceMotion ? false : { opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.15 }}
-            className="h-5 font-mono text-[12px] font-bold text-pending"
+            className="h-5 text-[13px] font-bold text-pending"
           >
             {LABELS[stars]}
           </motion.div>
+
+          <div className="w-full rounded-xl bg-blue-50 px-4 py-3 text-center text-[12.5px] text-brand-dark">
+            Ratings stay hidden until you both rate each other.
+          </div>
 
           {error && <div className="text-[12.5px] text-danger">{error}</div>}
 
           <button
             onClick={submit}
             disabled={stars === 0}
-            className="mt-2 flex h-[52px] w-full items-center justify-center rounded-full bg-brand text-[15px] font-bold text-white disabled:opacity-40"
+            className="mt-1 flex h-[52px] w-full items-center justify-center rounded-xl bg-brand text-[16px] font-bold text-white disabled:opacity-60"
           >
             Submit rating
           </button>
 
           <Link
             to={`/report?interactionId=${id}&reason=fake_or_coerced_rating`}
-            className="font-mono text-[11px] font-bold text-danger"
+            className="text-[12px] font-semibold text-danger"
           >
-            FLAG THIS INTERACTION
+            Flag this interaction
           </Link>
         </div>
       )}
