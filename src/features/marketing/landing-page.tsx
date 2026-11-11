@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 
@@ -26,8 +27,38 @@ const STEPS = [
   ['04', 'Rate within 48h', 'Ratings stay hidden until you both rate, or the window closes.'],
 ] as const
 
+const MANIFESTO = [
+  "Arranging a ride over a group chat means showing up to meet someone you've never actually seen.",
+  "A verified name and a photo you can check against the person in front of you fixes that. Not a background check — just confirmation that who shows up is who said they would.",
+  'We built RideSentinel so a community can vouch for itself, one confirmed meeting at a time.',
+]
+
+const FAQ = [
+  [
+    'Is this a ride-hailing app?',
+    "No. There's no matching, booking, pricing, or payment. You still arrange the ride yourselves — this just confirms who you're meeting.",
+  ],
+  [
+    'What happens to my ID photo?',
+    "Nothing is read from it automatically — a human administrator reviews it. It's deleted 30 days after that review either way.",
+  ],
+  [
+    "What if the person doesn't match their photo?",
+    'Cancel on the spot and report it. No meeting gets counted, and the report goes straight to an administrator.',
+  ],
+  [
+    'Who sees my rating?',
+    "Nobody, until you both rate each other or 48 hours pass — whichever comes first. You can't see theirs just by rating fast.",
+  ],
+  [
+    'Can I delete my account?',
+    'Yes, anytime, from your profile. Past ratings stay as anonymous numbers so they don’t get deleted, so other people’s scores stay accurate.',
+  ],
+] as const
+
 export function LandingPage() {
   const reduceMotion = useReducedMotion()
+  const [openFaq, setOpenFaq] = useState<number | null>(0)
 
   return (
     <div className="min-h-dvh bg-ink text-white">
@@ -137,6 +168,107 @@ export function LandingPage() {
           <Link to="/register" className="mt-6 inline-block font-mono text-[12px] font-bold text-brand-dark">
             REGISTER →
           </Link>
+        </div>
+      </div>
+
+      {/* Manifesto */}
+      <div className="bg-paper px-7 py-14 text-ink">
+        <div className="mx-auto flex max-w-md flex-col gap-8">
+          <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-slate-400">
+            Why RideSentinel
+          </div>
+          {MANIFESTO.map((line, i) => (
+            <motion.p
+              key={i}
+              initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-80px' }}
+              transition={{ duration: 0.3, delay: i * 0.05 }}
+              className={i === MANIFESTO.length - 1 ? 'text-[20px] font-bold leading-snug' : 'text-[16px] leading-relaxed text-slate'}
+            >
+              {line}
+            </motion.p>
+          ))}
+        </div>
+      </div>
+
+      {/* FAQ */}
+      <div className="border-t border-mist bg-paper px-7 py-14 text-ink">
+        <div className="mx-auto max-w-md">
+          <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-slate-400">
+            Questions
+          </div>
+          <div className="mt-5 flex flex-col">
+            {FAQ.map(([q, a], i) => {
+              const open = openFaq === i
+              return (
+                <div key={q} className="border-b border-mist py-4 last:border-0">
+                  <button
+                    onClick={() => setOpenFaq(open ? null : i)}
+                    className="flex w-full items-center justify-between text-left"
+                    aria-expanded={open}
+                  >
+                    <span className="text-[15px] font-bold">{q}</span>
+                    <span className={'ml-4 flex-shrink-0 text-slate-400 transition-transform' + (open ? ' rotate-45' : '')}>
+                      +
+                    </span>
+                  </button>
+                  {open && (
+                    <motion.p
+                      initial={reduceMotion ? false : { opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      transition={{ duration: 0.18 }}
+                      className="mt-2 text-[13.5px] leading-snug text-slate"
+                    >
+                      {a}
+                    </motion.p>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Closing CTA */}
+      <div className="bg-ink px-7 py-16 text-center text-white">
+        <div className="mx-auto max-w-md">
+          <h2 className="text-[26px] font-extrabold leading-tight">Know who you&apos;re meeting.</h2>
+          <p className="mt-2 text-[14px] text-slate-400">Takes a day to verify. Takes a minute to confirm.</p>
+          <div className="mt-7 flex flex-col gap-2.5">
+            <Link
+              to="/register"
+              className="flex h-[54px] items-center justify-center rounded-full bg-brand text-[15px] font-bold text-white transition-colors hover:bg-brand-dark"
+            >
+              Register
+            </Link>
+            <Link
+              to="/login"
+              className="flex h-[54px] items-center justify-center rounded-full border border-white/15 text-[15px] font-bold text-white"
+            >
+              Log in
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="border-t border-white/10 bg-ink px-7 py-10 text-slate-500">
+        <div className="mx-auto flex max-w-md flex-col gap-4">
+          <div className="flex flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-semibold">
+            <Link to="/consent" className="hover:text-white">
+              Privacy &amp; Terms
+            </Link>
+            <Link to="/report" className="hover:text-white">
+              Report something
+            </Link>
+            <Link to="/admin" className="hover:text-white">
+              Admin
+            </Link>
+          </div>
+          <div className="font-mono text-[11px]">
+            RideSentinel · Pilot — Jaro / La Paz / Mandurriao, Iloilo City
+          </div>
         </div>
       </div>
     </div>
