@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Shield, QrCode, UserCheck, Star, Clock, ServerCog, Plus, ArrowRight } from 'lucide-react'
+import { Shield, QrCode, UserCheck, Star, Plus, ArrowRight } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
@@ -9,19 +9,19 @@ import { useReveal } from '@/hooks/use-reveal'
 
 const RULES = [
   {
-    icon: Clock,
+    stat: '60s',
     title: 'QR codes expire',
     body: 'Every code is one-time and dies in a minute. A screenshot is useless.',
   },
   {
-    icon: UserCheck,
+    stat: '2/2',
     title: 'Ratings need a confirmed meeting',
     body: 'Both people have to confirm, in person, before either can rate the other.',
   },
   {
-    icon: ServerCog,
+    stat: '0',
     title: 'The server decides what’s true',
-    body: 'Tier, verification, and ratings are never decided by your phone.',
+    body: 'Tier, verification, and ratings are never decided by your phone — client input is zero.',
   },
 ]
 
@@ -236,22 +236,18 @@ export function LandingPage() {
         </Reveal>
       </div>
 
-      {/* Rules */}
+      {/* Rules — a specs strip, not an icon grid */}
       <div className="border-t border-white/10 bg-ink px-7 py-10 md:px-16 md:py-14">
         <div className="mx-auto max-w-6xl">
           <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-slate-500">
             Three rules, no exceptions
           </div>
-          <div className="mt-5 grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-8">
+          <div className="mt-6 grid grid-cols-1 divide-y divide-white/10 md:grid-cols-3 md:divide-x md:divide-y-0">
             {RULES.map((r, i) => (
-              <Reveal key={r.title} delay={i * 0.05} className="flex gap-4">
-                <span className="mt-0.5 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-white/15 bg-white/5 text-brand">
-                  <r.icon size={18} strokeWidth={1.8} />
-                </span>
-                <div>
-                  <div className="text-[15px] font-bold">{r.title}</div>
-                  <div className="mt-0.5 text-[13px] leading-snug text-slate-400">{r.body}</div>
-                </div>
+              <Reveal key={r.title} delay={i * 0.05} className="flex flex-col gap-2 py-5 first:pt-0 md:px-8 md:py-0 md:first:pl-0 md:last:pr-0">
+                <span className="font-mono text-[28px] font-extrabold text-brand">{r.stat}</span>
+                <div className="text-[15px] font-bold text-white">{r.title}</div>
+                <div className="text-[13px] leading-snug text-slate-400">{r.body}</div>
               </Reveal>
             ))}
           </div>
