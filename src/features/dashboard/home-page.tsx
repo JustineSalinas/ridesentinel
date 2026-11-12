@@ -1,6 +1,6 @@
 import { useQuery } from 'convex/react'
 import { Link, Navigate } from 'react-router-dom'
-import { QrCode, ScanLine, Star } from 'lucide-react'
+import { QrCode, ScanLine, Star, ShieldCheck, Users } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
 
 export function HomePage() {
@@ -23,10 +23,15 @@ export function HomePage() {
     .toUpperCase()
 
   return (
-    <div className="flex flex-1 flex-col bg-page">
-      <div className="flex items-center justify-between px-6 py-5">
+    <div
+      className="flex flex-1 flex-col"
+      style={{ background: 'radial-gradient(130% 100% at 100% 0%, #EFF6FF 0%, #F1F5F9 55%)' }}
+    >
+      <div className="flex items-center justify-between px-6 pb-2 pt-6">
         <div>
-          <div className="text-[15px] font-bold text-ink">Hey, {me.displayName.split(' ')[0]}</div>
+          <div className="text-[26px] font-extrabold leading-tight tracking-tight text-ink">
+            Hey, {me.displayName.split(' ')[0]}.
+          </div>
           {me.verified ? (
             <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-bold text-verified">
               ✓ ID-verified
@@ -42,7 +47,7 @@ export function HomePage() {
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col gap-5 px-6 pb-6">
+      <div className="flex flex-1 flex-col gap-5 px-6 pb-6 pt-4">
         {!me.verified && (
           <Link
             to="/verify"
@@ -54,40 +59,68 @@ export function HomePage() {
         )}
 
         {summary && (
-          <div className="neu-brand rounded-[22px] px-5 py-5 text-white">
-            <div className="flex items-center gap-1.5 text-[13px] text-white/80">
-              <Star size={14} fill="currentColor" strokeWidth={0} />
-              Your rating
+          <div className="neu-out rounded-[26px] bg-paper p-5">
+            <div className="flex items-center justify-between">
+              <span className="text-[13px] font-semibold text-slate">Your rating</span>
+              <Star size={16} className="text-pending" fill="#D97706" />
             </div>
-            <div className="mt-1 text-[32px] font-extrabold leading-none">
+            <div className="mt-1 text-[44px] font-extrabold leading-none tracking-tight text-ink">
               {summary.score ? summary.score.toFixed(1) : 'New'}
             </div>
-            <div className="mt-1 text-[12.5px] text-white/80">
-              from {summary.confirmedMeetings} confirmed meetings
+
+            <div className="mt-5 flex flex-col gap-3 border-t border-mist pt-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5 text-[13px] text-slate">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-50">
+                    <Users size={13} className="text-brand" />
+                  </span>
+                  Confirmed meetings
+                </div>
+                <span className="text-[14px] font-bold text-ink">{summary.confirmedMeetings}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2.5 text-[13px] text-slate">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-green-50">
+                    <ShieldCheck size={13} className="text-verified" />
+                  </span>
+                  Verification tier
+                </div>
+                <span className="text-[14px] font-bold text-ink">{me.verified ? '12mo badge' : '—'}</span>
+              </div>
             </div>
           </div>
         )}
 
-        <div className="flex gap-4">
-          <Link to="/qr" className="neu-out flex flex-1 flex-col items-center gap-2 rounded-[22px] py-6">
-            <QrCode size={20} strokeWidth={1.8} className="text-ink" />
-            <span className="text-sm font-bold text-ink">My QR</span>
-          </Link>
+        <div className="flex gap-3">
           <Link
             to="/scan"
-            className="neu-brand flex flex-1 flex-col items-center gap-2 rounded-[22px] py-6 text-white"
+            className="flex flex-1 items-center justify-center gap-2 rounded-full bg-ink py-4 text-white"
           >
-            <ScanLine size={20} strokeWidth={1.8} />
+            <ScanLine size={18} strokeWidth={2} />
             <span className="text-sm font-bold">Scan</span>
+          </Link>
+          <Link
+            to="/qr"
+            className="neu-out flex flex-1 items-center justify-center gap-2 rounded-full py-4 text-ink"
+          >
+            <QrCode size={18} strokeWidth={2} />
+            <span className="text-sm font-bold">My QR</span>
           </Link>
         </div>
 
         {summary && (
-          <Link
-            to="/interactions"
-            className="neu-out-sm flex items-center justify-between rounded-2xl px-4 py-3.5"
-          >
-            <span className="text-[13px] font-semibold text-ink">Recent interactions</span>
+          <Link to="/interactions" className="neu-out-sm flex items-center gap-3 rounded-2xl px-4 py-3.5">
+            <div className="flex -space-x-2">
+              {Array.from({ length: Math.min(3, Math.max(1, summary.confirmedMeetings)) }).map((_, i) => (
+                <div key={i} className="h-7 w-7 rounded-full border-2 border-paper bg-mist" />
+              ))}
+            </div>
+            <div className="flex-1">
+              <div className="text-[13px] font-bold text-ink">Recent interactions</div>
+              <div className="text-[11.5px] text-slate">
+                {summary.confirmedMeetings} confirmed so far
+              </div>
+            </div>
             <span className="text-[12px] font-semibold text-brand">See all →</span>
           </Link>
         )}
