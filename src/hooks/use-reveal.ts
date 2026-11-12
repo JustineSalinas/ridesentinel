@@ -7,7 +7,12 @@ export function useReveal(options?: { delay?: number }): {
   motionProps: MotionProps
 } {
   const ref = useRef<HTMLElement | null>(null)
-  const inView = useInView(ref, { once: true, margin: '-60px' })
+  // Positive bottom margin expands the trigger zone below the viewport, so
+  // content starts revealing well before it's scrolled into view. Tall
+  // stacked sections (e.g. three full-height phone mockups) could otherwise
+  // sit fully transparent for 1000px+ of scroll, reading as a broken/empty
+  // page rather than an animation — found during a full design-review pass.
+  const inView = useInView(ref, { once: true, margin: '0px 0px 400px 0px' })
   const reduceMotion = useReducedMotion()
 
   return {
