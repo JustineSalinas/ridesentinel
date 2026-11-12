@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useAuthActions } from '@convex-dev/auth/react'
-import { useConvex, useMutation } from 'convex/react'
+import { useConvexAuth, useMutation } from 'convex/react'
 import { useNavigate } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Shield, QrCode, UserCheck } from 'lucide-react'
@@ -23,6 +23,15 @@ async function retryOnUnauthenticated<T>(fn: () => Promise<T>, attempts = 5, del
   throw new Error('unreachable')
 }
 
+/** Polls until `ref.current` is true, or throws after a timeout. */
+async function waitUntil(ref: React.RefObject<boolean>, timeoutMs = 4000, intervalMs = 50): Promise<void> {
+  const deadline = Date.now() + timeoutMs
+  while (!ref.current) {
+    if (Date.now() > deadline) throw new Error('Timed out waiting for authentication')
+    await new Promise((resolve) => setTimeout(resolve, intervalMs))
+  }
+}
+
 const fieldClass =
   'neu-dark-in h-12 rounded-xl px-3.5 text-[15px] text-white placeholder-white/30 outline-none'
 const labelClass = 'text-[13px] font-semibold text-white/70'
@@ -31,7 +40,11 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
   const [tab, setTab] = useState<Tab>(initialTab)
   const { signIn } = useAuthActions()
   const completeRegistration = useMutation(api.profiles.completeRegistration)
-  const convex = useConvex()
+  const { isAuthenticated } = useConvexAuth()
+  const isAuthenticatedRef = useRef(isAuthenticated)
+  useEffect(() => {
+    isAuthenticatedRef.current = isAuthenticated
+  }, [isAuthenticated])
   const navigate = useNavigate()
   const reduceMotion = useReducedMotion()
 
@@ -50,14 +63,13 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
     setSubmitting(true)
     try {
       await signIn('password', { email, password, flow: 'signIn' })
-      // Same race `retryOnUnauthenticated` guards against on registration:
-      // `signIn` resolving doesn't mean the Convex client's WebSocket has
-      // finished propagating the new auth token yet. Navigating to /home
-      // immediately can land RequireAuth's `isAuthenticated` check before
-      // that propagation completes, silently bouncing back to /login with
-      // no error shown. Force a round trip first so navigate only fires
-      // once the client is actually authenticated.
-      await retryOnUnauthenticated(() => convex.query(api.profiles.getMe, {}))
+      // `signIn` resolving doesn't mean RequireAuth's `useConvexAuth()` has
+      // re-rendered with `isAuthenticated: true` yet — that's a separate,
+      // slightly-later reactive update. Navigating to /home immediately
+      // can land RequireAuth's check before that update lands, silently
+      // bouncing back to /login with no error shown. Wait for the exact
+      // value RequireAuth itself reads before navigating.
+      await waitUntil(isAuthenticatedRef)
       navigate('/home')
     } catch {
       setError('Incorrect email or password.')
