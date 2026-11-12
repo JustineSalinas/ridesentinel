@@ -50,4 +50,12 @@ Verified via `gstack /qa` (real browser testing against the running app) and `pn
 npx convex run admin:makeAdmin '{"displayName":"Your Name"}'
 ```
 
+On **Windows PowerShell**, the above is unreliable — PowerShell 5.1 strips embedded double
+quotes from arguments passed to native executables no matter how you escape them. Use the
+bundled helper instead, which spawns `node` directly with an argv array and sidesteps the
+problem entirely:
+```powershell
+node scripts\make-admin.mjs "Your Name"
+```
+
 **Still needs a human:** a `CONVEX_DEPLOY_KEY` for Vercel/CI to actually deploy, a real device/browser pass on your end, and the `docs/SPEC.md` §17 decisions (pilot community name, data protection contact, final branding).
