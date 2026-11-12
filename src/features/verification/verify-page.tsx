@@ -52,27 +52,27 @@ export function VerifyPage() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-page">
-      <div className="border-b border-mist bg-paper px-6 py-5">
+      <div className="px-6 py-5">
         <div className="text-[11px] font-bold uppercase tracking-widest text-slate">Verification</div>
         <h1 className="mt-1 text-[21px] font-extrabold tracking-tight text-ink">Get ID-verified</h1>
       </div>
 
-      <div className="flex flex-1 flex-col gap-4 px-6 py-6">
+      <div className="flex flex-1 flex-col gap-4 px-6 py-2">
         {request?.status === 'rejected' && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3">
             <div className="text-[12px] font-bold uppercase tracking-wide text-danger">Not approved — resubmit</div>
             <div className="mt-1 text-[13px] leading-snug text-ink">{request.reason}</div>
           </div>
         )}
 
-        {error && <div className="rounded-xl bg-red-50 px-4 py-3 text-[13px] text-danger">{error}</div>}
+        {error && <div className="rounded-2xl bg-red-50 px-4 py-3 text-[13px] text-danger">{error}</div>}
 
         <div className="flex flex-col gap-1.5">
           <label className="text-[13px] font-semibold text-[#334155]">ID type</label>
           <select
             value={idType}
             onChange={(e) => setIdType(e.target.value)}
-            className="h-12 rounded-[10px] border border-[#CBD5E1] bg-paper px-3 text-[15px] text-ink"
+            className="neu-in h-12 rounded-xl px-3 text-[15px] text-ink outline-none"
           >
             {ID_TYPES.map((t) => (
               <option key={t}>{t}</option>
@@ -133,7 +133,7 @@ function UploadField({
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
-        className="flex h-[120px] flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-[#94A3B8] text-center"
+        className="neu-in flex h-[120px] flex-col items-center justify-center gap-1.5 rounded-2xl text-center"
       >
         {file ? (
           <span className="text-[13px] font-semibold text-verified">✓ {file.name}</span>
@@ -166,7 +166,7 @@ function StatusView({ status, reason }: { status: 'pending' | 'approved'; reason
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-page px-7 text-center">
-      <div className={`flex h-16 w-16 items-center justify-center rounded-full ${circleClass}`}>
+      <div className={`neu-out flex h-16 w-16 items-center justify-center rounded-full ${circleClass}`}>
         {status === 'approved' ? (
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path

@@ -72,8 +72,10 @@ export function MyQrPage() {
       </div>
 
       {token && (
-        <div className="rounded-2xl bg-white p-5">
-          <QRCodeSVG value={token.nonce} size={200} />
+        <div className="neu-dark-out rounded-[28px] p-5">
+          <div className="rounded-2xl bg-white p-4">
+            <QRCodeSVG value={token.nonce} size={200} />
+          </div>
           {/* e2e-only: lets a test read the nonce without decoding the QR image (SPEC.md §12) */}
           {import.meta.env.DEV && (
             <span data-testid="qr-nonce" className="hidden">
@@ -83,7 +85,7 @@ export function MyQrPage() {
         </div>
       )}
 
-      <div className="flex items-center gap-2 rounded-full bg-slate-800 px-4 py-2">
+      <div className="neu-dark-out-sm flex items-center gap-2 rounded-full px-4 py-2">
         <motion.span
           className="h-2 w-2 rounded-full bg-verified"
           animate={reduceMotion ? undefined : { opacity: [1, 0.4, 1] }}
@@ -111,7 +113,7 @@ export function MyQrPage() {
               initial={reduceMotion ? false : { opacity: 0, scale: 0.94, y: 8 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.18, ease: 'easeOut' }}
-              className="w-full max-w-[320px] rounded-2xl bg-paper p-6 text-ink"
+              className="neu-out w-full max-w-[320px] rounded-[28px] p-6 text-ink"
             >
               <div className="text-center">
                 <div className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
@@ -121,7 +123,7 @@ export function MyQrPage() {
               </div>
 
               {!openScan.interaction.bConfirmedAt ? (
-                <div className="mt-4 rounded-lg bg-mist px-4 py-3 text-center text-[13px] text-slate">
+                <div className="neu-in mt-4 rounded-2xl px-4 py-3 text-center text-[13px] text-slate">
                   Waiting for them to confirm it&apos;s you…
                 </div>
               ) : (
@@ -133,7 +135,7 @@ export function MyQrPage() {
                     <motion.button
                       whileTap={reduceMotion ? undefined : { scale: 0.96 }}
                       onClick={() => cancelInteraction({ interactionId: openScan.interaction._id, reason: 'other' })}
-                      className="flex-1 rounded-full border border-danger py-3 text-[14px] font-bold text-danger"
+                      className="neu-out-sm flex-1 rounded-full py-3 text-[14px] font-bold text-danger"
                     >
                       Not them
                     </motion.button>

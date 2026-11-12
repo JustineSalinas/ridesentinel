@@ -37,7 +37,7 @@ export function ConsentPage() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-page">
-      <div className="border-b border-mist bg-paper px-6 py-5">
+      <div className="px-6 py-5">
         <div className="text-[11px] font-bold uppercase tracking-widest text-slate">
           Before you continue
         </div>
@@ -46,11 +46,11 @@ export function ConsentPage() {
         </h1>
       </div>
 
-      <div className="flex flex-1 flex-col px-6 py-6">
+      <div className="flex flex-1 flex-col px-6 py-2">
         <div className="flex flex-col gap-3">
           {POINTS.map(([title, body]) => (
-            <div key={title} className="rounded-[14px] border border-mist bg-paper p-4">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50">
+            <div key={title} className="neu-out-sm rounded-2xl p-4">
+              <div className="neu-in flex h-9 w-9 items-center justify-center rounded-full">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                   <path
                     d="M12 2L4 6v6c0 5.5 3.5 8.5 8 10 4.5-1.5 8-4.5 8-10V6l-8-4z"
@@ -81,7 +81,7 @@ export function ConsentPage() {
         </p>
 
         {showTerms && (
-          <div className="mt-3 max-h-[220px] overflow-y-auto rounded-xl border border-mist bg-mist/40 p-4">
+          <div className="neu-in mt-3 max-h-[220px] overflow-y-auto rounded-2xl p-4">
             <pre className="whitespace-pre-wrap text-[11.5px] leading-relaxed text-slate">
               {TERMS_OF_USE}
               {'\n\n'}
@@ -98,7 +98,7 @@ export function ConsentPage() {
         </div>
       </div>
 
-      <div className="sticky bottom-0 flex flex-col gap-2 border-t border-mist bg-paper px-6 py-4">
+      <div className="neu-out sticky bottom-0 flex flex-col gap-2 rounded-t-[22px] px-6 py-4">
         <button
           type="button"
           onClick={agree}

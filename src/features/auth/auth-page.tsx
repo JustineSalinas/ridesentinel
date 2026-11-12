@@ -24,7 +24,7 @@ async function retryOnUnauthenticated<T>(fn: () => Promise<T>, attempts = 5, del
 }
 
 const fieldClass =
-  'h-12 rounded-[10px] border border-white/15 bg-white/5 px-3.5 text-[15px] text-white placeholder-white/30 outline-none transition-colors focus:border-brand'
+  'neu-dark-in h-12 rounded-xl px-3.5 text-[15px] text-white placeholder-white/30 outline-none'
 const labelClass = 'text-[13px] font-semibold text-white/70'
 
 export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
@@ -89,7 +89,7 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
           transition={{ duration: 0.3, ease: 'easeOut' }}
         >
           <div className="flex items-center gap-2.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand">
+            <div className="neu-brand flex h-10 w-10 items-center justify-center rounded-xl">
               <Shield size={18} strokeWidth={2.2} className="text-white" fill="#FFFFFF" />
             </div>
             <span className="text-[15px] font-extrabold tracking-tight text-white">RideSentinel</span>
@@ -104,13 +104,13 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
               : "A verified photo is how the other person knows it's really you."}
           </p>
 
-          <div className="mt-7 flex gap-1 rounded-[10px] bg-white/5 p-1">
+          <div className="neu-dark-in mt-7 flex gap-1 rounded-xl p-1">
             <button
               type="button"
               onClick={() => setTab('login')}
               className={cn(
                 'flex-1 rounded-lg py-2.5 text-sm font-semibold text-white/50 transition-colors',
-                tab === 'login' && 'bg-white/10 text-white',
+                tab === 'login' && 'neu-dark-out text-white',
               )}
             >
               Log in
@@ -120,7 +120,7 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
               onClick={() => setTab('register')}
               className={cn(
                 'flex-1 rounded-lg py-2.5 text-sm font-semibold text-white/50 transition-colors',
-                tab === 'register' && 'bg-white/10 text-white',
+                tab === 'register' && 'neu-dark-out text-white',
               )}
             >
               Register
@@ -234,10 +234,10 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
                     type="button"
                     onClick={() => setRideRole('driver')}
                     className={cn(
-                      'flex-1 rounded-[10px] border py-2.5 text-sm font-semibold transition-colors',
+                      'flex-1 rounded-xl border-2 py-2.5 text-sm font-semibold transition-colors',
                       rideRole === 'driver'
                         ? 'border-brand bg-brand/15 text-white'
-                        : 'border-white/15 bg-white/5 text-white/60',
+                        : 'neu-dark-out-sm border-transparent text-white/60',
                     )}
                   >
                     Driver
@@ -246,10 +246,10 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
                     type="button"
                     onClick={() => setRideRole('passenger')}
                     className={cn(
-                      'flex-1 rounded-[10px] border py-2.5 text-sm font-semibold transition-colors',
+                      'flex-1 rounded-xl border-2 py-2.5 text-sm font-semibold transition-colors',
                       rideRole === 'passenger'
                         ? 'border-brand bg-brand/15 text-white'
-                        : 'border-white/15 bg-white/5 text-white/60',
+                        : 'neu-dark-out-sm border-transparent text-white/60',
                     )}
                   >
                     Passenger

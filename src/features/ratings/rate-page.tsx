@@ -55,7 +55,7 @@ export function RatePage() {
           transition={{ duration: 0.2 }}
           className="flex flex-1 flex-col items-center justify-center gap-3 px-8 text-center"
         >
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-50">
+          <div className="neu-out flex h-16 w-16 items-center justify-center rounded-full">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M5 13l4 4L19 7" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -70,8 +70,8 @@ export function RatePage() {
         </motion.div>
       ) : (
         <div className="flex flex-1 flex-col items-center gap-5 px-8">
-          <div className="h-[72px] w-[72px] overflow-hidden rounded-full bg-mist">
-            {data.other.photoUrl && <img src={data.other.photoUrl} alt="" className="h-full w-full object-cover" />}
+          <div className="neu-out h-[84px] w-[84px] overflow-hidden rounded-full bg-mist p-1.5">
+            {data.other.photoUrl && <img src={data.other.photoUrl} alt="" className="h-full w-full rounded-full object-cover" />}
           </div>
           <div className="text-center">
             <div className="text-[17px] font-bold text-ink">
@@ -79,7 +79,7 @@ export function RatePage() {
             </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="neu-out-sm flex gap-2 rounded-2xl px-4 py-3">
             {[1, 2, 3, 4, 5].map((n) => (
               <motion.button
                 key={n}

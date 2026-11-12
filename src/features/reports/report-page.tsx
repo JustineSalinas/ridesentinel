@@ -42,7 +42,7 @@ export function ReportPage() {
   if (submitted) {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-page px-8 text-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-50">
+        <div className="neu-out flex h-16 w-16 items-center justify-center rounded-full">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M5 13l4 4L19 7" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -76,8 +76,8 @@ export function ReportPage() {
               key={r.value}
               onClick={() => setReason(r.value)}
               className={
-                'rounded-xl border p-4 text-left ' +
-                (reason === r.value ? 'border-brand bg-blue-50' : 'border-[#CBD5E1] bg-paper')
+                'rounded-2xl border-2 p-4 text-left transition-colors ' +
+                (reason === r.value ? 'border-brand bg-blue-50' : 'neu-out-sm border-transparent')
               }
             >
               <div className="text-[14px] font-bold text-ink">{r.title}</div>
@@ -90,7 +90,7 @@ export function ReportPage() {
           value={details}
           onChange={(e) => setDetails(e.target.value.slice(0, 500))}
           placeholder="Details (optional, 500 characters)"
-          className="h-24 resize-none rounded-xl border border-[#CBD5E1] bg-paper p-3 text-[13.5px] text-ink placeholder:text-slate"
+          className="neu-in h-24 resize-none rounded-2xl p-3 text-[13.5px] text-ink placeholder:text-slate outline-none"
         />
 
         <button

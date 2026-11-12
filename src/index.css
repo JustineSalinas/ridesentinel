@@ -71,4 +71,25 @@
       6px 6px 14px rgba(29, 78, 216, 0.35),
       -6px -6px 14px rgba(96, 155, 255, 0.35);
   }
+
+  /* Dark-canvas counterparts for the intentionally-dark screens (Auth, My
+     QR) — same soft-UI language, against --color-ink instead of page. */
+  .neu-dark-out {
+    background: var(--color-ink);
+    box-shadow:
+      6px 6px 14px rgba(0, 0, 0, 0.55),
+      -6px -6px 14px rgba(71, 85, 105, 0.3);
+  }
+  .neu-dark-in {
+    background: var(--color-ink);
+    box-shadow:
+      inset 4px 4px 9px rgba(0, 0, 0, 0.5),
+      inset -4px -4px 9px rgba(71, 85, 105, 0.25);
+  }
+  .neu-dark-out-sm {
+    background: var(--color-ink);
+    box-shadow:
+      3px 3px 7px rgba(0, 0, 0, 0.5),
+      -3px -3px 7px rgba(71, 85, 105, 0.25);
+  }
 }
