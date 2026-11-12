@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Shield, QrCode, UserCheck, Star, Plus, ArrowRight } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button-variants'
-import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { useReveal } from '@/hooks/use-reveal'
 
@@ -151,89 +150,71 @@ export function LandingPage() {
 
   return (
     <div className="min-h-dvh bg-ink text-white">
-      {/* Hero */}
-      <div className="relative overflow-hidden px-5 pb-20 pt-6 md:px-10 md:pb-28">
-        {/* Glow + diagonal light streaks, no imagery needed */}
-        <div
-          className="pointer-events-none absolute left-1/2 top-[-10%] h-[520px] w-[720px] -translate-x-1/2 rounded-full opacity-40 blur-[110px]"
-          style={{ background: 'radial-gradient(closest-side, #2563EB, transparent)' }}
-          aria-hidden="true"
-        />
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.5]"
-          style={{
-            background:
-              'repeating-linear-gradient(115deg, rgba(37,99,235,0.12) 0px, rgba(37,99,235,0.12) 2px, transparent 2px, transparent 90px)',
-          }}
-          aria-hidden="true"
-        />
+      {/* Nav — flat, no floating glass pill */}
+      <nav className="mx-auto flex max-w-6xl items-center justify-between border-b border-white/10 px-5 py-5 md:px-10">
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand">
+            <Shield size={15} strokeWidth={2.2} className="text-white" fill="#FFFFFF" />
+          </div>
+          <span className="text-[14px] font-extrabold tracking-tight">RideSentinel</span>
+        </div>
+        <div className="hidden items-center gap-7 text-[13px] font-semibold text-slate-300 md:flex">
+          <a href="#how-it-works" className="hover:text-white">
+            How it works
+          </a>
+          <a href="#faq" className="hover:text-white">
+            FAQ
+          </a>
+        </div>
+        <div className="flex items-center gap-5">
+          <Link to="/login" className="hidden text-[13px] font-semibold text-white hover:text-slate-300 md:block">
+            Log in
+          </Link>
+          <Link to="/register" className={cn(buttonVariants({ variant: 'heroPrimary', size: 'pill' }))}>
+            Register
+          </Link>
+        </div>
+      </nav>
 
-        {/* Nav */}
-        <nav className="relative mx-auto flex max-w-6xl items-center justify-between rounded-full border border-white/10 bg-white/5 px-5 py-3 backdrop-blur-md">
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand">
-              <Shield size={15} strokeWidth={2.2} className="text-white" fill="#FFFFFF" />
+      {/* Hero — asymmetric two-column, no decoration */}
+      <div className="px-5 py-14 md:px-10 md:py-24">
+        <div className="mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-[1.1fr_0.9fr] md:gap-16">
+          <Reveal>
+            <div className="text-[12px] font-bold uppercase tracking-[0.14em] text-pending">
+              Pilot · Iloilo City
             </div>
-            <span className="text-[14px] font-extrabold tracking-tight">RideSentinel</span>
-          </div>
-          <div className="hidden items-center gap-7 text-[13px] font-semibold text-slate-300 md:flex">
-            <a href="#how-it-works" className="hover:text-white">
-              How it works
-            </a>
-            <a href="#faq" className="hover:text-white">
-              FAQ
-            </a>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link to="/login" className={cn(buttonVariants({ variant: 'ghost', size: 'pill' }), 'hidden text-white hover:bg-white/10 md:flex')}>
-              Log in
-            </Link>
-            <Link to="/register" className={cn(buttonVariants({ variant: 'heroPrimary', size: 'pill' }))}>
-              Register
-            </Link>
-          </div>
-        </nav>
+            <h1 className="mt-4 text-[38px] font-bold leading-[1.1] tracking-tight text-slate-400 md:text-[52px]">
+              Know who you&apos;re <span className="font-extrabold text-white">meeting</span>{' '}
+              <span className="font-extrabold text-white">before you ride.</span>
+            </h1>
+            <p className="mt-5 max-w-[440px] text-[15px] leading-snug text-slate-400 md:text-[17px]">
+              A motorcycle ride is arranged in a chat. RideSentinel confirms, with a verified photo and a
+              live QR handshake, that the person who shows up is actually them.
+            </p>
 
-        <Reveal className="relative mx-auto mt-16 max-w-2xl text-center md:mt-24">
-          <Badge tone="pending" className="gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 font-mono tracking-[0.18em]">
-            <span className="h-1.5 w-1.5 rounded-full bg-pending" />
-            PILOT · ILOILO CITY
-          </Badge>
-          <h1 className="mt-5 text-[38px] font-bold leading-[1.1] tracking-tight text-slate-400 md:text-[58px]">
-            Know who you&apos;re <span className="font-extrabold text-white">meeting</span>
-            <br />
-            <span className="font-extrabold text-white">before you ride.</span>
-          </h1>
-          <p className="mx-auto mt-5 max-w-[440px] text-[15px] leading-snug text-slate-400 md:text-[17px]">
-            A motorcycle ride is arranged in a chat. RideSentinel confirms, with a verified photo and a
-            live QR handshake, that the person who shows up is actually them.
-          </p>
+            <div className="mt-8 flex max-w-sm flex-col gap-2.5 sm:flex-row">
+              <Link to="/register" className={cn(buttonVariants({ variant: 'heroPrimary', size: 'lg' }), 'px-8')}>
+                Register
+              </Link>
+              <Link to="/login" className={cn(buttonVariants({ variant: 'heroOutline', size: 'lg' }), 'px-8')}>
+                Log in
+              </Link>
+            </div>
 
-          <div className="mx-auto mt-8 flex max-w-sm flex-col gap-2.5 sm:flex-row sm:justify-center">
-            <Link to="/register" className={cn(buttonVariants({ variant: 'heroPrimary', size: 'lg' }), 'px-8')}>
-              Register
-            </Link>
-            <Link to="/login" className={cn(buttonVariants({ variant: 'heroOutline', size: 'lg' }), 'px-8')}>
-              Log in
-            </Link>
-          </div>
-        </Reveal>
-
-        <Reveal delay={0.1} className="relative mx-auto mt-16 flex max-w-4xl items-center justify-center md:mt-20">
-          <div className="relative">
-            <div className="hidden -translate-x-6 translate-y-6 rounded-2xl border border-white/10 bg-white/5 px-5 py-4 backdrop-blur-md sm:absolute sm:left-0 sm:top-10 sm:block">
-              <div className="text-[11px] text-slate-400">Confirmed meetings</div>
-              <div className="mt-1 flex items-center gap-1 text-[22px] font-extrabold">
-                4.9 <Star size={16} className="text-pending" fill="#D97706" />
+            <div className="mt-10 flex gap-8 border-t border-white/10 pt-6 text-[13px] text-slate-400">
+              <div>
+                <span className="text-[20px] font-extrabold text-white">60s</span> QR expiry
+              </div>
+              <div>
+                <span className="text-[20px] font-extrabold text-white">48h</span> rating window
               </div>
             </div>
-            <div className="hidden translate-x-6 -translate-y-6 rounded-2xl border border-white/10 bg-white/5 px-5 py-4 backdrop-blur-md sm:absolute sm:right-0 sm:top-24 sm:block">
-              <div className="text-[11px] text-slate-400">QR expires in</div>
-              <div className="mt-1 text-[22px] font-extrabold text-brand">60s</div>
-            </div>
+          </Reveal>
+
+          <Reveal delay={0.1} className="flex justify-center md:justify-end">
             <PhoneMock kind="confirm" />
-          </div>
-        </Reveal>
+          </Reveal>
+        </div>
       </div>
 
       {/* Rules — a specs strip, not an icon grid */}

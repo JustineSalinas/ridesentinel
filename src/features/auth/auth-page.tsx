@@ -3,7 +3,7 @@ import { useAuthActions } from '@convex-dev/auth/react'
 import { useConvexAuth, useMutation } from 'convex/react'
 import { useNavigate } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
-import { Shield, QrCode, UserCheck } from 'lucide-react'
+import { Shield } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button-variants'
@@ -298,51 +298,20 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
         </motion.div>
       </div>
 
-      {/* Right — brand panel, desktop only */}
-      <div className="relative hidden flex-1 overflow-hidden bg-gradient-to-br from-brand to-brand-dark md:flex md:flex-col md:justify-between md:p-12">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.15]"
-          style={{
-            backgroundImage:
-              'repeating-linear-gradient(0deg, #fff 0 1px, transparent 1px 32px), repeating-linear-gradient(90deg, #fff 0 1px, transparent 1px 32px)',
-          }}
-          aria-hidden="true"
-        />
+      {/* Right — brand panel, desktop only. A color field and a line of type, nothing else. */}
+      <div className="hidden flex-1 flex-col justify-between bg-brand-dark p-14 md:flex">
+        <Shield size={22} strokeWidth={1.8} className="text-white/40" />
 
-        <div />
-
-        <motion.div
-          initial={reduceMotion ? false : { opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
+        <motion.p
+          initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: 'easeOut' }}
-          className="relative mx-auto flex w-full max-w-[340px] flex-col items-center gap-4"
+          className="max-w-[420px] text-[28px] font-bold leading-[1.25] text-white"
         >
-          <div className="w-full rounded-2xl bg-white p-5 shadow-2xl">
-            <div className="flex items-center gap-3 border-b border-mist pb-3">
-              <div className="h-9 w-9 rounded-full bg-mist" />
-              <div>
-                <div className="text-[13px] font-bold text-ink">Marco D.</div>
-                <div className="flex items-center gap-1 text-[10.5px] font-bold text-verified">
-                  <UserCheck size={11} strokeWidth={2.2} />
-                  ID-verified
-                </div>
-              </div>
-            </div>
-            <div className="mt-3 flex items-center justify-center rounded-xl bg-ink py-6">
-              <QrCode size={64} strokeWidth={1.3} className="text-white" />
-            </div>
-            <div className="mt-3 rounded-full bg-mist py-1.5 text-center text-[11px] font-bold text-slate">
-              Refreshes in 42s
-            </div>
-          </div>
-        </motion.div>
+          Know who you&apos;re meeting, before you ride.
+        </motion.p>
 
-        <div className="relative text-center text-white">
-          <p className="text-[17px] font-bold leading-snug">
-            &ldquo;Know who you&apos;re meeting, before you ride.&rdquo;
-          </p>
-          <p className="mt-1.5 text-[12.5px] text-white/60">RideSentinel pilot — Iloilo City</p>
-        </div>
+        <p className="text-[13px] text-white/50">RideSentinel pilot — Iloilo City</p>
       </div>
     </div>
   )
