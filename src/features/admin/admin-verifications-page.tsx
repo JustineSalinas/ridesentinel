@@ -66,14 +66,20 @@ export function AdminVerificationsPage() {
         </div>
 
         <div className="flex-1 rounded-2xl border border-mist bg-paper p-7">
-          {selected ? <ReviewDetail requestId={selected} /> : <div className="text-slate">Select a request.</div>}
+          {selected ? (
+            <ReviewDetail requestId={selected} onDecided={() => setSelectedId(null)} />
+          ) : (
+            <div className="text-slate">
+              {pending?.length === 0 ? 'Nothing left to review.' : 'Select a request.'}
+            </div>
+          )}
         </div>
       </div>
     </div>
   )
 }
 
-function ReviewDetail({ requestId }: { requestId: Id<'verificationRequests'> }) {
+function ReviewDetail({ requestId, onDecided }: { requestId: Id<'verificationRequests'>; onDecided: () => void }) {
   const detail = useQuery(api.admin.getVerificationDetail, { requestId })
   const getFileUrl = useMutation(api.admin.getFileUrl)
   const review = useMutation(api.admin.reviewVerification)
@@ -101,6 +107,7 @@ function ReviewDetail({ requestId }: { requestId: Id<'verificationRequests'> }) 
       setSelfieUrl(null)
       setConfirmed18(false)
       setReason('')
+      onDecided()
     } finally {
       setBusy(false)
     }

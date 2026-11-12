@@ -58,14 +58,18 @@ export function AdminReportsPage() {
         </div>
 
         <div className="flex-1 rounded-2xl border border-mist bg-paper p-7">
-          {selected ? <ReportDetail reportId={selected} /> : <div className="text-slate">Select a report.</div>}
+          {selected ? (
+            <ReportDetail reportId={selected} onHandled={() => setSelectedId(null)} />
+          ) : (
+            <div className="text-slate">{reports?.length === 0 ? 'Nothing left to review.' : 'Select a report.'}</div>
+          )}
         </div>
       </div>
     </div>
   )
 }
 
-function ReportDetail({ reportId }: { reportId: Id<'reports'> }) {
+function ReportDetail({ reportId, onHandled }: { reportId: Id<'reports'>; onHandled: () => void }) {
   const detail = useQuery(api.admin.getReportDetail, { reportId })
   const handle = useMutation(api.admin.handleReport)
   const [reason, setReason] = useState('')
@@ -79,6 +83,7 @@ function ReportDetail({ reportId }: { reportId: Id<'reports'> }) {
     try {
       await handle({ reportId, action, reason })
       setReason('')
+      onHandled()
     } finally {
       setBusy(false)
     }
