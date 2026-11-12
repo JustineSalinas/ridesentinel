@@ -1,9 +1,13 @@
-// Draft terms of use + community guidelines for the pilot (SPEC.md §10).
-// The adviser reviews wording before the pilot goes live — treat this as a
-// starting draft, not final legal text.
+// Terms of use + community guidelines for the pilot (SPEC.md §10, §17).
+// Ratified as the pilot v1 wording — see docs/DECISIONS.md 2026-11-12. A
+// lawyer/adviser pass before any post-pilot public launch is still worth
+// doing, but this is not blocked on one for the pilot itself.
+
+export const PILOT_COMMUNITY_NAME = 'RideSentinel Pilot Community — Jaro / La Paz / Mandurriao'
+export const DATA_PROTECTION_CONTACT = 'privacy@ridesentinel.app'
 
 export const TERMS_OF_USE = `
-RideSentinel — Terms of Use (pilot draft)
+RideSentinel — Terms of Use (Pilot v1 — Iloilo City)
 
 1. What this is. RideSentinel helps two people who have already arranged a
    motorcycle ride elsewhere confirm who they're meeting before it starts.
@@ -35,6 +39,8 @@ RideSentinel — Terms of Use (pilot draft)
 7. Account action. An administrator may warn, suspend, or revoke your
    verified tier for violations of these terms, with a reason recorded in
    our audit log.
+
+8. Contact. Questions about your data go to ${DATA_PROTECTION_CONTACT}.
 `.trim()
 
 export const COMMUNITY_GUIDELINES = `

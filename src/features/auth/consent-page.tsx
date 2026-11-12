@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useMutation } from 'convex/react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../../../convex/_generated/api'
-import { TERMS_OF_USE, COMMUNITY_GUIDELINES } from './terms'
+import { TERMS_OF_USE, COMMUNITY_GUIDELINES, PILOT_COMMUNITY_NAME, DATA_PROTECTION_CONTACT } from './terms'
 
 const POINTS = [
   [
@@ -89,6 +89,13 @@ export function ConsentPage() {
             </pre>
           </div>
         )}
+
+        <div className="mt-4 text-[11.5px] leading-snug text-slate">
+          {PILOT_COMMUNITY_NAME} · Questions about your data:{' '}
+          <a href={`mailto:${DATA_PROTECTION_CONTACT}`} className="font-semibold text-brand">
+            {DATA_PROTECTION_CONTACT}
+          </a>
+        </div>
       </div>
 
       <div className="sticky bottom-0 flex flex-col gap-2 border-t border-mist bg-paper px-6 py-4">

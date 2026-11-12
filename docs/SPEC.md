@@ -580,10 +580,10 @@ Surveys (SUS, TAM, confidence before/after, ISO 25010 checklist) are external (G
 
 ## 17. Open items (do not guess silently — ask the owner)
 
-1. Pilot community name and the named **data protection contact** (shown on the consent screen).
-2. Final wording of terms of use / community guidelines (adviser review).
-3. Real admin accounts (≥ 2 named administrators) and who owns the Supabase and Vercel accounts (planned under the Project Manager).
-4. Whether NPC registration applies at pilot scale (paper says to confirm with the adviser).
+1. ~~Pilot community name and the named **data protection contact**~~ — **Resolved 2026-11-12**: "RideSentinel Pilot Community — Jaro / La Paz / Mandurriao", contact `privacy@ridesentinel.app`, both shown on the Consent screen. See DECISIONS.md.
+2. ~~Final wording of terms of use / community guidelines~~ — **Resolved 2026-11-12**: ratified as pilot v1 (`src/features/auth/terms.ts`). A lawyer/adviser pass is still worth doing before any post-pilot public launch, but it does not block the pilot.
+3. Admin accounts and account ownership — **Partially resolved 2026-11-12**: Vercel/Convex/GitHub are owned by the project lead's accounts (team `justinesalinas-projects`); the CLI-only `admin:makeAdmin` bootstrap (DECISIONS.md, 2026-11-10) already exists and one admin account is live. Naming a **second** real, trusted human administrator is a staffing decision outside what can be inferred from the repo — still needs the owner.
+4. Whether NPC registration applies at pilot scale — **Working assumption 2026-11-12, not legal advice**: no, not yet. See DECISIONS.md for the reasoning and the trigger to revisit.
 5. ~~Branding: app name/logo/colors~~ — **Resolved 2026-11-12**: app name is RideSentinel, palette is the existing blue (`#2563EB`/`#1D4ED8`, a clean confident blue in the spirit of Grab's app), logo is the shield+check mark already used across Auth/Landing/PWA icons. Final wordmark/logo artwork from a designer would still be a welcome upgrade, but nothing is blocked on it.
 
 ---
