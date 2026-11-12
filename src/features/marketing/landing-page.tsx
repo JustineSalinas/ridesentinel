@@ -5,6 +5,7 @@ import { Shield, QrCode, UserCheck, Star, Plus, ArrowRight } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { cn } from '@/lib/utils'
 import { useReveal } from '@/hooks/use-reveal'
+import { DemoQuickAccess } from './demo-quick-access'
 
 const RULES = [
   {
@@ -436,6 +437,8 @@ export function LandingPage() {
           </div>
         </div>
       </div>
+
+      <DemoQuickAccess />
 
       {/* Footer */}
       <div className="border-t border-white/10 bg-ink px-7 py-10 text-slate-500 md:px-16">

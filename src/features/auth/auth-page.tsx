@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAuthActions } from '@convex-dev/auth/react'
 import { useConvexAuth, useMutation } from 'convex/react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Shield } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
@@ -47,8 +47,9 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
   }, [isAuthenticated])
   const navigate = useNavigate()
   const reduceMotion = useReducedMotion()
+  const [searchParams] = useSearchParams()
 
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(() => searchParams.get('email') ?? '')
   const [password, setPassword] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [rideRole, setRideRole] = useState<'driver' | 'passenger'>('driver')
@@ -164,7 +165,7 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
                   id="email"
                   type="email"
                   required
-                  autoFocus
+                  autoFocus={!searchParams.get('email')}
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -180,6 +181,7 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
                   type="password"
                   required
                   minLength={8}
+                  autoFocus={!!searchParams.get('email')}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
