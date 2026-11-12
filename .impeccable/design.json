@@ -25,3 +25,4 @@
     "auth": ["src/features/auth/auth-page.tsx"]
   }
 }
+

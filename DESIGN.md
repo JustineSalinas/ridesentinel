@@ -93,3 +93,4 @@ RideSentinel splits its visual grammar intentionally by surface mode while shari
 
 - **Do:** Keep `≥12px` text floor, `≥4.5:1` contrast, `≤75ch` prose measure, and `tabular-nums` on countdowns and metrics.
 - **Don't:** Add uppercase kickers above headings, `01/02/03` chapter pills beside titles, CSS grid-line background gradients, fake user avatar stacks, or passwords in client bundles.
+

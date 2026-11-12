@@ -232,7 +232,7 @@ export function LandingPage() {
           <div className="mt-8 flex flex-col gap-3 rounded-xl border border-mist bg-page px-5 py-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-start gap-3">
               <ShieldAlert size={18} className="mt-0.5 flex-shrink-0 text-amber-700" />
-              <p className="max-w-[70ch] text-[13.5px] leading-snug text-slate">
+              <p className="max-w-[52ch] text-[13.5px] leading-snug text-slate">
                 <strong className="font-bold text-ink">Not a ride-hailing app.</strong> There is no
                 matching, booking, GPS tracking, or payment — you still arrange rides yourselves.
                 &ldquo;ID-verified&rdquo; means an admin checked a government or school ID; it is not a
