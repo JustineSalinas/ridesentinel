@@ -54,43 +54,76 @@ const FEATURE_ROWS = [
 
 function PhoneMock({ kind }: { kind: 'qr' | 'confirm' | 'rate' }) {
   return (
-    <div className="relative mx-auto h-[300px] w-[172px] rounded-[26px] border-[6px] border-ink bg-paper shadow-[0_20px_40px_-20px_rgba(15,23,42,0.35)]">
-      <div className="absolute left-1/2 top-0 h-4 w-16 -translate-x-1/2 rounded-b-xl bg-ink" />
-      <div className="flex h-full flex-col items-center justify-center gap-2 px-4 pt-3">
-        {kind === 'qr' && (
-          <>
-            <div className="flex h-20 w-20 items-center justify-center rounded-md bg-ink">
-              <QrCode size={48} strokeWidth={1.5} className="text-white" />
+    <div className="relative">
+      {/* Ambient brand-tinted glow grounding the device */}
+      <div
+        className="pointer-events-none absolute inset-x-6 bottom-0 h-16 rounded-full opacity-50 blur-2xl"
+        style={{ background: 'radial-gradient(closest-side, #2563EB, transparent)' }}
+        aria-hidden="true"
+      />
+      {/* Metallic frame */}
+      <div
+        className="relative h-[340px] w-[188px] rounded-[40px] p-[3px] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.6)]"
+        style={{ background: 'linear-gradient(155deg, #3a3f4b 0%, #121419 45%, #050608 100%)' }}
+      >
+        {/* Side buttons */}
+        <div className="absolute -left-[2px] top-20 h-6 w-[3px] rounded-l-full bg-[#2a2d34]" />
+        <div className="absolute -left-[2px] top-32 h-10 w-[3px] rounded-l-full bg-[#2a2d34]" />
+        <div className="absolute -right-[2px] top-28 h-14 w-[3px] rounded-r-full bg-[#2a2d34]" />
+
+        <div className="h-full w-full overflow-hidden rounded-[37px] bg-ink">
+          {/* Status bar */}
+          <div className="relative flex items-center justify-between px-5 pt-2.5 text-[10px] font-semibold text-white/90">
+            <span>9:41</span>
+            <div className="absolute left-1/2 top-1.5 h-[18px] w-[64px] -translate-x-1/2 rounded-full bg-black" />
+            <div className="flex items-center gap-1">
+              <div className="flex gap-[1.5px]">
+                {[3, 5, 7, 9].map((h) => (
+                  <span key={h} className="w-[2.5px] rounded-sm bg-white/90" style={{ height: h }} />
+                ))}
+              </div>
             </div>
-            <div className="rounded-full bg-mist px-2.5 py-1 text-[9px] font-bold text-slate">Refreshes in 42s</div>
-          </>
-        )}
-        {kind === 'confirm' && (
-          <>
-            <div className="h-16 w-16 rounded-full bg-mist" />
-            <div className="text-[11px] font-bold text-ink">Marco D.</div>
-            <div className="flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[9px] font-bold text-verified">
-              <UserCheck size={10} strokeWidth={2.2} />
-              ID-verified
-            </div>
-            <div className="mt-1 w-full rounded-md bg-brand py-1.5 text-center text-[9px] font-bold text-white">
-              This is the person
-            </div>
-          </>
-        )}
-        {kind === 'rate' && (
-          <>
-            <div className="text-[10.5px] font-bold text-ink">How was the ride?</div>
-            <div className="flex gap-0.5">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star key={i} size={14} className="text-pending" fill={i < 4 ? '#D97706' : 'none'} />
-              ))}
-            </div>
-            <div className="mt-1 w-full rounded-md bg-mist py-1.5 text-center text-[9px] text-slate">
-              Hidden until you both rate
-            </div>
-          </>
-        )}
+          </div>
+
+          <div className="flex h-[calc(100%-32px)] flex-col items-center justify-center gap-2.5 bg-page px-4">
+            {kind === 'qr' && (
+              <>
+                <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-ink shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]">
+                  <QrCode size={46} strokeWidth={1.5} className="text-white" />
+                </div>
+                <div className="rounded-full bg-paper px-2.5 py-1 text-[9px] font-bold text-slate shadow-[0_1px_3px_rgba(15,23,42,0.12)]">
+                  Refreshes in 42s
+                </div>
+              </>
+            )}
+            {kind === 'confirm' && (
+              <>
+                <div className="h-16 w-16 rounded-full bg-mist shadow-[0_2px_8px_rgba(15,23,42,0.1)]" />
+                <div className="text-[11px] font-bold text-ink">Marco D.</div>
+                <div className="flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[9px] font-bold text-verified">
+                  <UserCheck size={10} strokeWidth={2.2} />
+                  ID-verified
+                </div>
+                <div className="mt-1 w-full rounded-xl bg-brand py-2 text-center text-[9px] font-bold text-white shadow-[0_4px_12px_rgba(37,99,235,0.4)]">
+                  This is the person
+                </div>
+              </>
+            )}
+            {kind === 'rate' && (
+              <>
+                <div className="text-[10.5px] font-bold text-ink">How was the ride?</div>
+                <div className="flex gap-0.5">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} size={14} className="text-pending" fill={i < 4 ? '#D97706' : 'none'} />
+                  ))}
+                </div>
+                <div className="mt-1 w-full rounded-xl bg-paper py-2 text-center text-[9px] text-slate shadow-[0_1px_3px_rgba(15,23,42,0.12)]">
+                  Hidden until you both rate
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -150,29 +183,40 @@ export function LandingPage() {
 
   return (
     <div className="min-h-dvh bg-ink text-white">
-      {/* Nav — flat, no floating glass pill */}
-      <nav className="mx-auto flex max-w-6xl items-center justify-between border-b border-white/10 px-5 py-5 md:px-10">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand">
-            <Shield size={15} strokeWidth={2.2} className="text-white" fill="#FFFFFF" />
+      {/* Nav — sticky, layered depth instead of a flat line */}
+      <nav className="sticky top-0 z-20 border-b border-white/[0.08] bg-ink/80 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 md:px-10">
+          <div className="flex items-center gap-2.5">
+            <div className="neu-brand flex h-8 w-8 items-center justify-center rounded-xl">
+              <Shield size={16} strokeWidth={2.2} className="text-white" fill="#FFFFFF" />
+            </div>
+            <span className="text-[14.5px] font-extrabold tracking-tight">RideSentinel</span>
           </div>
-          <span className="text-[14px] font-extrabold tracking-tight">RideSentinel</span>
-        </div>
-        <div className="hidden items-center gap-7 text-[13px] font-semibold text-slate-300 md:flex">
-          <a href="#how-it-works" className="hover:text-white">
-            How it works
-          </a>
-          <a href="#faq" className="hover:text-white">
-            FAQ
-          </a>
-        </div>
-        <div className="flex items-center gap-5">
-          <Link to="/login" className="hidden text-[13px] font-semibold text-white hover:text-slate-300 md:block">
-            Log in
-          </Link>
-          <Link to="/register" className={cn(buttonVariants({ variant: 'heroPrimary', size: 'pill' }))}>
-            Register
-          </Link>
+          <div className="hidden items-center gap-8 text-[13px] font-semibold text-slate-300 md:flex">
+            <a href="#how-it-works" className="transition-colors hover:text-white">
+              How it works
+            </a>
+            <a href="#faq" className="transition-colors hover:text-white">
+              FAQ
+            </a>
+          </div>
+          <div className="flex items-center gap-5">
+            <Link
+              to="/login"
+              className="hidden text-[13px] font-semibold text-white transition-colors hover:text-slate-300 md:block"
+            >
+              Log in
+            </Link>
+            <Link
+              to="/register"
+              className={cn(
+                buttonVariants({ variant: 'heroPrimary', size: 'pill' }),
+                'shadow-[0_4px_16px_rgba(37,99,235,0.35)] transition-transform hover:scale-[1.03]',
+              )}
+            >
+              Register
+            </Link>
+          </div>
         </div>
       </nav>
 
@@ -183,30 +227,44 @@ export function LandingPage() {
             <div className="text-[12px] font-bold uppercase tracking-[0.14em] text-pending">
               Pilot · Iloilo City
             </div>
-            <h1 className="mt-4 text-[38px] font-bold leading-[1.1] tracking-tight text-slate-400 md:text-[52px]">
-              Know who you&apos;re <span className="font-extrabold text-white">meeting</span>{' '}
-              <span className="font-extrabold text-white">before you ride.</span>
+            <h1 className="mt-4 text-[42px] font-extrabold leading-[1.05] tracking-tight text-white md:text-[56px]">
+              Know who you&apos;re meeting
+              <br />
+              before you ride.
             </h1>
-            <p className="mt-5 max-w-[440px] text-[15px] leading-snug text-slate-400 md:text-[17px]">
+            <p className="mt-5 max-w-[420px] text-[15px] leading-snug text-slate-400 md:text-[17px]">
               A motorcycle ride is arranged in a chat. RideSentinel confirms, with a verified photo and a
               live QR handshake, that the person who shows up is actually them.
             </p>
 
-            <div className="mt-8 flex max-w-sm flex-col gap-2.5 sm:flex-row">
-              <Link to="/register" className={cn(buttonVariants({ variant: 'heroPrimary', size: 'lg' }), 'px-8')}>
-                Register
-              </Link>
-              <Link to="/login" className={cn(buttonVariants({ variant: 'heroOutline', size: 'lg' }), 'px-8')}>
-                Log in
-              </Link>
-            </div>
+            <Link
+              to="/register"
+              className={cn(
+                buttonVariants({ variant: 'heroPrimary', size: 'lg' }),
+                'group mt-8 w-fit justify-between gap-6 pl-7 pr-2',
+              )}
+            >
+              Register
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 transition-transform group-hover:translate-x-0.5">
+                <ArrowRight size={16} strokeWidth={2.2} />
+              </span>
+            </Link>
 
-            <div className="mt-10 flex gap-8 border-t border-white/10 pt-6 text-[13px] text-slate-400">
-              <div>
-                <span className="text-[20px] font-extrabold text-white">60s</span> QR expiry
+            <div className="mt-10 flex items-center gap-3">
+              <div className="flex -space-x-2.5">
+                {['J', 'L', 'M'].map((letter) => (
+                  <div
+                    key={letter}
+                    className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-ink bg-white/10 text-[11px] font-bold text-white"
+                  >
+                    {letter}
+                  </div>
+                ))}
               </div>
-              <div>
-                <span className="text-[20px] font-extrabold text-white">48h</span> rating window
+              <div className="text-[13px] leading-snug text-slate-400">
+                <span className="font-extrabold text-white">3 barangays</span> in the pilot
+                <br />
+                Jaro · La Paz · Mandurriao
               </div>
             </div>
           </Reveal>
