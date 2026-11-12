@@ -1,5 +1,6 @@
 import { useQuery } from 'convex/react'
 import { Link } from 'react-router-dom'
+import { ScanLine } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
 
 export function InteractionsPage() {
@@ -16,7 +17,22 @@ export function InteractionsPage() {
 
       <div className="flex flex-1 flex-col gap-3 px-6 py-2">
         {rows === undefined && <div className="text-sm text-slate">Loading…</div>}
-        {rows?.length === 0 && <div className="text-sm text-slate">No interactions yet.</div>}
+        {rows?.length === 0 && (
+          <div className="flex flex-col items-center gap-3 px-4 pt-16 text-center">
+            <div className="neu-out flex h-14 w-14 items-center justify-center rounded-full">
+              <ScanLine size={22} strokeWidth={1.8} className="text-slate" />
+            </div>
+            <div>
+              <div className="text-[14px] font-bold text-ink">No interactions yet</div>
+              <p className="mt-1 max-w-[240px] text-[13px] leading-snug text-slate">
+                Scan someone&apos;s QR, or show them yours, to log your first confirmed meeting.
+              </p>
+            </div>
+            <Link to="/scan" className="mt-1 text-[13px] font-bold text-brand">
+              Scan a code →
+            </Link>
+          </div>
+        )}
 
         {rows?.map(({ interaction, other, myRating }) => (
           <div key={interaction._id} className="neu-out-sm flex items-center gap-3 rounded-2xl p-3.5">

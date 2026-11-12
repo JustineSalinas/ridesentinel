@@ -31,7 +31,7 @@ const AdminReportsPage = lazy(() =>
 const AdminAuditPage = lazy(() => import('@/features/admin/admin-audit-page').then((m) => ({ default: m.AdminAuditPage })))
 
 function AdminFallback() {
-  return <div className="flex flex-1 items-center justify-center bg-page text-sm text-slate">Loading…</div>
+  return <div className="flex min-h-dvh items-center justify-center bg-page text-sm text-slate">Loading…</div>
 }
 
 // Routing for docs/SPEC.md §7 — every screen is built. My QR/Scan/Scan
@@ -54,7 +54,7 @@ export const router = createBrowserRouter([
       {
         path: '/scan',
         element: (
-          <Suspense fallback={<div className="flex flex-1 items-center justify-center bg-ink text-slate-400">Loading…</div>}>
+          <Suspense fallback={<div className="flex min-h-dvh items-center justify-center bg-ink text-slate-400">Loading…</div>}>
             <ScanPage />
           </Suspense>
         ),

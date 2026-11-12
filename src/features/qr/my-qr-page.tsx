@@ -51,7 +51,7 @@ export function MyQrPage() {
 
   if (!me?.verified) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center gap-3 bg-ink p-8 text-center text-white">
+      <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-ink p-8 text-center text-white">
         <div className="text-[15px] font-bold">Get verified to show your QR</div>
         <Link to="/verify" className="text-[13px] font-bold text-brand">
           Verify →
@@ -61,7 +61,7 @@ export function MyQrPage() {
   }
 
   return (
-    <div className="relative flex flex-1 flex-col items-center justify-center gap-6 bg-ink px-6 text-white">
+    <div className="relative flex min-h-dvh flex-col items-center justify-center gap-6 bg-ink px-6 text-white">
       <Link to="/home" className="absolute left-6 top-6 text-[13px] font-semibold text-slate-400">
         ← Home
       </Link>

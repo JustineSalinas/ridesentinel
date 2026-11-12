@@ -78,7 +78,7 @@ export function ScanPage() {
   }, [])
 
   return (
-    <div className="flex flex-1 flex-col bg-ink text-white">
+    <div className="flex min-h-dvh flex-col bg-ink text-white">
       <div className="flex items-center justify-between px-6 py-5">
         <Link to="/home" className="font-mono text-[11px] font-bold tracking-wide text-slate-400">
           ← HOME

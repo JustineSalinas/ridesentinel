@@ -61,21 +61,22 @@ function PhoneMock({ kind }: { kind: 'qr' | 'confirm' | 'rate' }) {
         style={{ background: 'radial-gradient(closest-side, #2563EB, transparent)' }}
         aria-hidden="true"
       />
-      {/* Metallic frame */}
+      {/* Metallic frame — iPhone 17 Pro Max proportions: 440×956pt logical
+          display (6.9"), scaled down to 196×426px keeping the exact ratio */}
       <div
-        className="relative h-[340px] w-[188px] rounded-[40px] p-[3px] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.6)]"
+        className="relative h-[426px] w-[196px] rounded-[46px] p-[3px] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.6)]"
         style={{ background: 'linear-gradient(155deg, #3a3f4b 0%, #121419 45%, #050608 100%)' }}
       >
         {/* Side buttons */}
-        <div className="absolute -left-[2px] top-20 h-6 w-[3px] rounded-l-full bg-[#2a2d34]" />
-        <div className="absolute -left-[2px] top-32 h-10 w-[3px] rounded-l-full bg-[#2a2d34]" />
-        <div className="absolute -right-[2px] top-28 h-14 w-[3px] rounded-r-full bg-[#2a2d34]" />
+        <div className="absolute -left-[2px] top-24 h-7 w-[3px] rounded-l-full bg-[#2a2d34]" />
+        <div className="absolute -left-[2px] top-36 h-12 w-[3px] rounded-l-full bg-[#2a2d34]" />
+        <div className="absolute -right-[2px] top-32 h-16 w-[3px] rounded-r-full bg-[#2a2d34]" />
 
-        <div className="h-full w-full overflow-hidden rounded-[37px] bg-ink">
+        <div className="h-full w-full overflow-hidden rounded-[43px] bg-ink">
           {/* Status bar */}
-          <div className="relative flex items-center justify-between px-5 pt-2.5 text-[10px] font-semibold text-white/90">
+          <div className="relative flex items-center justify-between px-5 pt-3 text-[10px] font-semibold text-white/90">
             <span>9:41</span>
-            <div className="absolute left-1/2 top-1.5 h-[18px] w-[64px] -translate-x-1/2 rounded-full bg-black" />
+            <div className="absolute left-1/2 top-[7px] h-[20px] w-[70px] -translate-x-1/2 rounded-full bg-black" />
             <div className="flex items-center gap-1">
               <div className="flex gap-[1.5px]">
                 {[3, 5, 7, 9].map((h) => (

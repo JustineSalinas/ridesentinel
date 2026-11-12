@@ -110,15 +110,19 @@ export function HomePage() {
 
         {summary && (
           <Link to="/interactions" className="neu-out-sm flex items-center gap-3 rounded-2xl px-4 py-3.5">
-            <div className="flex -space-x-2">
-              {Array.from({ length: Math.min(3, Math.max(1, summary.confirmedMeetings)) }).map((_, i) => (
-                <div key={i} className="h-7 w-7 rounded-full border-2 border-paper bg-mist" />
-              ))}
-            </div>
+            {summary.confirmedMeetings > 0 ? (
+              <div className="flex -space-x-2">
+                {Array.from({ length: Math.min(3, summary.confirmedMeetings) }).map((_, i) => (
+                  <div key={i} className="h-7 w-7 rounded-full border-2 border-paper bg-mist" />
+                ))}
+              </div>
+            ) : (
+              <Users size={16} className="text-slate" />
+            )}
             <div className="flex-1">
               <div className="text-[13px] font-bold text-ink">Recent interactions</div>
               <div className="text-[11.5px] text-slate">
-                {summary.confirmedMeetings} confirmed so far
+                {summary.confirmedMeetings > 0 ? `${summary.confirmedMeetings} confirmed so far` : 'None yet'}
               </div>
             </div>
             <span className="text-[12px] font-semibold text-brand">See all →</span>
