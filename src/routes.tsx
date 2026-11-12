@@ -18,10 +18,21 @@ import { InteractionsPage } from '@/features/interactions/interactions-page'
 import { RatePage } from '@/features/ratings/rate-page'
 import { ReportPage } from '@/features/reports/report-page'
 import { ProfilePage } from '@/features/profile/profile-page'
-import { AdminHomePage } from '@/features/admin/admin-home-page'
-import { AdminVerificationsPage } from '@/features/admin/admin-verifications-page'
-import { AdminReportsPage } from '@/features/admin/admin-reports-page'
-import { AdminAuditPage } from '@/features/admin/admin-audit-page'
+
+// Admin surfaces are only ever reached by admins — lazy-load the whole
+// section so riders never pay for it in their first-load bundle.
+const AdminHomePage = lazy(() => import('@/features/admin/admin-home-page').then((m) => ({ default: m.AdminHomePage })))
+const AdminVerificationsPage = lazy(() =>
+  import('@/features/admin/admin-verifications-page').then((m) => ({ default: m.AdminVerificationsPage })),
+)
+const AdminReportsPage = lazy(() =>
+  import('@/features/admin/admin-reports-page').then((m) => ({ default: m.AdminReportsPage })),
+)
+const AdminAuditPage = lazy(() => import('@/features/admin/admin-audit-page').then((m) => ({ default: m.AdminAuditPage })))
+
+function AdminFallback() {
+  return <div className="flex flex-1 items-center justify-center bg-page text-sm text-slate">Loading…</div>
+}
 
 // Routing for docs/SPEC.md §7 — every screen is built. My QR/Scan/Scan
 // Result/Rate/Report live outside AppShell: they're full-screen flows with
@@ -64,10 +75,38 @@ export const router = createBrowserRouter([
   {
     element: <RequireAdmin />,
     children: [
-      { path: '/admin', element: <AdminHomePage /> },
-      { path: '/admin/verifications', element: <AdminVerificationsPage /> },
-      { path: '/admin/reports', element: <AdminReportsPage /> },
-      { path: '/admin/audit', element: <AdminAuditPage /> },
+      {
+        path: '/admin',
+        element: (
+          <Suspense fallback={<AdminFallback />}>
+            <AdminHomePage />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/admin/verifications',
+        element: (
+          <Suspense fallback={<AdminFallback />}>
+            <AdminVerificationsPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/admin/reports',
+        element: (
+          <Suspense fallback={<AdminFallback />}>
+            <AdminReportsPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/admin/audit',
+        element: (
+          <Suspense fallback={<AdminFallback />}>
+            <AdminAuditPage />
+          </Suspense>
+        ),
+      },
     ],
   },
 

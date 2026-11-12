@@ -6,7 +6,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { Shield, QrCode, UserCheck } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
 import { cn } from '@/lib/utils'
-import { buttonVariants } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button-variants'
 
 type Tab = 'login' | 'register'
 

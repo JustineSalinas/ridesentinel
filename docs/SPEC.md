@@ -584,7 +584,7 @@ Surveys (SUS, TAM, confidence before/after, ISO 25010 checklist) are external (G
 2. Final wording of terms of use / community guidelines (adviser review).
 3. Real admin accounts (≥ 2 named administrators) and who owns the Supabase and Vercel accounts (planned under the Project Manager).
 4. Whether NPC registration applies at pilot scale (paper says to confirm with the adviser).
-5. Branding: app name/logo/colors (use a neutral blue theme until provided).
+5. ~~Branding: app name/logo/colors~~ — **Resolved 2026-11-12**: app name is RideSentinel, palette is the existing blue (`#2563EB`/`#1D4ED8`, a clean confident blue in the spirit of Grab's app), logo is the shield+check mark already used across Auth/Landing/PWA icons. Final wordmark/logo artwork from a designer would still be a welcome upgrade, but nothing is blocked on it.
 
 ---
 
