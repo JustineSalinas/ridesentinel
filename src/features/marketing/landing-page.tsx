@@ -1,464 +1,441 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { Shield, QrCode, UserCheck, Star, Plus, ArrowRight } from 'lucide-react'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { ArrowRight, Check, Lock, Plus, ShieldAlert } from 'lucide-react'
+import { BrandMark } from '@/components/brand-mark'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { cn } from '@/lib/utils'
-import { useReveal } from '@/hooks/use-reveal'
 import { DemoQuickAccess } from './demo-quick-access'
-
-const RULES = [
-  {
-    stat: '60s',
-    title: 'QR codes expire',
-    body: 'Every code is one-time and dies in a minute. A screenshot is useless.',
-  },
-  {
-    stat: '2/2',
-    title: 'Ratings need a confirmed meeting',
-    body: 'Both people have to confirm, in person, before either can rate the other.',
-  },
-  {
-    stat: '0',
-    title: 'The server decides what’s true',
-    body: 'Tier, verification, and ratings are never decided by your phone — client input is zero.',
-  },
-]
+import { HandshakePreview } from './handshake-preview'
 
 const STEPS = [
-  ['01', 'Get ID-verified', 'Submit an ID photo and a selfie. An admin reviews it — usually within a day.'],
-  ['02', 'Show or scan a QR', 'At pickup, one of you shows a rotating code, the other scans it.'],
-  ['03', 'Both confirm', 'You each see the other’s photo and tap “this is the person.”'],
-  ['04', 'Rate within 48h', 'Ratings stay hidden until you both rate, or the window closes.'],
+  {
+    moment: 'Before pickup',
+    title: 'Get ID-verified',
+    body: 'Upload a government or school ID and a selfie. An admin reviews it manually, usually within 24 hours.',
+  },
+  {
+    moment: 'At the curb',
+    title: 'Show or scan a 60s QR',
+    body: 'One rider displays a rotating single-use code and the other scans it with their camera.',
+  },
+  {
+    moment: 'Face-to-face',
+    title: 'Confirm the person',
+    body: 'Both riders check the verified photo on screen and tap to confirm they are meeting the right rider.',
+  },
+  {
+    moment: 'Within 48 hours',
+    title: 'Rate blindly',
+    body: 'Leave a rating after the ride. Scores stay locked until both submit or the 48-hour window closes.',
+  },
 ] as const
 
-const FEATURE_ROWS = [
-  {
-    tag: 'Verify',
-    title: 'A code that expires before it can be screenshotted',
-    body: 'Every QR is single-use and dies in 60 seconds. There is nothing to forward, save, or reuse — only a live code the server just issued.',
-    mock: 'qr' as const,
-  },
-  {
-    tag: 'Confirm',
-    title: 'See a photo before you get on the bike',
-    body: 'Scanning pulls up the other rider’s verified photo, name, and rating. You both tap confirm, in person, before anything counts.',
-    mock: 'confirm' as const,
-  },
-  {
-    tag: 'Rate',
-    title: 'Ratings that can’t be gamed by whoever rates first',
-    body: 'Scores stay hidden until both of you rate each other, or 48 hours pass. No reason to rush, no reason to retaliate.',
-    mock: 'rate' as const,
-  },
-]
-
-function PhoneMock({ kind }: { kind: 'qr' | 'confirm' | 'rate' }) {
-  return (
-    <div className="relative">
-      {/* Ambient brand-tinted glow grounding the device */}
-      <div
-        className="pointer-events-none absolute inset-x-6 bottom-0 h-16 rounded-full opacity-50 blur-2xl"
-        style={{ background: 'radial-gradient(closest-side, #2563EB, transparent)' }}
-        aria-hidden="true"
-      />
-      {/* Metallic frame — iPhone 17 Pro Max proportions: 440×956pt logical
-          display (6.9"), scaled down to 196×426px keeping the exact ratio */}
-      <div
-        className="relative h-[426px] w-[196px] rounded-[46px] p-[3px] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.6)]"
-        style={{ background: 'linear-gradient(155deg, #3a3f4b 0%, #121419 45%, #050608 100%)' }}
-      >
-        {/* Side buttons */}
-        <div className="absolute -left-[2px] top-24 h-7 w-[3px] rounded-l-full bg-[#2a2d34]" />
-        <div className="absolute -left-[2px] top-36 h-12 w-[3px] rounded-l-full bg-[#2a2d34]" />
-        <div className="absolute -right-[2px] top-32 h-16 w-[3px] rounded-r-full bg-[#2a2d34]" />
-
-        <div className="h-full w-full overflow-hidden rounded-[43px] bg-ink">
-          {/* Status bar */}
-          <div className="relative flex items-center justify-between px-5 pt-3 text-[10px] font-semibold text-white/90">
-            <span>9:41</span>
-            <div className="absolute left-1/2 top-[7px] h-[20px] w-[70px] -translate-x-1/2 rounded-full bg-black" />
-            <div className="flex items-center gap-1">
-              <div className="flex gap-[1.5px]">
-                {[3, 5, 7, 9].map((h) => (
-                  <span key={h} className="w-[2.5px] rounded-sm bg-white/90" style={{ height: h }} />
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex h-[calc(100%-32px)] flex-col items-center justify-center gap-2.5 bg-page px-4">
-            {kind === 'qr' && (
-              <>
-                <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-ink shadow-[inset_0_0_0_1px_rgba(255,255,255,0.06)]">
-                  <QrCode size={46} strokeWidth={1.5} className="text-white" />
-                </div>
-                <div className="rounded-full bg-paper px-2.5 py-1 text-[9px] font-bold text-slate shadow-[0_1px_3px_rgba(15,23,42,0.12)]">
-                  Refreshes in 42s
-                </div>
-              </>
-            )}
-            {kind === 'confirm' && (
-              <>
-                <div className="h-16 w-16 rounded-full bg-mist shadow-[0_2px_8px_rgba(15,23,42,0.1)]" />
-                <div className="text-[11px] font-bold text-ink">Marco D.</div>
-                <div className="flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[9px] font-bold text-verified">
-                  <UserCheck size={10} strokeWidth={2.2} />
-                  ID-verified
-                </div>
-                <div className="mt-1 w-full rounded-xl bg-brand py-2 text-center text-[9px] font-bold text-white shadow-[0_4px_12px_rgba(37,99,235,0.4)]">
-                  This is the person
-                </div>
-              </>
-            )}
-            {kind === 'rate' && (
-              <>
-                <div className="text-[10.5px] font-bold text-ink">How was the ride?</div>
-                <div className="flex gap-0.5">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} size={14} className="text-pending" fill={i < 4 ? '#D97706' : 'none'} />
-                  ))}
-                </div>
-                <div className="mt-1 w-full rounded-xl bg-paper py-2 text-center text-[9px] text-slate shadow-[0_1px_3px_rgba(15,23,42,0.12)]">
-                  Hidden until you both rate
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-const MANIFESTO = [
-  "Arranging a ride over a group chat means showing up to meet someone you've never actually seen.",
-  "A verified name and a photo you can check against the person in front of you fixes that. Not a background check — just confirmation that who shows up is who said they would.",
-  'We built RideSentinel so a community can vouch for itself, one confirmed meeting at a time.',
-]
+const PRIVACY_FACTS = [
+  'No ID numbers extracted or stored (zero OCR)',
+  'ID photos and selfies auto-purged 30 days after review',
+  'No GPS tracking, trip logging, or ride payments',
+] as const
 
 const FAQ = [
   [
     'Is this a ride-hailing app?',
-    "No. There's no matching, booking, pricing, or payment. You still arrange the ride yourselves — this just confirms who you're meeting.",
+    "No. There's no matching, booking, pricing, or payment. You still arrange the ride yourselves — RideSentinel only confirms who you're meeting at pickup.",
   ],
   [
     'What happens to my ID photo?',
-    "Nothing is read from it automatically — a human administrator reviews it. It's deleted 30 days after that review either way.",
+    'Nothing is read from it automatically — a human administrator reviews it to verify your account, and the image is deleted 30 days after that decision either way.',
   ],
   [
     "What if the person doesn't match their photo?",
-    'Cancel on the spot and report it. No meeting gets counted, and the report goes straight to an administrator.',
+    'Tap "Not the same person" or cancel on the spot and file a report. No meeting gets counted, and the report goes straight to an administrator.',
   ],
   [
     'Who sees my rating?',
-    "Nobody, until you both rate each other or 48 hours pass — whichever comes first. You can't see theirs just by rating fast.",
+    "Nobody, until you both rate each other or 48 hours pass — whichever comes first. You can't see theirs by submitting yours early.",
   ],
   [
     'Can I delete my account?',
-    'Yes, anytime, from your profile. Past ratings stay as anonymous numbers so they don’t get deleted, so other people’s scores stay accurate.',
+    'Yes, anytime from your profile. Your personal data is removed while past ratings remain anonymized so other riders’ scores stay accurate.',
   ],
 ] as const
 
-function Reveal({
-  as: Tag = 'div',
-  delay,
-  className,
-  children,
-}: {
-  as?: 'div' | 'p'
-  delay?: number
-  className?: string
-  children: React.ReactNode
-}) {
-  const { ref, motionProps } = useReveal({ delay })
-  const MotionTag = Tag === 'p' ? motion.p : motion.div
-  return (
-    <MotionTag ref={ref as never} className={className} {...motionProps}>
-      {children}
-    </MotionTag>
-  )
-}
-
 export function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0)
+  const reduceMotion = useReducedMotion()
 
   return (
-    <div className="min-h-dvh bg-ink text-white">
-      {/* Nav — sticky, layered depth instead of a flat line */}
-      <nav className="sticky top-0 z-20 border-b border-white/[0.08] bg-ink/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4 md:px-10">
-          <div className="flex items-center gap-2.5">
-            <div className="neu-brand flex h-8 w-8 items-center justify-center rounded-xl">
-              <Shield size={16} strokeWidth={2.2} className="text-white" fill="#FFFFFF" />
-            </div>
-            <span className="text-[14.5px] font-extrabold tracking-tight">RideSentinel</span>
-          </div>
-          <div className="hidden items-center gap-8 text-[13px] font-semibold text-slate-300 md:flex">
+    <div className="min-h-dvh bg-ink font-marketing text-white">
+      {/* Top navigation */}
+      <header className="sticky top-0 z-20 border-b border-white/10 bg-ink/95 backdrop-blur-md">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5 md:px-10">
+          <Link to="/" aria-label="RideSentinel home">
+            <BrandMark showPilotTag />
+          </Link>
+
+          <nav className="hidden items-center gap-7 text-[13.5px] font-semibold text-slate-300 md:flex">
             <a href="#how-it-works" className="transition-colors hover:text-white">
               How it works
+            </a>
+            <a href="#rules" className="transition-colors hover:text-white">
+              The rules
             </a>
             <a href="#faq" className="transition-colors hover:text-white">
               FAQ
             </a>
-          </div>
-          <div className="flex items-center gap-5">
+          </nav>
+
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <Link
               to="/login"
-              className="hidden text-[13px] font-semibold text-white transition-colors hover:text-slate-300 md:block"
+              className="whitespace-nowrap px-2 py-1.5 text-[13.5px] font-semibold text-slate-200 transition-colors hover:text-white sm:px-3"
             >
               Log in
             </Link>
             <Link
               to="/register"
-              className={cn(
-                buttonVariants({ variant: 'heroPrimary', size: 'pill' }),
-                'shadow-[0_4px_16px_rgba(37,99,235,0.35)] transition-transform hover:scale-[1.03]',
-              )}
+              className="inline-flex h-9 shrink-0 items-center justify-center whitespace-nowrap rounded-lg bg-brand px-3.5 text-[13.5px] font-bold text-white transition-colors hover:bg-brand-dark sm:px-4"
             >
               Register
             </Link>
           </div>
         </div>
-      </nav>
+      </header>
 
-      {/* Hero — asymmetric two-column, no decoration */}
-      <div className="px-5 py-14 md:px-10 md:py-24">
-        <div className="mx-auto grid max-w-6xl items-center gap-12 md:grid-cols-[1.1fr_0.9fr] md:gap-16">
-          <Reveal>
-            <div className="text-[12px] font-bold uppercase tracking-[0.14em] text-pending">
-              Pilot · Iloilo City
-            </div>
-            <h1 className="mt-4 text-[42px] font-extrabold leading-[1.05] tracking-tight text-white md:text-[56px]">
-              Know who you&apos;re meeting
-              <br />
-              before you ride.
-            </h1>
-            <p className="mt-5 max-w-[420px] text-[15px] leading-snug text-slate-400 md:text-[17px]">
-              A motorcycle ride is arranged in a chat. RideSentinel confirms, with a verified photo and a
-              live QR handshake, that the person who shows up is actually them.
-            </p>
-
-            <Link
-              to="/register"
-              className={cn(
-                buttonVariants({ variant: 'heroPrimary', size: 'lg' }),
-                'group mt-8 w-fit justify-between gap-6 pl-7 pr-2',
-              )}
-            >
-              Register
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 transition-transform group-hover:translate-x-0.5">
-                <ArrowRight size={16} strokeWidth={2.2} />
-              </span>
-            </Link>
-
-            <div className="mt-10 flex items-center gap-3">
-              <div className="flex -space-x-2.5">
-                {['J', 'L', 'M'].map((letter) => (
-                  <div
-                    key={letter}
-                    className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-ink bg-white/10 text-[11px] font-bold text-white"
-                  >
-                    {letter}
-                  </div>
-                ))}
-              </div>
-              <div className="text-[13px] leading-snug text-slate-400">
-                <span className="font-extrabold text-white">3 barangays</span> in the pilot
-                <br />
-                Jaro · La Paz · Mandurriao
-              </div>
-            </div>
-          </Reveal>
-
-          <Reveal delay={0.1} className="flex justify-center md:justify-end">
-            <PhoneMock kind="confirm" />
-          </Reveal>
-        </div>
-      </div>
-
-      {/* Rules — a specs strip, not an icon grid */}
-      <div className="border-t border-white/10 bg-ink px-7 py-10 md:px-16 md:py-14">
+      {/* First viewport — Curbside Signal opening */}
+      <section className="border-b border-white/10 bg-ink px-5 pb-14 pt-10 md:px-10 md:pb-20 md:pt-14">
         <div className="mx-auto max-w-6xl">
-          <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-slate-500">
-            Three rules, no exceptions
-          </div>
-          <div className="mt-6 grid grid-cols-1 divide-y divide-white/10 md:grid-cols-3 md:divide-x md:divide-y-0">
-            {RULES.map((r, i) => (
-              <Reveal key={r.title} delay={i * 0.05} className="flex flex-col gap-2 py-5 first:pt-0 md:px-8 md:py-0 md:first:pl-0 md:last:pr-0">
-                <span className="font-mono text-[28px] font-extrabold text-brand">{r.stat}</span>
-                <div className="text-[15px] font-bold text-white">{r.title}</div>
-                <div className="text-[13px] leading-snug text-slate-400">{r.body}</div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Feature rows — alternating mock + copy, on the paper sheet */}
-      <div className="rounded-t-[28px] bg-paper px-7 pb-4 pt-12 text-ink md:px-16 md:pt-20">
-        <div className="mx-auto flex max-w-5xl flex-col gap-16 md:gap-24">
-          {FEATURE_ROWS.map((row, i) => (
-            <Reveal
-              key={row.tag}
-              className={`flex flex-col items-center gap-6 md:gap-16 ${i % 2 === 1 ? 'md:flex-row-reverse' : 'md:flex-row'}`}
-            >
-              <div className="flex-1">
-                <PhoneMock kind={row.mock} />
+          <motion.div
+            initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, ease: 'easeOut' }}
+            className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between"
+          >
+            <div className="max-w-3xl">
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-3.5 py-1 font-mono text-xs font-semibold uppercase tracking-wider text-slate-200">
+                <span className="h-2 w-2 rounded-full bg-green-400" aria-hidden="true" />
+                Iloilo Pilot · Jaro · La Paz · Mandurriao
               </div>
-              <div className="flex-1 text-center md:text-left">
-                <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-brand">
-                  {row.tag}
+
+              <h1 className="font-display mt-5 text-[40px] font-extrabold leading-[1.01] tracking-[-0.03em] text-white sm:text-[52px] lg:text-[62px]">
+                Know who you&apos;re meeting before you ride.
+              </h1>
+            </div>
+
+            <div className="flex max-w-md flex-col gap-5 lg:pb-1">
+              <p className="text-[15.5px] leading-relaxed text-slate-300">
+                Informal motorcycle rides get arranged in group chats, leaving both people guessing at
+                pickup. RideSentinel verifies both riders with a photo ID check, a 60-second QR handshake,
+                and blind ratings.
+              </p>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <Link
+                  to="/register"
+                  className={cn(
+                    buttonVariants({ variant: 'primary', size: 'lg' }),
+                    'rounded-xl px-6 shadow-sm',
+                  )}
+                >
+                  Register for the pilot
+                  <ArrowRight size={16} strokeWidth={2.2} />
+                </Link>
+                <Link
+                  to="/login"
+                  className="inline-flex h-[52px] items-center justify-center rounded-xl border border-white/15 bg-white/[0.04] px-5 text-[14.5px] font-bold text-white transition-colors hover:border-white/25 hover:bg-white/[0.08]"
+                >
+                  Log in
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Unified Curbside Signal Deck — flat signal-blue field + interactive live handshake */}
+          <div className="mt-10 grid overflow-hidden rounded-2xl border border-white/15 bg-[#0B1120] lg:mt-12 lg:grid-cols-[0.88fr_1.12fr]">
+            <div className="flex flex-col justify-between bg-brand p-6 text-white sm:p-8 lg:p-10">
+              <div>
+                <div className="font-mono text-xs font-bold uppercase tracking-wider text-blue-50">
+                  Pickup handshake protocol
                 </div>
-                <h3 className="mt-2 text-[20px] font-extrabold leading-snug md:text-[28px]">{row.title}</h3>
-                <p className="mt-2 text-[14px] leading-relaxed text-slate md:max-w-[420px] md:text-[16px]">
-                  {row.body}
+                <h2 className="font-display mt-3 text-[26px] font-bold leading-[1.12] tracking-tight text-white sm:text-[30px]">
+                  Two phones, one live token, zero guesswork at the curb.
+                </h2>
+                <p className="mt-3 max-w-md text-[14.5px] leading-relaxed text-blue-50">
+                  Test the three live screens on the right — every check runs against server state, never
+                  screenshots or client claims.
                 </p>
               </div>
-            </Reveal>
-          ))}
-        </div>
-      </div>
 
-      {/* How it works — on the paper sheet, Operate-style, same as the rest of the app */}
-      <div id="how-it-works" className="bg-paper px-7 pb-16 pt-10 text-ink md:px-16 md:pb-24 md:pt-20">
-        <div className="mx-auto max-w-6xl">
-          <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-slate-400">
-            How it works
-          </div>
-          <div className="mt-5 grid grid-cols-1 md:grid-cols-2 md:gap-x-12">
-            {STEPS.map(([num, title, body]) => (
-              <div key={num} className="flex gap-4 border-b border-mist py-4 last:border-0">
-                <span className="font-mono text-[13px] font-bold text-slate-400">{num}</span>
-                <div>
-                  <div className="text-[15px] font-bold">{title}</div>
-                  <div className="mt-0.5 text-[13px] leading-snug text-slate">{body}</div>
+              <dl className="mt-8 grid grid-cols-3 divide-x divide-white/25 border-t border-white/25 pt-6 tabular-nums">
+                <div className="pr-3">
+                  <dt className="font-mono text-[24px] font-bold leading-none text-white sm:text-[28px]">
+                    60s
+                  </dt>
+                  <dd className="mt-1.5 text-xs leading-snug text-blue-50">Single-use QR expiry</dd>
                 </div>
-              </div>
+                <div className="px-3">
+                  <dt className="font-mono text-[24px] font-bold leading-none text-white sm:text-[28px]">
+                    2/2
+                  </dt>
+                  <dd className="mt-1.5 text-xs leading-snug text-blue-50">Mutual face confirm</dd>
+                </div>
+                <div className="pl-3">
+                  <dt className="font-mono text-[24px] font-bold leading-none text-white sm:text-[28px]">
+                    48h
+                  </dt>
+                  <dd className="mt-1.5 text-xs leading-snug text-blue-50">Blind rating lock</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div className="flex items-center justify-center border-t border-white/15 bg-[#0B1120] lg:border-l lg:border-t-0">
+              <HandshakePreview embedded />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Band 1: Unbroken horizontal 4-step pickup sequence */}
+      <section id="how-it-works" className="border-b border-mist bg-paper px-5 py-14 text-ink md:px-10 md:py-20">
+        <div className="mx-auto max-w-6xl">
+          <div className="flex flex-col justify-between gap-3 md:flex-row md:items-end">
+            <h2 className="font-display text-[28px] font-bold tracking-tight text-ink md:text-[34px]">
+              How pickup verification works.
+            </h2>
+            <p className="max-w-sm text-[14px] leading-snug text-slate">
+              Same workflow whether you drive or ride as a passenger — both sides confirm before a ride
+              counts.
+            </p>
+          </div>
+
+          <ol className="mt-8 grid grid-cols-1 divide-y divide-mist border-y border-mist sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x">
+            {STEPS.map((step, index) => (
+              <li
+                key={step.title}
+                className={cn(
+                  'py-6 sm:px-5 lg:py-7 lg:first:pl-0 lg:last:pr-0',
+                  index < 2 && 'sm:border-b sm:border-mist lg:border-b-0',
+                  index % 2 === 0 && 'sm:border-r sm:border-mist sm:pl-0 lg:border-r-0 lg:pl-5',
+                  index % 2 === 1 && 'sm:pr-0 lg:pr-5',
+                )}
+              >
+                <div className="font-mono text-xs font-semibold text-brand">{step.moment}</div>
+                <h3 className="font-display mt-2 text-[18px] font-bold tracking-tight text-ink">
+                  {step.title}
+                </h3>
+                <p className="mt-2 text-[14px] leading-relaxed text-slate">{step.body}</p>
+              </li>
             ))}
-          </div>
+          </ol>
 
-          <div className="mt-8 max-w-3xl rounded-xl bg-mist px-4 py-3 text-[12.5px] leading-snug text-slate">
-            This isn&apos;t a ride-hailing app. There&apos;s no matching, booking, or payment &mdash; you
-            still arrange rides yourselves. &ldquo;ID-verified&rdquo; means an administrator checked a
-            government or school ID. It is not a safety guarantee.
-          </div>
-
-          <Link to="/register" className="mt-6 inline-flex items-center gap-1 text-[12px] font-bold text-brand-dark">
-            Register <ArrowRight size={14} strokeWidth={2.2} />
-          </Link>
-        </div>
-      </div>
-
-      {/* Manifesto */}
-      <div className="bg-paper px-7 py-14 text-ink md:px-16 md:py-24">
-        <div className="mx-auto flex max-w-3xl flex-col gap-8">
-          <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-slate-400">
-            Why RideSentinel
-          </div>
-          {MANIFESTO.map((line, i) => (
-            <Reveal
-              as="p"
-              key={line}
-              delay={i * 0.05}
-              className={
-                i === MANIFESTO.length - 1
-                  ? 'text-[20px] font-bold leading-snug md:text-[26px]'
-                  : 'text-[16px] leading-relaxed text-slate md:text-[19px]'
-              }
+          {/* Honest scope boundary notice */}
+          <div className="mt-8 flex flex-col gap-3 rounded-xl border border-mist bg-page px-5 py-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-start gap-3">
+              <ShieldAlert size={18} className="mt-0.5 flex-shrink-0 text-amber-700" />
+              <p className="max-w-[70ch] text-[13.5px] leading-snug text-slate">
+                <strong className="font-bold text-ink">Not a ride-hailing app.</strong> There is no
+                matching, booking, GPS tracking, or payment — you still arrange rides yourselves.
+                &ldquo;ID-verified&rdquo; means an admin checked a government or school ID; it is not a
+                background check or safety guarantee.
+              </p>
+            </div>
+            <Link
+              to="/consent"
+              className="inline-flex flex-shrink-0 items-center gap-1 text-[13.5px] font-bold text-brand hover:text-brand-dark"
             >
-              {line}
-            </Reveal>
-          ))}
-        </div>
-      </div>
-
-      {/* FAQ */}
-      <div id="faq" className="border-t border-mist bg-paper px-7 py-14 text-ink md:px-16 md:py-24">
-        <div className="mx-auto max-w-3xl">
-          <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-slate-400">
-            Questions
+              Privacy &amp; Terms <ArrowRight size={13} />
+            </Link>
           </div>
-          <div className="mt-5 flex flex-col">
+        </div>
+      </section>
+
+      {/* Band 2: Specification Ledger — Server-enforced rules + privacy posture */}
+      <section id="rules" className="border-b border-mist bg-page px-5 py-14 text-ink md:px-10 md:py-20">
+        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
+          <div className="flex flex-col justify-between">
+            <div>
+              <h2 className="font-display text-[28px] font-bold leading-tight tracking-tight text-ink md:text-[34px]">
+                Chat groups don&apos;t verify faces. Screenshots don&apos;t prove presence.
+              </h2>
+              <p className="mt-4 text-[15px] leading-relaxed text-slate">
+                Arranging a ride over a group chat means showing up to meet someone you have never seen. A
+                verified name and a photo you can compare in person fixes that — and tying ratings to a
+                live QR scan keeps scores grounded in real trips.
+              </p>
+            </div>
+
+            <div className="mt-8 border-t border-mist pt-6">
+              <div className="text-[13.5px] font-bold text-ink">Data minimization by default</div>
+              <ul className="mt-3 space-y-2.5">
+                {PRIVACY_FACTS.map((fact) => (
+                  <li key={fact} className="flex items-start gap-2.5 text-[14px] text-ink">
+                    <span className="mt-0.5 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-green-100 text-green-800">
+                      <Check size={11} strokeWidth={2.6} />
+                    </span>
+                    <span>{fact}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Three server rules — clean specification ledger rows instead of card sprawl */}
+          <div className="divide-y divide-mist border-y border-mist bg-paper px-6">
+            <div className="py-6">
+              <div className="flex items-center justify-between gap-4">
+                <span className="font-mono text-xs font-bold text-brand">Rule 01 · Token expiry</span>
+                <span className="shrink-0 whitespace-nowrap rounded-md bg-page px-2.5 py-0.5 font-mono text-xs font-bold text-ink">
+                  TTL = 60s
+                </span>
+              </div>
+              <h3 className="font-display mt-2 text-[18px] font-bold text-ink">
+                QR codes expire and cannot be replayed
+              </h3>
+              <p className="mt-1.5 text-[14px] leading-relaxed text-slate">
+                Every nonce is single-use and rotates automatically before it expires. Forwarding a
+                screenshot from earlier in the day fails server validation.
+              </p>
+            </div>
+
+            <div className="py-6">
+              <div className="flex items-center justify-between gap-4">
+                <span className="font-mono text-xs font-bold text-brand">Rule 02 · Handshake gate</span>
+                <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-md bg-green-100 px-2.5 py-0.5 font-mono text-xs font-bold text-green-800">
+                  <Lock size={11} />
+                  2 / 2 confirm
+                </span>
+              </div>
+              <h3 className="font-display mt-2 text-[18px] font-bold text-ink">
+                No rating without a mutually confirmed meeting
+              </h3>
+              <p className="mt-1.5 text-[14px] leading-relaxed text-slate">
+                The scanner confirms first, then the QR holder receives a live prompt to confirm. Ratings
+                stay sealed until both rate or 48 hours elapse, preventing retaliatory scoring.
+              </p>
+            </div>
+
+            <div className="py-6">
+              <div className="flex items-center justify-between gap-4">
+                <span className="font-mono text-xs font-bold text-brand">Rule 03 · Server authority</span>
+                <span className="shrink-0 whitespace-nowrap rounded-md bg-page px-2.5 py-0.5 font-mono text-xs font-bold text-ink">
+                  Client trust = 0
+                </span>
+              </div>
+              <h3 className="font-display mt-2 text-[18px] font-bold text-ink">
+                The server decides tier, badge, and rating visibility
+              </h3>
+              <p className="mt-1.5 text-[14px] leading-relaxed text-slate">
+                Verification status, daily interaction caps, and score reveal logic run strictly inside
+                authenticated backend functions with an immutable admin audit log.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Band 3: FAQ */}
+      <section id="faq" className="bg-paper px-5 py-14 text-ink md:px-10 md:py-20">
+        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.75fr_1.25fr] lg:gap-16">
+          <div>
+            <h2 className="font-display text-[28px] font-bold tracking-tight text-ink md:text-[32px]">
+              Straight answers before you join.
+            </h2>
+            <p className="mt-3 text-[14.5px] leading-relaxed text-slate">
+              Pilot scope covers commuters and motorcycle riders around Jaro, La Paz, and Mandurriao in
+              Iloilo City.
+            </p>
+          </div>
+
+          <div className="divide-y divide-mist border-y border-mist">
             {FAQ.map(([q, a], i) => {
               const open = openFaq === i
               return (
-                <div key={q} className="border-b border-mist py-4 last:border-0">
+                <div key={q} className="py-4">
                   <button
+                    type="button"
                     onClick={() => setOpenFaq(open ? null : i)}
-                    className="flex w-full items-center justify-between text-left"
+                    className="flex w-full items-center justify-between gap-4 text-left"
                     aria-expanded={open}
                   >
-                    <span className="text-[15px] font-bold md:text-[17px]">{q}</span>
+                    <span className="text-[15.5px] font-bold text-ink md:text-[16.5px]">{q}</span>
                     <Plus
                       size={18}
-                      className={cn('flex-shrink-0 text-slate-400 transition-transform', open && 'rotate-45')}
+                      className={cn(
+                        'flex-shrink-0 text-slate transition-transform duration-200',
+                        open && 'rotate-45 text-ink',
+                      )}
                     />
                   </button>
-                  {open && (
-                    <motion.p
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      transition={{ duration: 0.18 }}
-                      className="mt-2 text-[13.5px] leading-snug text-slate md:text-[15px]"
-                    >
-                      {a}
-                    </motion.p>
-                  )}
+                  <AnimatePresence initial={false}>
+                    {open && (
+                      <motion.p
+                        initial={reduceMotion ? false : { opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={reduceMotion ? undefined : { opacity: 0, height: 0 }}
+                        transition={{ duration: 0.18 }}
+                        className="overflow-hidden pt-2 text-[14.5px] leading-relaxed text-slate"
+                      >
+                        {a}
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
                 </div>
               )
             })}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Closing CTA */}
-      <div className="bg-ink px-7 py-16 text-center text-white md:px-16 md:py-24">
-        <div className="mx-auto max-w-2xl">
-          <h2 className="text-[26px] font-extrabold leading-tight md:text-[36px]">
-            Know who you&apos;re meeting.
-          </h2>
-          <p className="mt-2 text-[14px] text-slate-400 md:text-[16px]">
-            Takes a day to verify. Takes a minute to confirm.
-          </p>
-          <div className="mx-auto mt-7 flex max-w-sm flex-col gap-2.5 md:max-w-none md:flex-row">
+      {/* Closing bar */}
+      <section className="border-t border-white/10 bg-ink px-5 py-12 text-white md:px-10 md:py-16">
+        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+          <div>
+            <h2 className="font-display text-[26px] font-bold tracking-tight md:text-[32px]">
+              Takes a day to verify. Takes a minute at pickup.
+            </h2>
+            <p className="mt-1.5 text-[14.5px] text-slate-300">
+              Create your pilot account now or sign in to view your verification status.
+            </p>
+          </div>
+          <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:flex-row">
             <Link
               to="/register"
-              className={cn(buttonVariants({ variant: 'heroPrimary', size: 'lg' }), 'md:flex-1')}
+              className={cn(buttonVariants({ variant: 'primary', size: 'lg' }), 'rounded-xl px-6')}
             >
               Register
+              <ArrowRight size={16} />
             </Link>
             <Link
               to="/login"
-              className={cn(buttonVariants({ variant: 'heroOutline', size: 'lg' }), 'md:flex-1')}
+              className="inline-flex h-[52px] items-center justify-center rounded-xl border border-white/15 bg-white/[0.04] px-6 text-[14.5px] font-bold text-white transition-colors hover:border-white/25 hover:bg-white/[0.08]"
             >
               Log in
             </Link>
           </div>
         </div>
-      </div>
+      </section>
 
       <DemoQuickAccess />
 
       {/* Footer */}
-      <div className="border-t border-white/10 bg-ink px-7 py-10 text-slate-500 md:px-16">
+      <footer className="border-t border-white/10 bg-[#0B1120] px-5 py-8 text-slate-300 md:px-10">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex flex-wrap gap-x-5 gap-y-2 text-[12.5px] font-semibold">
-            <Link to="/consent" className="hover:text-white">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] font-semibold">
+            <Link to="/consent" className="transition-colors hover:text-white">
               Privacy &amp; Terms
             </Link>
-            <Link to="/report" className="hover:text-white">
+            <Link to="/report" className="transition-colors hover:text-white">
               Report something
             </Link>
-            <Link to="/admin" className="hover:text-white">
+            <Link to="/admin" className="transition-colors hover:text-white">
               Admin
             </Link>
           </div>
-          <div className="font-mono text-[11px]">
+          <div className="font-mono text-xs text-slate-300">
             RideSentinel · Pilot — Jaro / La Paz / Mandurriao, Iloilo City
           </div>
         </div>
-      </div>
+      </footer>
     </div>
   )
 }

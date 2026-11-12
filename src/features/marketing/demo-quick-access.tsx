@@ -13,19 +13,19 @@ const ROLES = [
 
 export function DemoQuickAccess() {
   return (
-    <div className="border-t border-white/10 bg-ink px-7 py-8 md:px-16">
+    <div className="border-t border-white/10 bg-[#0B1120] px-6 py-5 md:px-10">
       <div className="mx-auto flex max-w-6xl flex-col items-center gap-3 md:flex-row md:justify-between">
-        <div className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
-          Pilot demo — quick access
+        <div className="font-mono text-xs font-bold uppercase tracking-widest text-slate-300">
+          Pilot demo · quick login
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap justify-center gap-2">
           {ROLES.map(({ label, email, icon: Icon }) => (
             <Link
               key={label}
               to={`/login?email=${encodeURIComponent(email)}`}
-              className="neu-dark-out-sm flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-bold text-white/80"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-white/[0.04] px-3 py-1.5 text-[12.5px] font-semibold text-slate-100 transition-colors hover:border-white/30 hover:bg-white/[0.08] hover:text-white"
             >
-              <Icon size={13} strokeWidth={2} />
+              <Icon size={13} strokeWidth={2} className="text-slate-300" />
               {label}
             </Link>
           ))}

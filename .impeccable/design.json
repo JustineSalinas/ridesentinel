@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "brand": "RideSentinel",
+  "palette": {
+    "ink": "#0f172a",
+    "inkDeep": "#0b1120",
+    "slate": "#475569",
+    "page": "#f1f5f9",
+    "mist": "#e2e8f0",
+    "paper": "#ffffff",
+    "brand": "#2563eb",
+    "brandDark": "#1d4ed8",
+    "verified": "#16a34a",
+    "pending": "#d97706",
+    "danger": "#dc2626"
+  },
+  "typography": {
+    "display": "Bricolage Grotesque",
+    "marketingBody": "Onest",
+    "appBody": "Inter",
+    "mono": "JetBrains Mono"
+  },
+  "surfaces": {
+    "persuade": ["src/features/marketing/landing-page.tsx", "src/features/marketing/handshake-preview.tsx", "src/features/marketing/demo-quick-access.tsx"],
+    "auth": ["src/features/auth/auth-page.tsx"]
+  }
+}
