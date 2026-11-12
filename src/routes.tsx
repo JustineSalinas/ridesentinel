@@ -37,7 +37,8 @@ function AdminFallback() {
 // Routing for docs/SPEC.md §7 — every screen is built. My QR/Scan/Scan
 // Result/Rate/Report live outside AppShell: they're full-screen flows with
 // their own back navigation, not tab-bar destinations, matching the
-// approved prototype.
+// approved prototype. Interactions does keep the tab bar (AppShell), same
+// as the prototype's Interactions.dc.html.
 
 export const router = createBrowserRouter([
   { path: '/', element: <LandingPage /> },
@@ -59,13 +60,13 @@ export const router = createBrowserRouter([
         ),
       },
       { path: '/scan/result/:id', element: <ScanResultPage /> },
-      { path: '/interactions', element: <InteractionsPage /> },
       { path: '/rate/:interactionId', element: <RatePage /> },
       { path: '/report', element: <ReportPage /> },
       {
         element: <AppShell />,
         children: [
           { path: '/home', element: <HomePage /> },
+          { path: '/interactions', element: <InteractionsPage /> },
           { path: '/profile', element: <ProfilePage /> },
         ],
       },

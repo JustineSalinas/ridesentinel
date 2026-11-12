@@ -11,7 +11,7 @@ const tabs = [
 
 export function BottomTabBar() {
   return (
-    <nav className="flex border-t border-mist bg-paper px-2 pb-5 pt-2.5">
+    <nav className="neu-out flex rounded-t-[22px] px-2 pb-5 pt-2.5">
       {tabs.map(({ to, label, icon: Icon }) => (
         <NavLink
           key={to}

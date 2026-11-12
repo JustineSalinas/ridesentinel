@@ -41,3 +41,34 @@
     outline-offset: 1px;
   }
 }
+
+@layer utilities {
+  /* Neumorphic (soft UI) surfaces — dual soft shadows against the
+     monochrome --color-page canvas. "-out" reads as raised (cards, tiles,
+     idle buttons); "-in" reads as recessed (inputs, pressed/active states).
+     Deliberately no border — the shadow pair is what defines the edge. */
+  .neu-out {
+    background: var(--color-page);
+    box-shadow:
+      6px 6px 14px rgba(148, 163, 184, 0.45),
+      -6px -6px 14px rgba(255, 255, 255, 0.9);
+  }
+  .neu-out-sm {
+    background: var(--color-page);
+    box-shadow:
+      3px 3px 7px rgba(148, 163, 184, 0.4),
+      -3px -3px 7px rgba(255, 255, 255, 0.85);
+  }
+  .neu-in {
+    background: var(--color-page);
+    box-shadow:
+      inset 4px 4px 9px rgba(148, 163, 184, 0.4),
+      inset -4px -4px 9px rgba(255, 255, 255, 0.85);
+  }
+  .neu-brand {
+    background: linear-gradient(135deg, var(--color-brand), var(--color-brand-dark));
+    box-shadow:
+      6px 6px 14px rgba(29, 78, 216, 0.35),
+      -6px -6px 14px rgba(96, 155, 255, 0.35);
+  }
+}

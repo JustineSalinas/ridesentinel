@@ -23,30 +23,30 @@ export function HomePage() {
     .toUpperCase()
 
   return (
-    <div className="flex flex-1 flex-col">
-      <div className="flex items-center justify-between border-b border-mist bg-paper px-6 py-4">
+    <div className="flex flex-1 flex-col bg-page">
+      <div className="flex items-center justify-between px-6 py-5">
         <div>
           <div className="text-[15px] font-bold text-ink">Hey, {me.displayName.split(' ')[0]}</div>
           {me.verified ? (
-            <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-bold text-verified">
+            <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-bold text-verified">
               ✓ ID-verified
             </div>
           ) : (
-            <div className="mt-1 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-pending">
+            <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-pending">
               Not verified
             </div>
           )}
         </div>
-        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-mist text-[14px] font-bold text-ink">
+        <div className="neu-out flex h-12 w-12 items-center justify-center rounded-full text-[14px] font-bold text-ink">
           {initials}
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col gap-4 px-6 py-5">
+      <div className="flex flex-1 flex-col gap-5 px-6 pb-6">
         {!me.verified && (
           <Link
             to="/verify"
-            className="flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-[13px] font-semibold text-pending"
+            className="flex items-center justify-between rounded-2xl bg-amber-50 px-4 py-3.5 text-[13px] font-semibold text-pending"
           >
             Get ID-verified to scan and show your QR
             <span>→</span>
@@ -54,10 +54,7 @@ export function HomePage() {
         )}
 
         {summary && (
-          <div
-            className="rounded-2xl px-5 py-5 text-white"
-            style={{ background: 'linear-gradient(135deg, #2563EB, #1D4ED8)' }}
-          >
+          <div className="neu-brand rounded-[22px] px-5 py-5 text-white">
             <div className="flex items-center gap-1.5 text-[13px] text-white/80">
               <Star size={14} fill="currentColor" strokeWidth={0} />
               Your rating
@@ -71,17 +68,14 @@ export function HomePage() {
           </div>
         )}
 
-        <div className="flex gap-3">
-          <Link
-            to="/qr"
-            className="flex flex-1 flex-col items-center gap-2 rounded-2xl border border-mist bg-paper py-5"
-          >
+        <div className="flex gap-4">
+          <Link to="/qr" className="neu-out flex flex-1 flex-col items-center gap-2 rounded-[22px] py-6">
             <QrCode size={20} strokeWidth={1.8} className="text-ink" />
             <span className="text-sm font-bold text-ink">My QR</span>
           </Link>
           <Link
             to="/scan"
-            className="flex flex-1 flex-col items-center gap-2 rounded-2xl bg-brand py-5 text-white"
+            className="neu-brand flex flex-1 flex-col items-center gap-2 rounded-[22px] py-6 text-white"
           >
             <ScanLine size={20} strokeWidth={1.8} />
             <span className="text-sm font-bold">Scan</span>
@@ -91,7 +85,7 @@ export function HomePage() {
         {summary && (
           <Link
             to="/interactions"
-            className="flex items-center justify-between rounded-xl border border-mist bg-paper px-4 py-3"
+            className="neu-out-sm flex items-center justify-between rounded-2xl px-4 py-3.5"
           >
             <span className="text-[13px] font-semibold text-ink">Recent interactions</span>
             <span className="text-[12px] font-semibold text-brand">See all →</span>
