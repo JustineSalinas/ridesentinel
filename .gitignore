@@ -31,3 +31,5 @@ test-results
 # Convex — generated on `npx convex dev`, never hand-edited or committed
 convex/_generated
 .gstack/
+android-twa/
+*.keystore

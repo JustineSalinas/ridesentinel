@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.ridesentinel.twa",
+      "sha256_cert_fingerprints": [
+        "34:BD:CA:E7:C4:58:FB:36:6B:C3:6B:3A:4D:13:BA:B7:75:D9:EB:B8:89:3E:7E:93:7E:9F:A3:EF:8B:21:EB:E0"
+      ]
+    }
+  }
+]
