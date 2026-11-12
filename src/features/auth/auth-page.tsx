@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useAuthActions } from '@convex-dev/auth/react'
-import { useMutation } from 'convex/react'
+import { useConvex, useMutation } from 'convex/react'
 import { useNavigate } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Shield, QrCode, UserCheck } from 'lucide-react'
@@ -31,6 +31,7 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
   const [tab, setTab] = useState<Tab>(initialTab)
   const { signIn } = useAuthActions()
   const completeRegistration = useMutation(api.profiles.completeRegistration)
+  const convex = useConvex()
   const navigate = useNavigate()
   const reduceMotion = useReducedMotion()
 
@@ -49,6 +50,14 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
     setSubmitting(true)
     try {
       await signIn('password', { email, password, flow: 'signIn' })
+      // Same race `retryOnUnauthenticated` guards against on registration:
+      // `signIn` resolving doesn't mean the Convex client's WebSocket has
+      // finished propagating the new auth token yet. Navigating to /home
+      // immediately can land RequireAuth's `isAuthenticated` check before
+      // that propagation completes, silently bouncing back to /login with
+      // no error shown. Force a round trip first so navigate only fires
+      // once the client is actually authenticated.
+      await retryOnUnauthenticated(() => convex.query(api.profiles.getMe, {}))
       navigate('/home')
     } catch {
       setError('Incorrect email or password.')
