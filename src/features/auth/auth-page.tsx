@@ -112,7 +112,7 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
 
   return (
     <div className="min-h-dvh bg-ink font-marketing text-white">
-      <div className="mx-auto flex min-h-dvh w-full max-w-[460px] flex-col justify-between px-6 py-8 md:py-12">
+      <div className="mx-auto flex w-full max-w-[460px] flex-col px-6 py-8 md:py-12">
         <div className="flex items-center justify-between">
           <Link to="/" aria-label="RideSentinel home">
             <BrandMark showPilotTag />
@@ -130,7 +130,7 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
           initial={reduceMotion ? false : { opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25, ease: 'easeOut' }}
-          className="my-auto py-8"
+          className="mt-10 md:mt-14"
         >
           <h1 className="font-display text-[30px] font-bold leading-tight tracking-tight text-white">
             {tab === 'login' ? 'Welcome back' : 'Create your account'}
@@ -392,7 +392,7 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
           )}
         </motion.main>
 
-        <footer className="font-mono text-xs text-slate-300">
+        <footer className="mt-14 font-mono text-xs text-slate-300">
           Pilot area · Jaro / La Paz / Mandurriao, Iloilo City
         </footer>
       </div>
