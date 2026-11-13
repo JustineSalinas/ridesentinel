@@ -161,8 +161,8 @@ export function LandingPage() {
                   Two phones, one live token, zero guesswork at the curb.
                 </h2>
                 <p className="mt-3 max-w-md text-[14.5px] leading-relaxed text-blue-50">
-                  Test the three live screens on the right — every check runs against server state, never
-                  screenshots or client claims.
+                  Click through the three screens on the right to see the flow. In the real app, every
+                  check runs against server state — never screenshots or client claims.
                 </p>
               </div>
 
