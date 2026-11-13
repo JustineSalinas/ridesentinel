@@ -1,22 +1,26 @@
 import { useState } from 'react'
 import { useMutation } from 'convex/react'
 import { useNavigate } from 'react-router-dom'
+import { ScanFace, UserCheck, Clock3 } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
 import { TERMS_OF_USE, COMMUNITY_GUIDELINES, PILOT_COMMUNITY_NAME, DATA_PROTECTION_CONTACT } from './terms'
 
 const POINTS = [
-  [
-    'What we collect',
-    'Your name, an ID photo, and a selfie. No ID number, ever. No location, ever.',
-  ],
-  [
-    'Who sees it',
-    'Only a named administrator reviews your ID. Other riders only ever see your name, photo, tier, and rating.',
-  ],
-  [
-    'Deletion',
-    'ID and selfie photos are deleted 30 days after review. You can delete your account anytime.',
-  ],
+  {
+    title: 'What we collect',
+    body: 'Your name, an ID photo, and a selfie. No ID number, ever. No location, ever.',
+    icon: ScanFace,
+  },
+  {
+    title: 'Who sees it',
+    body: 'Only a named administrator reviews your ID. Other riders only ever see your name, photo, tier, and rating.',
+    icon: UserCheck,
+  },
+  {
+    title: 'Deletion',
+    body: 'ID and selfie photos are deleted 30 days after review. You can delete your account anytime.',
+    icon: Clock3,
+  },
 ] as const
 
 export function ConsentPage() {
@@ -48,17 +52,10 @@ export function ConsentPage() {
 
       <div className="flex flex-1 flex-col px-6 py-2">
         <div className="flex flex-col gap-3">
-          {POINTS.map(([title, body]) => (
+          {POINTS.map(({ title, body, icon: Icon }) => (
             <div key={title} className="neu-out-sm rounded-2xl p-4">
               <div className="neu-in flex h-9 w-9 items-center justify-center rounded-full">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                  <path
-                    d="M12 2L4 6v6c0 5.5 3.5 8.5 8 10 4.5-1.5 8-4.5 8-10V6l-8-4z"
-                    stroke="#2563EB"
-                    strokeWidth="1.8"
-                    strokeLinejoin="round"
-                  />
-                </svg>
+                <Icon size={16} strokeWidth={1.8} className="text-brand" />
               </div>
               <div className="mt-2.5 text-[15px] font-bold text-ink">{title}</div>
               <div className="mt-0.5 text-[13px] leading-snug text-slate">{body}</div>
