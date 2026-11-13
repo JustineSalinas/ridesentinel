@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { ArrowRight, Check, Lock, Plus, ShieldAlert } from 'lucide-react'
+import { ArrowRight, Check, Download, Lock, Plus, ShieldAlert } from 'lucide-react'
 import { BrandMark } from '@/components/brand-mark'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { cn } from '@/lib/utils'
@@ -430,6 +430,14 @@ export function LandingPage() {
             <Link to="/admin" className="transition-colors hover:text-white">
               Admin
             </Link>
+            <a
+              href="/ridesentinel.apk"
+              download
+              className="inline-flex items-center gap-1.5 transition-colors hover:text-white"
+            >
+              <Download size={13} strokeWidth={2.2} />
+              Download Android app
+            </a>
           </div>
           <div className="font-mono text-xs text-slate-300">
             RideSentinel · Pilot — Jaro / La Paz / Mandurriao, Iloilo City
