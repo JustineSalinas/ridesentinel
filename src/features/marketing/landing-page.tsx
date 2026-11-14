@@ -3,14 +3,14 @@ import { Link } from 'react-router-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { ArrowRight, Download, Plus, ShieldAlert } from 'lucide-react'
+import { ArrowRight, Download, Handshake, IdCard, Plus, ScanFace, ShieldAlert } from 'lucide-react'
 import { BrandMark } from '@/components/brand-mark'
 import { PhoneMock } from '@/components/phone-mock'
 import { CountdownRing } from '@/components/countdown-ring'
+import { AndroidGlyph, AppleGlyph } from '@/components/platform-icons'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { cn } from '@/lib/utils'
 import { useScrollReveal } from '@/hooks/use-scroll-reveal'
-import { DemoQuickAccess } from './demo-quick-access'
 import { HandshakePreview } from './handshake-preview'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -183,6 +183,25 @@ export function LandingPage() {
                 Log in
               </Link>
             </div>
+
+            <div className="mt-4 flex items-center gap-2.5 text-[12.5px] font-semibold text-slate">
+              <a
+                href="/ridesentinel.apk"
+                download
+                className="inline-flex items-center gap-1.5 text-ink transition-colors hover:text-brand"
+              >
+                <AndroidGlyph className="h-3.5 w-3.5" />
+                Download for Android
+              </a>
+              <span className="text-ink/20">·</span>
+              <span className="inline-flex items-center gap-1.5 text-slate-400">
+                <AppleGlyph className="h-3.5 w-3.5" />
+                iOS
+                <span className="rounded-full bg-mist px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-slate">
+                  Soon
+                </span>
+              </span>
+            </div>
           </motion.div>
 
           <motion.div
@@ -192,7 +211,7 @@ export function LandingPage() {
             className="relative mx-auto lg:mx-0 lg:ml-auto lg:-mr-16 lg:translate-x-10"
           >
             <div ref={phoneRef} className="relative rotate-[8deg] transition-transform duration-500 hover:rotate-[2deg]">
-              <PhoneMock className="relative z-10 w-[300px] sm:w-[340px] lg:w-[380px]">
+              <PhoneMock className="relative z-10 h-[400px] w-auto sm:h-[440px] lg:h-[480px]">
                 <HandshakePreview embedded />
               </PhoneMock>
 
@@ -351,36 +370,98 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Closing bar */}
-      <section className="border-t border-white/10 bg-ink px-5 py-12 text-white md:px-10 md:py-16">
-        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-6 md:flex-row md:items-center">
-          <div>
-            <h2 className="font-display text-[26px] font-bold tracking-tight md:text-[32px]">
-              Takes a day to verify. Takes a minute at pickup.
-            </h2>
-            <p className="mt-1.5 text-[14.5px] text-slate-300">
-              Create your account now or sign in to view your verification status.
-            </p>
-          </div>
-          <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:flex-row">
-            <Link
-              to="/register"
-              className={cn(buttonVariants({ variant: 'primary', size: 'lg' }), 'rounded-xl px-6')}
-            >
-              Register
-              <ArrowRight size={16} />
-            </Link>
-            <Link
-              to="/login"
-              className="inline-flex h-[52px] items-center justify-center rounded-xl border border-white/15 bg-white/[0.04] px-6 text-[14.5px] font-bold text-white transition-colors hover:border-white/25 hover:bg-white/[0.08]"
-            >
-              Log in
-            </Link>
+      {/* Closing bar — a verification ticket, perforated stub and all, instead of a generic CTA strip */}
+      <section className="border-t border-white/10 bg-ink px-5 py-16 text-white md:px-10 md:py-20">
+        <div className="mx-auto max-w-5xl">
+          <div className="relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] md:flex-row">
+            {/* Ticket body */}
+            <div className="flex-1 px-7 py-8 md:px-9 md:py-10">
+              <div className="font-mono text-[11px] font-bold uppercase tracking-[0.15em] text-brand">
+                Verification ticket · No. RS&#8209;0001
+              </div>
+              <h2 className="font-display mt-3 text-[26px] font-bold tracking-tight md:text-[32px]">
+                Takes a day to verify. Takes a minute at pickup.
+              </h2>
+              <p className="mt-2 max-w-sm text-[14.5px] leading-relaxed text-slate-300">
+                Create your account now or sign in to view your verification status.
+              </p>
+
+              {/* Flow — a real stepper (icon nodes threaded on one line), not just stated prose */}
+              <div className="relative mt-10 max-w-md">
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-x-0 top-5 h-px bg-gradient-to-r from-brand via-verified to-pending opacity-50"
+                />
+                <div className="relative grid grid-cols-3 gap-2 text-center">
+                  <div className="flex flex-col items-center gap-2.5">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-brand bg-ink text-brand">
+                      <IdCard size={18} strokeWidth={2.2} />
+                    </div>
+                    <div>
+                      <div className="text-[12.5px] font-bold text-white">ID review</div>
+                      <div className="font-mono text-[10px] text-slate-400">~24 hours</div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-center gap-2.5">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-verified bg-ink text-verified">
+                      <ScanFace size={18} strokeWidth={2.2} />
+                    </div>
+                    <div>
+                      <div className="text-[12.5px] font-bold text-white">Face confirmed</div>
+                      <div className="font-mono text-[10px] text-slate-400">60s handshake</div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-center gap-2.5">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-pending bg-ink text-pending">
+                      <Handshake size={18} strokeWidth={2.2} />
+                    </div>
+                    <div>
+                      <div className="text-[12.5px] font-bold text-white">At pickup</div>
+                      <div className="font-mono text-[10px] text-slate-400">ride confirmed</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Perforation — punched notches top and bottom, like a torn ticket stub */}
+            <div className="relative hidden border-l border-dashed border-white/15 md:block" aria-hidden="true">
+              <span className="absolute -left-2.5 -top-2.5 h-5 w-5 rounded-full bg-ink" />
+              <span className="absolute -bottom-2.5 -left-2.5 h-5 w-5 rounded-full bg-ink" />
+            </div>
+            <div className="border-t border-dashed border-white/15 md:hidden" aria-hidden="true" />
+
+            {/* Ticket stub — the actual action */}
+            <div className="flex flex-col justify-center gap-3 px-7 py-8 md:w-[220px] md:px-8 md:py-10">
+              <svg
+                viewBox="0 0 120 28"
+                className="h-6 w-full text-white/25"
+                aria-hidden="true"
+                preserveAspectRatio="none"
+              >
+                {[2, 6, 9, 13, 15, 19, 23, 27, 31, 36, 39, 43, 48, 52, 55, 60, 64, 68, 73, 77, 81, 86, 90, 95, 99, 104, 108, 113, 117].map(
+                  (x, i) => (
+                    <rect key={x} x={x} y="0" width={i % 3 === 0 ? 2 : 1} height="28" fill="currentColor" />
+                  ),
+                )}
+              </svg>
+              <Link
+                to="/register"
+                className={cn(buttonVariants({ variant: 'primary', size: 'lg' }), 'w-full rounded-xl')}
+              >
+                Register
+                <ArrowRight size={16} />
+              </Link>
+              <Link
+                to="/login"
+                className="inline-flex h-[52px] w-full items-center justify-center rounded-xl border border-white/15 bg-white/[0.04] px-6 text-[14.5px] font-bold text-white transition-colors hover:border-white/25 hover:bg-white/[0.08]"
+              >
+                Log in
+              </Link>
+            </div>
           </div>
         </div>
       </section>
-
-      <DemoQuickAccess />
 
       {/* Footer */}
       <footer className="relative overflow-hidden border-t border-white/10 bg-[#0B1120] px-5 pb-8 pt-14 text-slate-300 md:px-10 md:pb-10 md:pt-20">

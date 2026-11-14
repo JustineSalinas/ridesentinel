@@ -149,27 +149,54 @@ export function HandshakePreview({ embedded = false }: { embedded?: boolean }) {
             animate={{ opacity: 1, y: 0 }}
             exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
             transition={{ duration: 0.16 }}
-            className={cn('flex flex-col justify-between bg-paper px-6 py-5 text-ink', embedded ? 'h-full' : 'min-h-[340px]')}
+            className={cn(
+              'flex flex-col justify-between bg-paper text-ink',
+              embedded ? 'h-full px-4 py-4' : 'min-h-[340px] px-6 py-5',
+            )}
           >
-            <div className="flex items-center justify-between border-b border-mist pb-3">
-              <span className="font-mono text-xs font-bold uppercase tracking-wider text-slate">
+            <div className="flex items-center justify-between gap-2 border-b border-mist pb-3">
+              <span
+                className={cn(
+                  'font-mono font-bold uppercase tracking-wider text-slate',
+                  embedded ? 'text-[10px]' : 'text-xs',
+                )}
+              >
                 Scanned rider
               </span>
-              <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-bold text-green-800">
+              <span
+                className={cn(
+                  'shrink-0 whitespace-nowrap rounded-full bg-green-100 font-bold text-green-800',
+                  embedded ? 'px-2 py-0.5 text-[10px]' : 'px-2.5 py-0.5 text-xs',
+                )}
+              >
                 12mo badge
               </span>
             </div>
 
-            <div className="my-4 flex items-center gap-4">
-              <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-xl border border-mist">
+            <div className={cn('flex items-center', embedded ? 'my-3 gap-3' : 'my-4 gap-4')}>
+              <div
+                className={cn(
+                  'flex-shrink-0 overflow-hidden rounded-xl border border-mist',
+                  embedded ? 'h-11 w-11' : 'h-16 w-16',
+                )}
+              >
                 <RiderAvatarSvg />
               </div>
               <div className="min-w-0">
-                <div className="text-[17px] font-extrabold tracking-tight text-ink">Harry V.</div>
-                <div className="mt-0.5 text-[13px] font-medium text-slate">Driver · Jaro pickup</div>
-                <div className="mt-1.5 flex items-center gap-2 font-mono text-xs font-bold text-ink">
+                <div className={cn('font-extrabold tracking-tight text-ink', embedded ? 'text-[14px]' : 'text-[17px]')}>
+                  Harry V.
+                </div>
+                <div className={cn('mt-0.5 font-medium text-slate', embedded ? 'text-[11px]' : 'text-[13px]')}>
+                  Driver · Jaro pickup
+                </div>
+                <div
+                  className={cn(
+                    'mt-1.5 flex flex-wrap items-center gap-1.5 font-mono font-bold text-ink',
+                    embedded ? 'text-[10px]' : 'text-xs',
+                  )}
+                >
                   <span className="inline-flex items-center gap-1 text-amber-700">
-                    <Star size={12} fill="#B45309" />
+                    <Star size={embedded ? 10 : 12} fill="#B45309" />
                     4.9
                   </span>
                   <span className="text-slate-400">·</span>
@@ -178,17 +205,27 @@ export function HandshakePreview({ embedded = false }: { embedded?: boolean }) {
               </div>
             </div>
 
-            <div className="space-y-3 border-t border-mist pt-4">
-              <p className="text-[13px] font-medium leading-snug text-slate">
+            <div className={cn('border-t border-mist', embedded ? 'space-y-2.5 pt-3' : 'space-y-3 pt-4')}>
+              <p className={cn('font-medium leading-snug text-slate', embedded ? 'text-[11px]' : 'text-[13px]')}>
                 Compare the photo above with the person in front of you before confirming.
               </p>
-              <div className="grid grid-cols-2 gap-2.5">
-                <div className="flex items-center justify-center gap-1.5 rounded-xl border border-mist bg-page py-2.5 text-[13px] font-bold text-ink">
-                  <X size={14} strokeWidth={2.4} />
+              <div className="grid grid-cols-2 gap-2">
+                <div
+                  className={cn(
+                    'flex items-center justify-center gap-1.5 rounded-xl border border-mist bg-page font-bold text-ink',
+                    embedded ? 'py-2 text-[11px]' : 'py-2.5 text-[13px]',
+                  )}
+                >
+                  <X size={embedded ? 12 : 14} strokeWidth={2.4} />
                   Not them
                 </div>
-                <div className="flex items-center justify-center gap-1.5 rounded-xl bg-brand py-2.5 text-[13px] font-bold text-white">
-                  <Check size={14} strokeWidth={2.5} />
+                <div
+                  className={cn(
+                    'flex items-center justify-center gap-1.5 rounded-xl bg-brand font-bold text-white',
+                    embedded ? 'py-2 text-[11px]' : 'py-2.5 text-[13px]',
+                  )}
+                >
+                  <Check size={embedded ? 12 : 14} strokeWidth={2.5} />
                   Same person
                 </div>
               </div>
