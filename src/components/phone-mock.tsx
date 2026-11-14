@@ -34,8 +34,9 @@ export function PhoneMock({ children, className }: { children: ReactNode; classN
 
           {/* Screen */}
           <div className="flex h-full w-full flex-col overflow-hidden">
-            {/* Status bar */}
-            <div className="z-40 flex shrink-0 items-center justify-between px-[4.7%] pt-[1.5%] text-[10px] font-semibold text-slate-900">
+            {/* Status bar — height-driven (not just top padding) so the row clears the rounded
+                top corners instead of the "9:41" text getting cut by the curve */}
+            <div className="z-40 flex h-[7.5%] shrink-0 items-center justify-between px-[7%] text-[10px] font-semibold text-slate-900">
               <span className="tracking-tight">9:41</span>
               <div className="flex items-center gap-1.5 text-slate-900">
                 <svg className="h-2.5 w-3" viewBox="0 0 18 12" fill="currentColor">
