@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 export function PhoneMock({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <div
-      className={cn('relative mx-auto aspect-[430/932] w-[260px] sm:w-[300px]', className)}
+      className={cn('relative mx-auto aspect-[430/932] w-[280px]', className)}
       role="img"
       aria-label="RideSentinel app shown on an iPhone 16 Pro Max"
     >

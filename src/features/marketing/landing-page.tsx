@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { ArrowRight, Check, Download, Lock, Plus, ShieldAlert } from 'lucide-react'
+import { ArrowRight, Download, Plus, ShieldAlert } from 'lucide-react'
 import { BrandMark } from '@/components/brand-mark'
 import { PhoneMock } from '@/components/phone-mock'
 import { buttonVariants } from '@/components/ui/button-variants'
@@ -33,12 +33,6 @@ const STEPS = [
   },
 ] as const
 
-const PRIVACY_FACTS = [
-  'No ID numbers extracted or stored (zero OCR)',
-  'ID photos and selfies auto-purged 30 days after review',
-  'No GPS tracking, trip logging, or ride payments',
-] as const
-
 const FAQ = [
   [
     'Is this a ride-hailing app?',
@@ -46,19 +40,11 @@ const FAQ = [
   ],
   [
     'What happens to my ID photo?',
-    'Nothing is read from it automatically — a human administrator reviews it to verify your account, and the image is deleted 30 days after that decision either way.',
-  ],
-  [
-    "What if the person doesn't match their photo?",
-    'Tap "Not the same person" or cancel on the spot and file a report. No meeting gets counted, and the report goes straight to an administrator.',
+    'A human administrator reviews it to verify your account, and the image is deleted 30 days after that decision either way. No ID number is ever read or stored.',
   ],
   [
     'Who sees my rating?',
     "Nobody, until you both rate each other or 48 hours pass — whichever comes first. You can't see theirs by submitting yours early.",
-  ],
-  [
-    'Can I delete my account?',
-    'Yes, anytime from your profile. Your personal data is removed while past ratings remain anonymized so other riders’ scores stay accurate.',
   ],
 ] as const
 
@@ -66,7 +52,6 @@ export function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0)
   const reduceMotion = useReducedMotion()
   const stepsRef = useScrollReveal<HTMLOListElement>()
-  const rulesRef = useScrollReveal<HTMLDivElement>()
   const faqRef = useScrollReveal<HTMLDivElement>()
 
   return (
@@ -81,9 +66,6 @@ export function LandingPage() {
           <nav className="hidden items-center gap-7 text-[13.5px] font-semibold text-slate-300 md:flex">
             <a href="#how-it-works" className="transition-colors hover:text-white">
               How it works
-            </a>
-            <a href="#rules" className="transition-colors hover:text-white">
-              The rules
             </a>
             <a href="#faq" className="transition-colors hover:text-white">
               FAQ
@@ -145,27 +127,6 @@ export function LandingPage() {
                 Log in
               </Link>
             </div>
-
-            <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-ink/10 pt-6 text-[13px] font-semibold text-slate">
-              <span className="inline-flex items-center gap-1.5">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-verified">
-                  <Check size={11} strokeWidth={2.6} />
-                </span>
-                Human-reviewed ID checks
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-verified">
-                  <Check size={11} strokeWidth={2.6} />
-                </span>
-                Scores stay hidden until both rate
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-verified">
-                  <Check size={11} strokeWidth={2.6} />
-                </span>
-                No ride-hailing, no payments
-              </span>
-            </div>
           </motion.div>
 
           <motion.div
@@ -179,7 +140,7 @@ export function LandingPage() {
               className="absolute inset-0 -z-10 scale-125 rounded-full bg-gradient-to-br from-blue-200/60 via-blue-100/40 to-transparent blur-3xl"
             />
             <div className="rotate-[7deg] transition-transform duration-500 hover:rotate-0">
-              <PhoneMock className="w-[270px] sm:w-[310px]">
+              <PhoneMock>
                 <HandshakePreview embedded />
               </PhoneMock>
             </div>
@@ -277,92 +238,8 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Band 2: Specification Ledger — Server-enforced rules + privacy posture */}
-      <section id="rules" className="border-b border-mist bg-page px-5 py-14 text-ink md:px-10 md:py-20">
-        <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
-          <div className="flex flex-col justify-between">
-            <div>
-              <h2 className="font-display text-[28px] font-bold leading-tight tracking-tight text-ink md:text-[34px]">
-                Chat groups don&apos;t verify faces. Screenshots don&apos;t prove presence.
-              </h2>
-              <p className="mt-4 text-[15px] leading-relaxed text-slate">
-                Arranging a ride over a group chat means showing up to meet someone you have never seen. A
-                verified name and a photo you can compare in person fixes that — and tying ratings to a
-                live QR scan keeps scores grounded in real trips.
-              </p>
-            </div>
-
-            <div className="mt-8 border-t border-mist pt-6">
-              <div className="text-[13.5px] font-bold text-ink">Data minimization by default</div>
-              <ul className="mt-3 space-y-2.5">
-                {PRIVACY_FACTS.map((fact) => (
-                  <li key={fact} className="flex items-start gap-2.5 text-[14px] text-ink">
-                    <span className="mt-0.5 flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-green-100 text-green-800">
-                      <Check size={11} strokeWidth={2.6} />
-                    </span>
-                    <span>{fact}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* Three server rules — clean specification ledger rows instead of card sprawl */}
-          <div ref={rulesRef} className="divide-y divide-mist border-y border-mist bg-paper px-6">
-            <div className="py-6">
-              <div className="flex items-center justify-between gap-4">
-                <span className="font-mono text-xs font-bold text-brand">Rule 01 · Token expiry</span>
-                <span className="shrink-0 whitespace-nowrap rounded-md bg-page px-2.5 py-0.5 font-mono text-xs font-bold text-ink">
-                  TTL = 60s
-                </span>
-              </div>
-              <h3 className="font-display mt-2 text-[18px] font-bold text-ink">
-                QR codes expire and cannot be replayed
-              </h3>
-              <p className="mt-1.5 text-[14px] leading-relaxed text-slate">
-                Every nonce is single-use and rotates automatically before it expires. Forwarding a
-                screenshot from earlier in the day fails server validation.
-              </p>
-            </div>
-
-            <div className="py-6">
-              <div className="flex items-center justify-between gap-4">
-                <span className="font-mono text-xs font-bold text-brand">Rule 02 · Handshake gate</span>
-                <span className="inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-md bg-green-100 px-2.5 py-0.5 font-mono text-xs font-bold text-green-800">
-                  <Lock size={11} />
-                  2 / 2 confirm
-                </span>
-              </div>
-              <h3 className="font-display mt-2 text-[18px] font-bold text-ink">
-                No rating without a mutually confirmed meeting
-              </h3>
-              <p className="mt-1.5 text-[14px] leading-relaxed text-slate">
-                The scanner confirms first, then the QR holder receives a live prompt to confirm. Ratings
-                stay sealed until both rate or 48 hours elapse, preventing retaliatory scoring.
-              </p>
-            </div>
-
-            <div className="py-6">
-              <div className="flex items-center justify-between gap-4">
-                <span className="font-mono text-xs font-bold text-brand">Rule 03 · Server authority</span>
-                <span className="shrink-0 whitespace-nowrap rounded-md bg-page px-2.5 py-0.5 font-mono text-xs font-bold text-ink">
-                  Client trust = 0
-                </span>
-              </div>
-              <h3 className="font-display mt-2 text-[18px] font-bold text-ink">
-                The server decides tier, badge, and rating visibility
-              </h3>
-              <p className="mt-1.5 text-[14px] leading-relaxed text-slate">
-                Verification status, daily interaction caps, and score reveal logic run strictly inside
-                authenticated backend functions with an immutable admin audit log.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Band 3: FAQ */}
-      <section id="faq" className="bg-paper px-5 py-14 text-ink md:px-10 md:py-20">
+      {/* Band 2: FAQ */}
+      <section id="faq" className="border-b border-mist bg-paper px-5 py-14 text-ink md:px-10 md:py-20">
         <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.75fr_1.25fr] lg:gap-16">
           <div>
             <h2 className="font-display text-[28px] font-bold tracking-tight text-ink md:text-[32px]">
@@ -446,8 +323,22 @@ export function LandingPage() {
       <DemoQuickAccess />
 
       {/* Footer */}
-      <footer className="border-t border-white/10 bg-[#0B1120] px-5 py-8 text-slate-300 md:px-10">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <footer className="relative overflow-hidden border-t border-white/10 bg-[#0B1120] px-5 py-8 text-slate-300 md:px-10">
+        {/* Real Iloilo City map (OpenStreetMap), faded behind the footer content */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-25 grayscale">
+          <iframe
+            title="Map of Iloilo City"
+            src="https://www.openstreetmap.org/export/embed.html?bbox=122.4650%2C10.6550%2C122.6050%2C10.7650&layer=mapnik"
+            className="h-full w-full border-0"
+            loading="lazy"
+          />
+        </div>
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0B1120] via-[#0B1120]/80 to-[#0B1120]/40"
+        />
+
+        <div className="relative mx-auto flex max-w-6xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] font-semibold">
             <Link to="/consent" className="transition-colors hover:text-white">
               Privacy &amp; Terms
