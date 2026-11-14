@@ -107,96 +107,116 @@ export function LandingPage() {
         </div>
       </header>
 
-      {/* First viewport — Curbside Signal opening */}
-      <section className="border-b border-white/10 bg-ink px-5 pb-14 pt-10 md:px-10 md:pb-20 md:pt-14">
-        <div className="mx-auto max-w-6xl">
+      {/* First viewport — light hero with the app on a tilted phone */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-50 px-5 pb-16 pt-14 text-ink md:px-10 md:pb-24 md:pt-20">
+        <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10">
           <motion.div
             initial={reduceMotion ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, ease: 'easeOut' }}
-            className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between"
           >
-            <div className="max-w-3xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-3.5 py-1 font-mono text-xs font-semibold uppercase tracking-wider text-slate-200">
-                <span className="h-2 w-2 rounded-full bg-green-400" aria-hidden="true" />
-                Iloilo Pilot · Jaro · La Paz · Mandurriao
-              </div>
-
-              <h1 className="font-display mt-5 text-[40px] font-extrabold leading-[1.01] tracking-[-0.03em] text-white sm:text-[52px] lg:text-[62px]">
-                Know who you&apos;re meeting before you ride.
-              </h1>
+            <div className="inline-flex items-center gap-2 rounded-full border border-ink/10 bg-white px-3.5 py-1 font-mono text-xs font-semibold uppercase tracking-wider text-slate shadow-sm">
+              <span className="h-2 w-2 rounded-full bg-green-500" aria-hidden="true" />
+              Iloilo Pilot · Jaro · La Paz · Mandurriao
             </div>
 
-            <div className="flex max-w-md flex-col gap-5 lg:pb-1">
-              <p className="text-[15.5px] leading-relaxed text-slate-300">
-                Informal motorcycle rides get arranged in group chats, leaving both people guessing at
-                pickup. RideSentinel verifies both riders with a photo ID check, a 60-second QR handshake,
-                and blind ratings.
-              </p>
+            <h1 className="font-display mt-5 text-[40px] font-extrabold leading-[1.03] tracking-[-0.03em] text-ink sm:text-[50px] lg:text-[56px]">
+              Know who you&apos;re meeting before you ride.
+            </h1>
 
-              <div className="flex flex-wrap items-center gap-3">
-                <Link
-                  to="/register"
-                  className={cn(
-                    buttonVariants({ variant: 'primary', size: 'lg' }),
-                    'rounded-xl px-6 shadow-sm',
-                  )}
-                >
-                  Register for the pilot
-                  <ArrowRight size={16} strokeWidth={2.2} />
-                </Link>
-                <Link
-                  to="/login"
-                  className="inline-flex h-[52px] items-center justify-center rounded-xl border border-white/15 bg-white/[0.04] px-5 text-[14.5px] font-bold text-white transition-colors hover:border-white/25 hover:bg-white/[0.08]"
-                >
-                  Log in
-                </Link>
-              </div>
+            <p className="mt-5 max-w-md text-[15.5px] leading-relaxed text-slate">
+              Informal motorcycle rides get arranged in group chats, leaving both people guessing at
+              pickup. RideSentinel verifies both riders with a photo ID check, a 60-second QR handshake,
+              and blind ratings.
+            </p>
+
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <Link
+                to="/register"
+                className={cn(buttonVariants({ variant: 'primary', size: 'lg' }), 'rounded-xl px-6 shadow-sm')}
+              >
+                Register for the pilot
+                <ArrowRight size={16} strokeWidth={2.2} />
+              </Link>
+              <Link
+                to="/login"
+                className="inline-flex h-[52px] items-center justify-center gap-1.5 rounded-xl border border-ink/15 bg-white px-5 text-[14.5px] font-bold text-ink transition-colors hover:border-ink/25 hover:bg-mist"
+              >
+                Log in
+              </Link>
+            </div>
+
+            <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-ink/10 pt-6 text-[13px] font-semibold text-slate">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-verified">
+                  <Check size={11} strokeWidth={2.6} />
+                </span>
+                Human-reviewed ID checks
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-verified">
+                  <Check size={11} strokeWidth={2.6} />
+                </span>
+                Scores stay hidden until both rate
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-verified">
+                  <Check size={11} strokeWidth={2.6} />
+                </span>
+                No ride-hailing, no payments
+              </span>
             </div>
           </motion.div>
 
-          {/* Unified Curbside Signal Deck — flat signal-blue field + interactive live handshake */}
-          <div className="mt-10 grid overflow-hidden rounded-2xl border border-white/15 bg-[#0B1120] lg:mt-12 lg:grid-cols-[0.88fr_1.12fr]">
-            <div className="flex flex-col bg-brand p-6 text-white sm:p-8 lg:p-10">
-              <div className="font-mono text-xs font-bold uppercase tracking-wider text-blue-50">
-                Pickup handshake protocol
-              </div>
-              <h2 className="font-display mt-3 text-[26px] font-bold leading-[1.12] tracking-tight text-white sm:text-[30px]">
-                Two phones, one live token, zero guesswork at the curb.
-              </h2>
-              <p className="mt-3 max-w-md text-[14.5px] leading-relaxed text-blue-50">
-                Click through the three screens on the right to see the flow. In the real app, every
-                check runs against server state — never screenshots or client claims.
-              </p>
-
-              <dl className="mt-10 grid grid-cols-3 divide-x divide-white/25 border-t border-white/25 pt-6 tabular-nums">
-                <div className="pr-3">
-                  <dt className="font-mono text-[24px] font-bold leading-none text-white sm:text-[28px]">
-                    60s
-                  </dt>
-                  <dd className="mt-1.5 text-xs leading-snug text-blue-50">Single-use QR expiry</dd>
-                </div>
-                <div className="px-3">
-                  <dt className="font-mono text-[24px] font-bold leading-none text-white sm:text-[28px]">
-                    2/2
-                  </dt>
-                  <dd className="mt-1.5 text-xs leading-snug text-blue-50">Mutual face confirm</dd>
-                </div>
-                <div className="pl-3">
-                  <dt className="font-mono text-[24px] font-bold leading-none text-white sm:text-[28px]">
-                    48h
-                  </dt>
-                  <dd className="mt-1.5 text-xs leading-snug text-blue-50">Blind rating lock</dd>
-                </div>
-              </dl>
-            </div>
-
-            <div className="flex items-center justify-center border-t border-white/15 bg-[#0B1120] py-8 lg:border-l lg:border-t-0 lg:py-10">
-              <PhoneMock>
+          <motion.div
+            initial={reduceMotion ? false : { opacity: 0, scale: 0.94 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.45, ease: 'easeOut', delay: 0.1 }}
+            className="relative mx-auto"
+          >
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 -z-10 scale-125 rounded-full bg-gradient-to-br from-blue-200/60 via-blue-100/40 to-transparent blur-3xl"
+            />
+            <div className="rotate-[7deg] transition-transform duration-500 hover:rotate-0">
+              <PhoneMock className="w-[270px] sm:w-[310px]">
                 <HandshakePreview embedded />
               </PhoneMock>
             </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Band 0: Pickup handshake protocol facts */}
+      <section className="bg-brand px-5 py-10 text-white md:px-10 md:py-12">
+        <div className="mx-auto max-w-6xl">
+          <div className="font-mono text-xs font-bold uppercase tracking-wider text-blue-50">
+            Pickup handshake protocol
           </div>
+          <h2 className="font-display mt-2 max-w-2xl text-[22px] font-bold leading-[1.2] tracking-tight text-white sm:text-[26px]">
+            Two phones, one live token, zero guesswork at the curb.
+          </h2>
+
+          <dl className="mt-7 grid grid-cols-1 gap-6 border-t border-white/25 pt-6 sm:grid-cols-3 sm:divide-x sm:divide-white/25 tabular-nums">
+            <div className="sm:pr-5">
+              <dt className="font-mono text-[26px] font-bold leading-none text-white sm:text-[30px]">
+                60s
+              </dt>
+              <dd className="mt-1.5 text-xs leading-snug text-blue-50">Single-use QR expiry</dd>
+            </div>
+            <div className="sm:px-5">
+              <dt className="font-mono text-[26px] font-bold leading-none text-white sm:text-[30px]">
+                2/2
+              </dt>
+              <dd className="mt-1.5 text-xs leading-snug text-blue-50">Mutual face confirm</dd>
+            </div>
+            <div className="sm:pl-5">
+              <dt className="font-mono text-[26px] font-bold leading-none text-white sm:text-[30px]">
+                48h
+              </dt>
+              <dd className="mt-1.5 text-xs leading-snug text-blue-50">Blind rating lock</dd>
+            </div>
+          </dl>
         </div>
       </section>
 
