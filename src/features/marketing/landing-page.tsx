@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { ArrowRight, Check, Download, Lock, Plus, ShieldAlert } from 'lucide-react'
 import { BrandMark } from '@/components/brand-mark'
+import { PhoneMock } from '@/components/phone-mock'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { cn } from '@/lib/utils'
+import { useScrollReveal } from '@/hooks/use-scroll-reveal'
 import { DemoQuickAccess } from './demo-quick-access'
 import { HandshakePreview } from './handshake-preview'
 
@@ -63,6 +65,9 @@ const FAQ = [
 export function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0)
   const reduceMotion = useReducedMotion()
+  const stepsRef = useScrollReveal<HTMLOListElement>()
+  const rulesRef = useScrollReveal<HTMLDivElement>()
+  const faqRef = useScrollReveal<HTMLDivElement>()
 
   return (
     <div className="min-h-dvh bg-ink font-marketing text-white">
@@ -186,8 +191,10 @@ export function LandingPage() {
               </dl>
             </div>
 
-            <div className="flex items-center justify-center border-t border-white/15 bg-[#0B1120] lg:border-l lg:border-t-0">
-              <HandshakePreview embedded />
+            <div className="flex items-center justify-center border-t border-white/15 bg-[#0B1120] py-8 lg:border-l lg:border-t-0 lg:py-10">
+              <PhoneMock>
+                <HandshakePreview embedded />
+              </PhoneMock>
             </div>
           </div>
         </div>
@@ -206,7 +213,10 @@ export function LandingPage() {
             </p>
           </div>
 
-          <ol className="mt-8 grid grid-cols-1 divide-y divide-mist border-y border-mist sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x">
+          <ol
+            ref={stepsRef}
+            className="mt-8 grid grid-cols-1 divide-y divide-mist border-y border-mist sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4 lg:divide-x"
+          >
             {STEPS.map((step, index) => (
               <li
                 key={step.title}
@@ -278,7 +288,7 @@ export function LandingPage() {
           </div>
 
           {/* Three server rules — clean specification ledger rows instead of card sprawl */}
-          <div className="divide-y divide-mist border-y border-mist bg-paper px-6">
+          <div ref={rulesRef} className="divide-y divide-mist border-y border-mist bg-paper px-6">
             <div className="py-6">
               <div className="flex items-center justify-between gap-4">
                 <span className="font-mono text-xs font-bold text-brand">Rule 01 · Token expiry</span>
@@ -344,7 +354,7 @@ export function LandingPage() {
             </p>
           </div>
 
-          <div className="divide-y divide-mist border-y border-mist">
+          <div ref={faqRef} className="divide-y divide-mist border-y border-mist">
             {FAQ.map(([q, a], i) => {
               const open = openFaq === i
               return (
