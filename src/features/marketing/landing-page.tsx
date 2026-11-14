@@ -90,8 +90,14 @@ export function LandingPage() {
       </header>
 
       {/* First viewport — light hero with the app on a tilted phone */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-blue-50 px-5 pb-16 pt-14 text-ink md:px-10 md:pb-24 md:pt-20">
-        <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10">
+      <section
+        className="relative overflow-hidden px-5 pb-16 pt-14 text-ink md:px-10 md:pb-24 md:pt-20"
+        style={{
+          background:
+            'radial-gradient(120% 100% at 85% 0%, #FCE7F3 0%, #F5F3FF 38%, #FFFFFF 72%)',
+        }}
+      >
+        <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1fr_1.15fr] lg:gap-6">
           <motion.div
             initial={reduceMotion ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -130,17 +136,17 @@ export function LandingPage() {
           </motion.div>
 
           <motion.div
-            initial={reduceMotion ? false : { opacity: 0, scale: 0.94 }}
+            initial={reduceMotion ? false : { opacity: 0, scale: 0.92 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.45, ease: 'easeOut', delay: 0.1 }}
-            className="relative mx-auto"
+            className="relative mx-auto lg:mx-0 lg:ml-auto lg:-mr-10 lg:translate-x-6"
           >
             <div
               aria-hidden="true"
-              className="absolute inset-0 -z-10 scale-125 rounded-full bg-gradient-to-br from-blue-200/60 via-blue-100/40 to-transparent blur-3xl"
+              className="absolute inset-0 -z-10 scale-125 rounded-full bg-gradient-to-br from-pink-200/50 via-indigo-100/40 to-transparent blur-3xl"
             />
-            <div className="rotate-[7deg] transition-transform duration-500 hover:rotate-0">
-              <PhoneMock>
+            <div className="rotate-[14deg] transition-transform duration-500 hover:rotate-[4deg]">
+              <PhoneMock className="w-[300px] sm:w-[340px] lg:w-[380px]">
                 <HandshakePreview embedded />
               </PhoneMock>
             </div>
