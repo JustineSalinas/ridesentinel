@@ -152,21 +152,19 @@ export function LandingPage() {
 
           {/* Unified Curbside Signal Deck — flat signal-blue field + interactive live handshake */}
           <div className="mt-10 grid overflow-hidden rounded-2xl border border-white/15 bg-[#0B1120] lg:mt-12 lg:grid-cols-[0.88fr_1.12fr]">
-            <div className="flex flex-col justify-between bg-brand p-6 text-white sm:p-8 lg:p-10">
-              <div>
-                <div className="font-mono text-xs font-bold uppercase tracking-wider text-blue-50">
-                  Pickup handshake protocol
-                </div>
-                <h2 className="font-display mt-3 text-[26px] font-bold leading-[1.12] tracking-tight text-white sm:text-[30px]">
-                  Two phones, one live token, zero guesswork at the curb.
-                </h2>
-                <p className="mt-3 max-w-md text-[14.5px] leading-relaxed text-blue-50">
-                  Click through the three screens on the right to see the flow. In the real app, every
-                  check runs against server state — never screenshots or client claims.
-                </p>
+            <div className="flex flex-col bg-brand p-6 text-white sm:p-8 lg:p-10">
+              <div className="font-mono text-xs font-bold uppercase tracking-wider text-blue-50">
+                Pickup handshake protocol
               </div>
+              <h2 className="font-display mt-3 text-[26px] font-bold leading-[1.12] tracking-tight text-white sm:text-[30px]">
+                Two phones, one live token, zero guesswork at the curb.
+              </h2>
+              <p className="mt-3 max-w-md text-[14.5px] leading-relaxed text-blue-50">
+                Click through the three screens on the right to see the flow. In the real app, every
+                check runs against server state — never screenshots or client claims.
+              </p>
 
-              <dl className="mt-8 grid grid-cols-3 divide-x divide-white/25 border-t border-white/25 pt-6 tabular-nums">
+              <dl className="mt-10 grid grid-cols-3 divide-x divide-white/25 border-t border-white/25 pt-6 tabular-nums">
                 <div className="pr-3">
                   <dt className="font-mono text-[24px] font-bold leading-none text-white sm:text-[28px]">
                     60s
