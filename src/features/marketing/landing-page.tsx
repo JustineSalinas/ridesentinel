@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { ArrowRight, Download, Handshake, IdCard, Plus, ScanFace, ShieldAlert } from 'lucide-react'
+import { ArrowRight, Check, Download, Handshake, IdCard, Minus, Plus, ScanFace, ShieldAlert, X } from 'lucide-react'
 import { BrandMark } from '@/components/brand-mark'
 import { PhoneMock } from '@/components/phone-mock'
 import { CountdownRing } from '@/components/countdown-ring'
@@ -45,10 +45,43 @@ const STEPS = [
   },
 ] as const
 
+type Support = 'yes' | 'no' | 'partial'
+
+const COMPARISON: { feature: string; groupChat: Support; rideHailing: Support; rideSentinel: Support }[] = [
+  { feature: 'ID verified before you meet', groupChat: 'no', rideHailing: 'partial', rideSentinel: 'yes' },
+  { feature: 'Face-to-face pickup confirmation', groupChat: 'no', rideHailing: 'no', rideSentinel: 'yes' },
+  { feature: 'Mutual blind rating', groupChat: 'no', rideHailing: 'partial', rideSentinel: 'yes' },
+  { feature: 'Works with rides you already arranged', groupChat: 'yes', rideHailing: 'no', rideSentinel: 'yes' },
+  { feature: 'Booking, matching & in-app payment', groupChat: 'no', rideHailing: 'yes', rideSentinel: 'no' },
+  { feature: 'GPS ride tracking', groupChat: 'no', rideHailing: 'yes', rideSentinel: 'no' },
+] as const
+
+function SupportMark({ value }: { value: Support }) {
+  if (value === 'yes') {
+    return (
+      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-verified/15 text-verified">
+        <Check size={14} strokeWidth={3} />
+      </span>
+    )
+  }
+  if (value === 'partial') {
+    return (
+      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-pending/15 text-pending">
+        <Minus size={14} strokeWidth={3} />
+      </span>
+    )
+  }
+  return (
+    <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-mist text-slate-400">
+      <X size={14} strokeWidth={3} />
+    </span>
+  )
+}
+
 const FAQ = [
   [
     'Is this a ride-hailing app?',
-    "No. There's no matching, booking, pricing, or payment. You still arrange the ride yourselves — RideSentinel only confirms who you're meeting at pickup.",
+    "No. There's no matching, booking, pricing, or payment. You still arrange the ride yourselves. RideSentinel only confirms who you're meeting at pickup.",
   ],
   [
     'What happens to my ID photo?',
@@ -56,7 +89,7 @@ const FAQ = [
   ],
   [
     'Who sees my rating?',
-    "Nobody, until you both rate each other or 48 hours pass — whichever comes first. You can't see theirs by submitting yours early.",
+    "Nobody, until you both rate each other or 48 hours pass, whichever comes first. You can't see theirs by submitting yours early.",
   ],
 ] as const
 
@@ -146,7 +179,7 @@ export function LandingPage() {
             className="lg:pt-6"
           >
             <div className="border-l-2 border-brand pl-3 font-mono text-xs font-semibold uppercase tracking-wider text-slate">
-              Service area — Iloilo City
+              Service area: Iloilo City
               <span className="mx-1.5 text-ink/25">·</span>
               Jaro, La Paz, Mandurriao
             </div>
@@ -268,7 +301,7 @@ export function LandingPage() {
               How pickup verification works.
             </h2>
             <p className="max-w-sm text-[14px] leading-snug text-slate">
-              Same workflow whether you drive or ride as a passenger — both sides confirm before a ride
+              Same workflow whether you drive or ride as a passenger: both sides confirm before a ride
               counts.
             </p>
           </div>
@@ -302,7 +335,7 @@ export function LandingPage() {
               <ShieldAlert size={18} className="mt-0.5 flex-shrink-0 text-amber-700" />
               <p className="max-w-[52ch] text-[13.5px] leading-snug text-slate">
                 <strong className="font-bold text-ink">Not a ride-hailing app.</strong> There is no
-                matching, booking, GPS tracking, or payment — you still arrange rides yourselves.
+                matching, booking, GPS tracking, or payment. You still arrange rides yourselves.
                 &ldquo;ID-verified&rdquo; means an admin checked a government or school ID; it is not a
                 background check or safety guarantee.
               </p>
@@ -314,6 +347,68 @@ export function LandingPage() {
               Privacy &amp; Terms <ArrowRight size={13} />
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* Band 1.5: Honest comparison — what RideSentinel adds that the alternatives don't */}
+      <section className="border-b border-mist bg-page px-5 py-14 text-ink md:px-10 md:py-20">
+        <div className="mx-auto max-w-5xl">
+          <h2 className="font-display text-[28px] font-bold tracking-tight text-ink md:text-[34px]">
+            Not a replacement for how you already ride: the missing trust layer.
+          </h2>
+          <p className="mt-3 max-w-2xl text-[14.5px] leading-relaxed text-slate">
+            RideSentinel isn&apos;t a ride-hailing app and doesn&apos;t try to be one. Here&apos;s how it compares
+            to arranging rides in a group chat, and to a typical ride-hailing app, for the one moment that
+            matters most: knowing who&apos;s actually showing up at pickup.
+          </p>
+
+          <div className="mt-8 overflow-x-auto rounded-xl border border-mist bg-paper">
+            <table className="w-full min-w-[560px] border-collapse text-left text-[13.5px]">
+              <thead>
+                <tr className="border-b border-mist">
+                  <th scope="col" className="px-5 py-4 font-semibold text-slate">
+                    Feature
+                  </th>
+                  <th scope="col" className="px-4 py-4 text-center font-semibold text-slate">
+                    Group chat
+                  </th>
+                  <th scope="col" className="px-4 py-4 text-center font-semibold text-slate">
+                    Ride-hailing apps
+                  </th>
+                  <th scope="col" className="bg-blue-50/60 px-4 py-4 text-center font-bold text-brand-dark">
+                    RideSentinel
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARISON.map((row, i) => (
+                  <tr key={row.feature} className={cn(i !== COMPARISON.length - 1 && 'border-b border-mist')}>
+                    <th scope="row" className="px-5 py-3.5 font-semibold text-ink">
+                      {row.feature}
+                    </th>
+                    <td className="px-4 py-3.5 text-center">
+                      <SupportMark value={row.groupChat} />
+                    </td>
+                    <td className="px-4 py-3.5 text-center">
+                      <SupportMark value={row.rideHailing} />
+                    </td>
+                    <td className="bg-blue-50/60 px-4 py-3.5 text-center">
+                      <SupportMark value={row.rideSentinel} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p className="mt-4 max-w-2xl text-[12.5px] leading-relaxed text-slate">
+            RideSentinel doesn&apos;t book, match, or track rides on purpose. You still arrange the ride
+            yourselves, the same way you do today. See the{' '}
+            <a href="#how-it-works" className="font-bold text-brand hover:text-brand-dark">
+              scope boundary
+            </a>{' '}
+            above for what &ldquo;ID-verified&rdquo; does and doesn&apos;t mean.
+          </p>
         </div>
       </section>
 
@@ -557,7 +652,7 @@ export function LandingPage() {
 
           <div className="mt-12 flex flex-col gap-3 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="font-mono text-xs text-slate-500">
-              RideSentinel — Jaro / La Paz / Mandurriao, Iloilo City
+              RideSentinel · Jaro / La Paz / Mandurriao, Iloilo City
             </div>
             <div className="font-mono text-xs text-slate-500">&copy; {new Date().getFullYear()} RideSentinel</div>
           </div>
