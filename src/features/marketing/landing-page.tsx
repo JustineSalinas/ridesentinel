@@ -171,6 +171,14 @@ const FAQ = [
     'Who sees my rating?',
     "Nobody, until you both rate each other or 48 hours pass, whichever comes first. You can't see theirs by submitting yours early.",
   ],
+  [
+    'What if my ID gets rejected?',
+    "You'll see the reason on your status page, and you can fix the issue and resubmit. Verification isn't a one-time pass or fail.",
+  ],
+  [
+    'Do I have to pay to use RideSentinel?',
+    "No. Verification, the QR handshake, and ratings are all free. RideSentinel doesn't charge fares or take a cut, because it doesn't arrange the ride.",
+  ],
 ] as const
 
 export function LandingPage() {
@@ -232,16 +240,10 @@ export function LandingPage() {
       {/* First viewport — asymmetric hero, phone bleeds past the content edge */}
       <section className="relative overflow-hidden bg-white px-5 pb-20 pt-14 text-ink md:px-10 md:pb-28 md:pt-20">
         {/* Real Iloilo City basemap, faded behind the content — not a blurred blob or stock decoration.
-            Mask fades toward the bottom-left only; the phone already covers the top-right, so
-            concentrating visibility there (like the old mask did) hid the map behind the phone itself. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10 opacity-[0.4] grayscale"
-          style={{
-            maskImage: 'radial-gradient(110% 100% at 50% 0%, black 55%, transparent 100%)',
-            WebkitMaskImage: 'radial-gradient(110% 100% at 50% 0%, black 55%, transparent 100%)',
-          }}
-        >
+            No negative z-index on this wrapper: that alone (independent of opacity/filter/mask)
+            breaks the WebGL canvas's compositing in this browser and renders it fully blank.
+            Stacking below the content is done with DOM order + the content wrapper's z-10 instead. */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0">
           <Suspense fallback={null}>
             <Map
               className="h-full w-full"
@@ -252,10 +254,18 @@ export function LandingPage() {
             />
           </Suspense>
         </div>
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 z-0"
+          style={{
+            background:
+              'radial-gradient(85% 90% at 50% 15%, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.4) 55%, rgba(255,255,255,0.8) 100%)',
+          }}
+        />
         {/* Dot-grid texture over the map, keeps the signal-grid motif without competing with it */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 -z-10"
+          className="pointer-events-none absolute inset-0 z-[1]"
           style={{
             backgroundImage: 'radial-gradient(circle, #CBD5E1 1px, transparent 1px)',
             backgroundSize: '22px 22px',
@@ -264,7 +274,7 @@ export function LandingPage() {
           }}
         />
 
-        <div className="mx-auto grid max-w-3xl items-start">
+        <div className="relative z-10 mx-auto grid max-w-6xl items-start">
           <motion.div
             initial={reduceMotion ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -334,7 +344,7 @@ export function LandingPage() {
 
       {/* Band 0.5: What RideSentinel actually is, before the step-by-step */}
       <section className="bg-paper px-5 py-14 text-ink md:px-10 md:py-20">
-        <div className="mx-auto max-w-5xl">
+        <div className="mx-auto max-w-6xl">
           <div className="font-mono text-xs font-bold uppercase tracking-wider text-brand">
             What RideSentinel is
           </div>
@@ -711,8 +721,10 @@ export function LandingPage() {
 
       {/* Footer */}
       <footer className="relative overflow-hidden border-t border-white/10 bg-[#0B1120] px-5 pb-8 pt-14 text-slate-300 md:px-10 md:pb-10 md:pt-20">
-        {/* Real Iloilo City basemap (mapcn/MapLibre), static and non-interactive, faded behind the footer content */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-30 grayscale">
+        {/* Real Iloilo City basemap (mapcn/MapLibre). No CSS opacity/filter here — both break the
+            WebGL canvas's compositing and render it blank; the gradient overlay below does the
+            fading instead, without ever touching the canvas. */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0">
           <Suspense fallback={null}>
             <Map
               className="h-full w-full"
@@ -725,7 +737,7 @@ export function LandingPage() {
         </div>
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0B1120] via-[#0B1120]/85 to-[#0B1120]/55"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0B1120] via-[#0B1120]/92 to-[#0B1120]/75"
         />
 
         <div className="relative mx-auto max-w-6xl">
