@@ -1,9 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Onest:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Onest:wght@400;500;600;700;800&display=swap');
 @import 'tailwindcss';
 
 @theme {
   --font-sans: 'Inter', system-ui, sans-serif;
-  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-display: 'IBM Plex Serif', Georgia, serif;
   --font-marketing: 'Onest', system-ui, sans-serif;
   /* Monospace accent for codes/tags — nonces, tiers, countdowns: the
      "this is a verification token" register the Inter body text can't give. */

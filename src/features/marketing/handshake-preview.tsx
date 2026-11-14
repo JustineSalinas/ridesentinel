@@ -63,13 +63,14 @@ export function HandshakePreview({ embedded = false }: { embedded?: boolean }) {
     <div
       className={cn(
         'w-full overflow-hidden bg-[#0B1120]',
-        !embedded &&
-          'max-w-[390px] rounded-2xl border border-white/15 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.75)]',
+        embedded
+          ? 'flex h-full flex-col'
+          : 'max-w-[390px] rounded-2xl border border-white/15 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.75)]',
       )}
     >
       {/* Flush tab bar — no nested cards */}
       <div
-        className="grid grid-cols-3 border-b border-white/10 bg-[#111827]"
+        className="grid shrink-0 grid-cols-3 border-b border-white/10 bg-[#111827]"
         role="tablist"
         aria-label="Pickup handshake preview steps"
       >
@@ -96,6 +97,7 @@ export function HandshakePreview({ embedded = false }: { embedded?: boolean }) {
       </div>
 
       {/* Screen canvas — flat, single-surface hierarchy */}
+      <div className={cn(embedded && 'min-h-0 flex-1')}>
       <AnimatePresence mode="wait">
         {stage === 'qr' && (
           <motion.div
@@ -104,7 +106,7 @@ export function HandshakePreview({ embedded = false }: { embedded?: boolean }) {
             animate={{ opacity: 1, y: 0 }}
             exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
             transition={{ duration: 0.16 }}
-            className="flex min-h-[340px] flex-col items-center justify-between bg-ink px-6 py-6 text-center text-white"
+            className={cn('flex flex-col items-center justify-between bg-ink px-6 py-6 text-center text-white', embedded ? 'h-full' : 'min-h-[340px]')}
           >
             <div className="flex w-full items-center justify-between text-xs">
               <span className="font-mono font-bold uppercase tracking-wider text-slate-300">My QR</span>
@@ -147,7 +149,7 @@ export function HandshakePreview({ embedded = false }: { embedded?: boolean }) {
             animate={{ opacity: 1, y: 0 }}
             exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
             transition={{ duration: 0.16 }}
-            className="flex min-h-[340px] flex-col justify-between bg-paper px-6 py-5 text-ink"
+            className={cn('flex flex-col justify-between bg-paper px-6 py-5 text-ink', embedded ? 'h-full' : 'min-h-[340px]')}
           >
             <div className="flex items-center justify-between border-b border-mist pb-3">
               <span className="font-mono text-xs font-bold uppercase tracking-wider text-slate">
@@ -163,7 +165,7 @@ export function HandshakePreview({ embedded = false }: { embedded?: boolean }) {
                 <RiderAvatarSvg />
               </div>
               <div className="min-w-0">
-                <div className="text-[17px] font-extrabold tracking-tight text-ink">Marco D.</div>
+                <div className="text-[17px] font-extrabold tracking-tight text-ink">Harry V.</div>
                 <div className="mt-0.5 text-[13px] font-medium text-slate">Driver · Jaro pickup</div>
                 <div className="mt-1.5 flex items-center gap-2 font-mono text-xs font-bold text-ink">
                   <span className="inline-flex items-center gap-1 text-amber-700">
@@ -201,7 +203,7 @@ export function HandshakePreview({ embedded = false }: { embedded?: boolean }) {
             animate={{ opacity: 1, y: 0 }}
             exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
             transition={{ duration: 0.16 }}
-            className="flex min-h-[340px] flex-col justify-between bg-paper px-6 py-5 text-ink"
+            className={cn('flex flex-col justify-between bg-paper px-6 py-5 text-ink', embedded ? 'h-full' : 'min-h-[340px]')}
           >
             <div className="flex items-center justify-between border-b border-mist pb-3">
               <span className="font-mono text-xs font-bold uppercase tracking-wider text-slate">
@@ -213,7 +215,7 @@ export function HandshakePreview({ embedded = false }: { embedded?: boolean }) {
             </div>
 
             <div className="my-4 text-center">
-              <div className="text-[15px] font-extrabold text-ink">How was your ride with Marco?</div>
+              <div className="text-[15px] font-extrabold text-ink">How was your ride with Harry?</div>
               <div className="mt-3 flex justify-center gap-1.5">
                 {[1, 2, 3, 4, 5].map((n) => (
                   <span
@@ -240,16 +242,17 @@ export function HandshakePreview({ embedded = false }: { embedded?: boolean }) {
             <div className="flex items-start gap-2.5 border-t border-mist pt-3.5 text-xs leading-relaxed text-slate">
               <Lock size={14} className="mt-0.5 flex-shrink-0 text-brand" />
               <span>
-                <strong className="font-bold text-ink">Blind reveal:</strong> Marco cannot see your rating
+                <strong className="font-bold text-ink">Blind reveal:</strong> Harry cannot see your rating
                 until he submits his own, or the 48-hour window closes.
               </span>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
 
       {/* Caption footer */}
-      <div className="border-t border-white/10 bg-[#0B1120] px-4 py-2.5 text-xs text-slate-300">
+      <div className="shrink-0 border-t border-white/10 bg-[#0B1120] px-4 py-2.5 text-xs text-slate-300">
         {activeStage.caption}
       </div>
     </div>

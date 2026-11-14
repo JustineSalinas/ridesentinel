@@ -1,14 +1,26 @@
-import { useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ArrowRight, Download, Plus, ShieldAlert } from 'lucide-react'
 import { BrandMark } from '@/components/brand-mark'
 import { PhoneMock } from '@/components/phone-mock'
+import { CountdownRing } from '@/components/countdown-ring'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { cn } from '@/lib/utils'
 import { useScrollReveal } from '@/hooks/use-scroll-reveal'
 import { DemoQuickAccess } from './demo-quick-access'
 import { HandshakePreview } from './handshake-preview'
+
+gsap.registerPlugin(ScrollTrigger)
+
+// maplibre-gl is >1MB — only the footer needs it, so it must not block the
+// landing page's initial bundle. Lazy-load it and let the footer's own
+// gradient/background color stand in until it's ready.
+const Map = lazy(() => import('@/components/ui/map').then((m) => ({ default: m.Map })))
+
+const HEADLINE_LINES = ['Know who you’re meeting', 'before you ride.']
 
 const STEPS = [
   {
@@ -53,6 +65,29 @@ export function LandingPage() {
   const reduceMotion = useReducedMotion()
   const stepsRef = useScrollReveal<HTMLOListElement>()
   const faqRef = useScrollReveal<HTMLDivElement>()
+  const headlineRef = useRef<HTMLHeadingElement>(null)
+  const phoneRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (reduceMotion) return
+    const ctx = gsap.context(() => {
+      if (headlineRef.current) {
+        gsap.fromTo(
+          headlineRef.current.querySelectorAll('[data-line]'),
+          { opacity: 0, y: 28 },
+          { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out', stagger: 0.09, delay: 0.05 },
+        )
+      }
+      if (phoneRef.current) {
+        gsap.to(phoneRef.current, {
+          y: -36,
+          ease: 'none',
+          scrollTrigger: { trigger: phoneRef.current, start: 'top top', end: 'bottom top', scrub: 0.6 },
+        })
+      }
+    })
+    return () => ctx.revert()
+  }, [reduceMotion])
 
   return (
     <div className="min-h-dvh bg-ink font-marketing text-white">
@@ -60,7 +95,7 @@ export function LandingPage() {
       <header className="sticky top-0 z-20 border-b border-white/10 bg-ink/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5 md:px-10">
           <Link to="/" aria-label="RideSentinel home">
-            <BrandMark showPilotTag />
+            <BrandMark />
           </Link>
 
           <nav className="hidden items-center gap-7 text-[13.5px] font-semibold text-slate-300 md:flex">
@@ -89,27 +124,42 @@ export function LandingPage() {
         </div>
       </header>
 
-      {/* First viewport — light hero with the app on a tilted phone */}
-      <section
-        className="relative overflow-hidden px-5 pb-16 pt-14 text-ink md:px-10 md:pb-24 md:pt-20"
-        style={{
-          background:
-            'radial-gradient(120% 100% at 85% 0%, #FCE7F3 0%, #F5F3FF 38%, #FFFFFF 72%)',
-        }}
-      >
-        <div className="mx-auto grid max-w-6xl items-center gap-10 lg:grid-cols-[1fr_1.15fr] lg:gap-6">
+      {/* First viewport — asymmetric hero, phone bleeds past the content edge */}
+      <section className="relative overflow-hidden bg-white px-5 pb-20 pt-14 text-ink md:px-10 md:pb-28 md:pt-20">
+        {/* Dot-grid texture, not a blurred blob — reads as a signal grid, not stock decoration */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 -z-10"
+          style={{
+            backgroundImage: 'radial-gradient(circle, #CBD5E1 1px, transparent 1px)',
+            backgroundSize: '22px 22px',
+            maskImage: 'radial-gradient(70% 60% at 78% 10%, black 0%, transparent 75%)',
+            WebkitMaskImage: 'radial-gradient(70% 60% at 78% 10%, black 0%, transparent 75%)',
+          }}
+        />
+
+        <div className="mx-auto grid max-w-6xl items-start gap-12 lg:grid-cols-[1fr_0.95fr] lg:gap-4">
           <motion.div
             initial={reduceMotion ? false : { opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, ease: 'easeOut' }}
+            className="lg:pt-6"
           >
-            <div className="inline-flex items-center gap-2 rounded-full border border-ink/10 bg-white px-3.5 py-1 font-mono text-xs font-semibold uppercase tracking-wider text-slate shadow-sm">
-              <span className="h-2 w-2 rounded-full bg-green-500" aria-hidden="true" />
-              Iloilo Pilot · Jaro · La Paz · Mandurriao
+            <div className="border-l-2 border-brand pl-3 font-mono text-xs font-semibold uppercase tracking-wider text-slate">
+              Service area — Iloilo City
+              <span className="mx-1.5 text-ink/25">·</span>
+              Jaro, La Paz, Mandurriao
             </div>
 
-            <h1 className="font-display mt-5 text-[40px] font-extrabold leading-[1.03] tracking-[-0.03em] text-ink sm:text-[50px] lg:text-[56px]">
-              Know who you&apos;re meeting before you ride.
+            <h1
+              ref={headlineRef}
+              className="font-display mt-5 text-[40px] font-extrabold leading-[1.03] tracking-[-0.03em] text-ink sm:text-[52px] lg:text-[58px]"
+            >
+              {HEADLINE_LINES.map((line) => (
+                <span key={line} data-line className="block overflow-hidden">
+                  {line}
+                </span>
+              ))}
             </h1>
 
             <p className="mt-5 max-w-md text-[15.5px] leading-relaxed text-slate">
@@ -123,7 +173,7 @@ export function LandingPage() {
                 to="/register"
                 className={cn(buttonVariants({ variant: 'primary', size: 'lg' }), 'rounded-xl px-6 shadow-sm')}
               >
-                Register for the pilot
+                Register
                 <ArrowRight size={16} strokeWidth={2.2} />
               </Link>
               <Link
@@ -136,19 +186,23 @@ export function LandingPage() {
           </motion.div>
 
           <motion.div
-            initial={reduceMotion ? false : { opacity: 0, scale: 0.92 }}
+            initial={reduceMotion ? false : { opacity: 0, scale: 0.94 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.45, ease: 'easeOut', delay: 0.1 }}
-            className="relative mx-auto lg:mx-0 lg:ml-auto lg:-mr-10 lg:translate-x-6"
+            className="relative mx-auto lg:mx-0 lg:ml-auto lg:-mr-16 lg:translate-x-10"
           >
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 -z-10 scale-125 rounded-full bg-gradient-to-br from-pink-200/50 via-indigo-100/40 to-transparent blur-3xl"
-            />
-            <div className="rotate-[14deg] transition-transform duration-500 hover:rotate-[4deg]">
-              <PhoneMock className="w-[300px] sm:w-[340px] lg:w-[380px]">
+            <div ref={phoneRef} className="relative rotate-[8deg] transition-transform duration-500 hover:rotate-[2deg]">
+              <PhoneMock className="relative z-10 w-[300px] sm:w-[340px] lg:w-[380px]">
                 <HandshakePreview embedded />
               </PhoneMock>
+
+              {/* Live QR expiry — a real ticking countdown, not a static badge */}
+              <div className="absolute -right-3 -top-3 z-20 flex items-center gap-1.5 rounded-full border border-ink/10 bg-white py-1.5 pl-2 pr-3 shadow-lg">
+                <CountdownRing className="h-6 w-6 text-brand" />
+                <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate">
+                  QR live
+                </span>
+              </div>
             </div>
           </motion.div>
         </div>
@@ -252,7 +306,7 @@ export function LandingPage() {
               Straight answers before you join.
             </h2>
             <p className="mt-3 text-[14.5px] leading-relaxed text-slate">
-              Pilot scope covers commuters and motorcycle riders around Jaro, La Paz, and Mandurriao in
+              Coverage spans commuters and motorcycle riders around Jaro, La Paz, and Mandurriao in
               Iloilo City.
             </p>
           </div>
@@ -305,7 +359,7 @@ export function LandingPage() {
               Takes a day to verify. Takes a minute at pickup.
             </h2>
             <p className="mt-1.5 text-[14.5px] text-slate-300">
-              Create your pilot account now or sign in to view your verification status.
+              Create your account now or sign in to view your verification status.
             </p>
           </div>
           <div className="flex w-full flex-col gap-2.5 sm:w-auto sm:flex-row">
@@ -329,43 +383,102 @@ export function LandingPage() {
       <DemoQuickAccess />
 
       {/* Footer */}
-      <footer className="relative overflow-hidden border-t border-white/10 bg-[#0B1120] px-5 py-8 text-slate-300 md:px-10">
-        {/* Real Iloilo City map (OpenStreetMap), faded behind the footer content */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-25 grayscale">
-          <iframe
-            title="Map of Iloilo City"
-            src="https://www.openstreetmap.org/export/embed.html?bbox=122.4650%2C10.6550%2C122.6050%2C10.7650&layer=mapnik"
-            className="h-full w-full border-0"
-            loading="lazy"
-          />
+      <footer className="relative overflow-hidden border-t border-white/10 bg-[#0B1120] px-5 pb-8 pt-14 text-slate-300 md:px-10 md:pb-10 md:pt-20">
+        {/* Real Iloilo City basemap (mapcn/MapLibre), static and non-interactive, faded behind the footer content */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-30 grayscale">
+          <Suspense fallback={null}>
+            <Map
+              className="h-full w-full"
+              theme="dark"
+              interactive={false}
+              attributionControl={false}
+              viewport={{ center: [122.549, 10.705], zoom: 12.4, bearing: 0, pitch: 0 }}
+            />
+          </Suspense>
         </div>
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0B1120] via-[#0B1120]/80 to-[#0B1120]/40"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0B1120] via-[#0B1120]/85 to-[#0B1120]/55"
         />
 
-        <div className="relative mx-auto flex max-w-6xl flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[13px] font-semibold">
-            <Link to="/consent" className="transition-colors hover:text-white">
-              Privacy &amp; Terms
-            </Link>
-            <Link to="/report" className="transition-colors hover:text-white">
-              Report something
-            </Link>
-            <Link to="/admin" className="transition-colors hover:text-white">
-              Admin
-            </Link>
-            <a
-              href="/ridesentinel.apk"
-              download
-              className="inline-flex items-center gap-1.5 transition-colors hover:text-white"
-            >
-              <Download size={13} strokeWidth={2.2} />
-              Download Android app
-            </a>
+        <div className="relative mx-auto max-w-6xl">
+          <div className="grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-4">
+            <div className="col-span-2 sm:col-span-1">
+              <BrandMark />
+              <p className="mt-4 max-w-[26ch] text-[13.5px] leading-relaxed text-slate-400">
+                ID-verified pickup confirmation for informal motorcycle rides.
+              </p>
+            </div>
+
+            <div>
+              <div className="font-mono text-xs font-bold uppercase tracking-wider text-slate-500">Product</div>
+              <ul className="mt-3.5 space-y-2.5 text-[13.5px] font-semibold">
+                <li>
+                  <a href="#how-it-works" className="transition-colors hover:text-white">
+                    How it works
+                  </a>
+                </li>
+                <li>
+                  <a href="#faq" className="transition-colors hover:text-white">
+                    FAQ
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/ridesentinel.apk"
+                    download
+                    className="inline-flex items-center gap-1.5 transition-colors hover:text-white"
+                  >
+                    <Download size={13} strokeWidth={2.2} />
+                    Download Android app
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <div className="font-mono text-xs font-bold uppercase tracking-wider text-slate-500">Account</div>
+              <ul className="mt-3.5 space-y-2.5 text-[13.5px] font-semibold">
+                <li>
+                  <Link to="/register" className="transition-colors hover:text-white">
+                    Register
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/login" className="transition-colors hover:text-white">
+                    Log in
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/report" className="transition-colors hover:text-white">
+                    Report something
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <div className="font-mono text-xs font-bold uppercase tracking-wider text-slate-500">Legal</div>
+              <ul className="mt-3.5 space-y-2.5 text-[13.5px] font-semibold">
+                <li>
+                  <Link to="/consent" className="transition-colors hover:text-white">
+                    Privacy &amp; Terms
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/admin" className="transition-colors hover:text-white">
+                    Admin
+                  </Link>
+                </li>
+              </ul>
+            </div>
           </div>
-          <div className="font-mono text-xs text-slate-300">
-            RideSentinel · Pilot — Jaro / La Paz / Mandurriao, Iloilo City
+
+          <div className="mt-12 flex flex-col gap-3 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="font-mono text-xs text-slate-500">
+              RideSentinel — Jaro / La Paz / Mandurriao, Iloilo City
+            </div>
+            <div className="font-mono text-xs text-slate-500">&copy; {new Date().getFullYear()} RideSentinel</div>
           </div>
         </div>
       </footer>
