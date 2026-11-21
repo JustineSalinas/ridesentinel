@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useMutation } from 'convex/react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 
@@ -51,7 +52,10 @@ export function ReportPage() {
         <p className="max-w-[260px] text-[13px] text-slate">
           An administrator will review this within a few days.
         </p>
-        <Link to="/home" className="mt-2 text-[13px] font-bold text-brand">
+        <Link
+          to="/home"
+          className="tap-feedback mt-2 text-[13px] font-bold text-brand transition-colors hover:text-brand-dark"
+        >
           Back to home
         </Link>
       </div>
@@ -61,8 +65,12 @@ export function ReportPage() {
   return (
     <div className="flex min-h-dvh flex-col bg-page">
       <div className="flex items-center justify-between px-6 py-5">
-        <button onClick={() => navigate(-1)} className="text-[13px] font-semibold text-slate">
-          ← Cancel
+        <button
+          onClick={() => navigate(-1)}
+          className="tap-feedback group flex items-center gap-1 text-[13px] font-semibold text-slate transition-colors hover:text-ink"
+        >
+          <ArrowLeft size={13} strokeWidth={2.5} className="transition-transform group-hover:-translate-x-0.5" />
+          Cancel
         </button>
         <div className="text-[12px] font-bold uppercase tracking-wide text-slate">Report</div>
       </div>
@@ -76,7 +84,7 @@ export function ReportPage() {
               key={r.value}
               onClick={() => setReason(r.value)}
               className={
-                'rounded-2xl border-2 p-4 text-left transition-colors ' +
+                'tap-feedback rounded-2xl border-2 p-4 text-left transition-colors ' +
                 (reason === r.value ? 'border-brand bg-blue-50' : 'neu-out-sm border-transparent')
               }
             >
@@ -96,7 +104,7 @@ export function ReportPage() {
         <button
           onClick={submit}
           disabled={submitting}
-          className="mt-auto flex h-[52px] items-center justify-center rounded-xl bg-danger text-[15px] font-bold text-white disabled:opacity-60"
+          className="tap-feedback mt-auto flex h-[52px] items-center justify-center rounded-xl bg-danger text-[15px] font-bold text-white transition-colors hover:bg-red-700 disabled:opacity-60 disabled:hover:bg-danger"
         >
           {submitting ? 'Submitting…' : 'Submit report'}
         </button>
