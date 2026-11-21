@@ -1,6 +1,6 @@
 import { useQuery } from 'convex/react'
 import { Link, Navigate } from 'react-router-dom'
-import { QrCode, ScanLine, Star, ShieldCheck, Users } from 'lucide-react'
+import { QrCode, ScanLine, Star, ShieldCheck, ShieldQuestion, Users, ArrowRight } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
 
 export function HomePage() {
@@ -34,10 +34,12 @@ export function HomePage() {
           </div>
           {me.verified ? (
             <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-bold text-verified">
-              ✓ ID-verified
+              <ShieldCheck size={12} strokeWidth={2.5} />
+              ID-verified
             </div>
           ) : (
             <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-pending">
+              <ShieldQuestion size={12} strokeWidth={2.5} />
               Not verified
             </div>
           )}
@@ -51,10 +53,10 @@ export function HomePage() {
         {!me.verified && (
           <Link
             to="/verify"
-            className="flex items-center justify-between rounded-2xl bg-amber-50 px-4 py-3.5 text-[13px] font-semibold text-pending"
+            className="tap-feedback group flex items-center justify-between rounded-2xl bg-amber-50 px-4 py-3.5 text-[13px] font-semibold text-pending transition-colors hover:bg-amber-100"
           >
             Get ID-verified to scan and show your QR
-            <span>→</span>
+            <ArrowRight size={15} strokeWidth={2.5} className="transition-transform group-hover:translate-x-0.5" />
           </Link>
         )}
 
@@ -94,14 +96,14 @@ export function HomePage() {
         <div className="flex gap-3">
           <Link
             to="/scan"
-            className="flex flex-1 items-center justify-center gap-2 rounded-full bg-ink py-4 text-white"
+            className="tap-feedback flex flex-1 items-center justify-center gap-2 rounded-full bg-ink py-4 text-white transition-colors hover:bg-ink/90"
           >
             <ScanLine size={18} strokeWidth={2} />
             <span className="text-sm font-bold">Scan</span>
           </Link>
           <Link
             to="/qr"
-            className="neu-out flex flex-1 items-center justify-center gap-2 rounded-full py-4 text-ink"
+            className="neu-out tap-feedback flex flex-1 items-center justify-center gap-2 rounded-full py-4 text-ink"
           >
             <QrCode size={18} strokeWidth={2} />
             <span className="text-sm font-bold">My QR</span>
@@ -109,7 +111,10 @@ export function HomePage() {
         </div>
 
         {summary && (
-          <Link to="/interactions" className="neu-out-sm flex items-center gap-3 rounded-2xl px-4 py-3.5">
+          <Link
+            to="/interactions"
+            className="neu-out-sm tap-feedback flex items-center gap-3 rounded-2xl px-4 py-3.5"
+          >
             {summary.confirmedMeetings > 0 ? (
               <div className="flex -space-x-2">
                 {Array.from({ length: Math.min(3, summary.confirmedMeetings) }).map((_, i) => (
