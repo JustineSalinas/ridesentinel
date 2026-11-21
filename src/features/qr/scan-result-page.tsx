@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from 'convex/react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { ArrowLeft, ArrowRight, ShieldCheck, Star } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 
@@ -20,8 +21,12 @@ export function ScanResultPage() {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-page p-8 text-center">
         <div className="text-[15px] font-bold text-ink">This meeting isn&apos;t available anymore.</div>
-        <Link to="/home" className="text-[13px] font-bold text-brand">
-          Home →
+        <Link
+          to="/home"
+          className="tap-feedback group inline-flex items-center gap-1 text-[13px] font-bold text-brand transition-colors hover:text-brand-dark"
+        >
+          Home
+          <ArrowRight size={13} strokeWidth={2.5} className="transition-transform group-hover:translate-x-0.5" />
         </Link>
       </div>
     )
@@ -33,8 +38,12 @@ export function ScanResultPage() {
   return (
     <div className="flex min-h-dvh flex-col bg-page">
       <div className="flex items-center justify-between px-6 py-5">
-        <Link to="/home" className="text-[13px] font-semibold text-slate">
-          ← Cancel
+        <Link
+          to="/home"
+          className="tap-feedback group flex items-center gap-1 text-[13px] font-semibold text-slate transition-colors hover:text-ink"
+        >
+          <ArrowLeft size={13} strokeWidth={2.5} className="transition-transform group-hover:-translate-x-0.5" />
+          Cancel
         </Link>
         <div className="text-[12px] font-bold uppercase tracking-wide text-slate">Match found</div>
       </div>
@@ -56,10 +65,20 @@ export function ScanResultPage() {
         </div>
 
         <div className="flex gap-2 text-[12px] font-bold">
-          <span className="rounded-full bg-green-50 px-2.5 py-1 text-verified">✓ ID-verified</span>
-          <span className="neu-out-sm rounded-full px-2.5 py-1 text-slate">
-            {other.ratingSummary.score ? `★ ${other.ratingSummary.score.toFixed(1)}` : 'New'} ·{' '}
-            {other.ratingSummary.confirmedMeetings} meetings
+          <span className="flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-verified">
+            <ShieldCheck size={12} strokeWidth={2.5} />
+            ID-verified
+          </span>
+          <span className="neu-out-sm flex items-center gap-1 rounded-full px-2.5 py-1 text-slate">
+            {other.ratingSummary.score ? (
+              <>
+                <Star size={11} strokeWidth={2.5} fill="currentColor" />
+                {other.ratingSummary.score.toFixed(1)}
+              </>
+            ) : (
+              'New'
+            )}{' '}
+            · {other.ratingSummary.confirmedMeetings} meetings
           </span>
         </div>
 
@@ -74,7 +93,7 @@ export function ScanResultPage() {
                   await cancelInteraction({ interactionId, reason: 'face_mismatch', report: true })
                   navigate('/home')
                 }}
-                className="neu-out flex-1 rounded-xl py-3.5 text-[14px] font-bold text-danger"
+                className="neu-out tap-feedback flex-1 rounded-xl py-3.5 text-[14px] font-bold text-danger"
               >
                 Not the person
               </button>
@@ -82,7 +101,7 @@ export function ScanResultPage() {
                 onClick={async () => {
                   await confirmMeeting({ interactionId })
                 }}
-                className="flex-[1.3] rounded-xl bg-brand py-3.5 text-[14px] font-bold text-white"
+                className="tap-feedback flex-[1.3] rounded-xl bg-brand py-3.5 text-[14px] font-bold text-white transition-colors hover:bg-brand-dark"
               >
                 This is the person
               </button>
@@ -110,7 +129,7 @@ export function ScanResultPage() {
               </p>
               <Link
                 to={`/rate/${interactionId}`}
-                className="w-full rounded-xl bg-brand py-3 text-center text-[14px] font-bold text-white"
+                className="tap-feedback w-full rounded-xl bg-brand py-3 text-center text-[14px] font-bold text-white transition-colors hover:bg-brand-dark"
               >
                 Rate now
               </Link>
