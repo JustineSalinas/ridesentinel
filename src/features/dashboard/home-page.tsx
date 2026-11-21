@@ -130,7 +130,10 @@ export function HomePage() {
                 {summary.confirmedMeetings > 0 ? `${summary.confirmedMeetings} confirmed so far` : 'None yet'}
               </div>
             </div>
-            <span className="text-[12px] font-semibold text-brand">See all →</span>
+            <span className="flex items-center gap-1 text-[12px] font-semibold text-brand">
+              See all
+              <ArrowRight size={11} strokeWidth={2.5} />
+            </span>
           </Link>
         )}
       </div>

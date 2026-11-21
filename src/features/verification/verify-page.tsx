@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { useMutation, useQuery } from 'convex/react'
 import { Link } from 'react-router-dom'
+import { Check } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 import { compressImage } from '@/lib/image'
@@ -101,7 +102,7 @@ export function VerifyPage() {
           type="button"
           onClick={handleSubmit}
           disabled={!idPhoto || !selfie || submitting}
-          className="mt-2 flex h-[52px] items-center justify-center rounded-xl bg-brand text-[16px] font-bold text-white disabled:opacity-60"
+          className="tap-feedback mt-2 flex h-[52px] items-center justify-center rounded-xl bg-brand text-[16px] font-bold text-white transition-colors hover:bg-brand-dark disabled:opacity-60 disabled:hover:bg-brand"
         >
           {submitting ? 'Submitting…' : 'Submit for review'}
         </button>
@@ -133,10 +134,13 @@ function UploadField({
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
-        className="neu-in flex h-[120px] flex-col items-center justify-center gap-1.5 rounded-2xl text-center"
+        className="neu-in tap-feedback flex h-[120px] flex-col items-center justify-center gap-1.5 rounded-2xl text-center"
       >
         {file ? (
-          <span className="text-[13px] font-semibold text-verified">✓ {file.name}</span>
+          <span className="flex items-center gap-1 text-[13px] font-semibold text-verified">
+            <Check size={14} strokeWidth={3} />
+            {file.name}
+          </span>
         ) : (
           <span className="text-[12.5px] text-slate">Tap to capture or upload</span>
         )}
@@ -188,7 +192,7 @@ function StatusView({ status, reason }: { status: 'pending' | 'approved'; reason
       <p className="max-w-[260px] text-[13.5px] leading-snug text-slate">{reason ?? copy.body}</p>
       <Link
         to="/home"
-        className="mt-4 flex h-12 w-full max-w-[280px] items-center justify-center rounded-xl bg-brand text-[14px] font-bold text-white"
+        className="tap-feedback mt-4 flex h-12 w-full max-w-[280px] items-center justify-center rounded-xl bg-brand text-[14px] font-bold text-white transition-colors hover:bg-brand-dark"
       >
         Back to home
       </Link>
