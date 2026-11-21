@@ -3,6 +3,7 @@ import { useMutation, useQuery } from 'convex/react'
 import { ConvexError } from 'convex/values'
 import { Link, useParams } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
+import { ArrowLeft } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
 
@@ -42,8 +43,12 @@ export function RatePage() {
   return (
     <div className="flex min-h-dvh flex-col bg-page">
       <div className="flex items-center justify-between px-6 py-5">
-        <Link to="/home" className="text-[13px] font-semibold text-slate">
-          ← Home
+        <Link
+          to="/home"
+          className="tap-feedback group flex items-center gap-1 text-[13px] font-semibold text-slate transition-colors hover:text-ink"
+        >
+          <ArrowLeft size={13} strokeWidth={2.5} className="transition-transform group-hover:-translate-x-0.5" />
+          Home
         </Link>
         <div className="text-[12px] font-bold uppercase tracking-wide text-slate">Rate</div>
       </div>
@@ -64,7 +69,10 @@ export function RatePage() {
           <p className="max-w-[260px] text-[13px] text-slate">
             Hidden until {data.other.displayName} rates you too, or the window closes.
           </p>
-          <Link to="/home" className="mt-2 text-[13px] font-bold text-brand">
+          <Link
+            to="/home"
+            className="tap-feedback mt-2 text-[13px] font-bold text-brand transition-colors hover:text-brand-dark"
+          >
             Back to home
           </Link>
         </motion.div>
@@ -117,14 +125,14 @@ export function RatePage() {
           <button
             onClick={submit}
             disabled={stars === 0}
-            className="mt-1 flex h-[52px] w-full items-center justify-center rounded-xl bg-brand text-[16px] font-bold text-white disabled:opacity-60"
+            className="tap-feedback mt-1 flex h-[52px] w-full items-center justify-center rounded-xl bg-brand text-[16px] font-bold text-white transition-colors hover:bg-brand-dark disabled:opacity-60 disabled:hover:bg-brand"
           >
             Submit rating
           </button>
 
           <Link
             to={`/report?interactionId=${id}&reason=fake_or_coerced_rating`}
-            className="text-[12px] font-semibold text-danger"
+            className="tap-feedback text-[12px] font-semibold text-danger transition-colors hover:text-red-700"
           >
             Flag this interaction
           </Link>
