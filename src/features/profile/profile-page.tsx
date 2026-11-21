@@ -72,14 +72,14 @@ export function ProfilePage() {
         <div className="mt-2 flex w-full max-w-[280px] gap-2">
           <button
             onClick={() => setConfirmingDelete(false)}
-            className="neu-out flex-1 rounded-xl py-3 text-[13.5px] font-bold text-ink"
+            className="neu-out tap-feedback flex-1 rounded-xl py-3 text-[13.5px] font-bold text-ink"
           >
             Keep account
           </button>
           <button
             onClick={handleDelete}
             disabled={busy}
-            className="flex-1 rounded-xl bg-danger py-3 text-[13.5px] font-bold text-white disabled:opacity-40"
+            className="tap-feedback flex-1 rounded-xl bg-danger py-3 text-[13.5px] font-bold text-white transition-colors hover:bg-red-700 disabled:opacity-40"
           >
             Delete
           </button>
@@ -113,6 +113,7 @@ export function ProfilePage() {
               className={cn(
                 'flex-1 rounded-xl border-2 py-2.5 text-sm font-bold transition-colors',
                 rideRole === 'driver' ? 'border-brand bg-blue-50 text-brand-dark' : 'border-transparent neu-out-sm text-slate',
+                'tap-feedback',
               )}
             >
               Driver
@@ -122,6 +123,7 @@ export function ProfilePage() {
               className={cn(
                 'flex-1 rounded-xl border-2 py-2.5 text-sm font-bold transition-colors',
                 rideRole === 'passenger' ? 'border-brand bg-blue-50 text-brand-dark' : 'border-transparent neu-out-sm text-slate',
+                'tap-feedback',
               )}
             >
               Passenger
@@ -129,13 +131,13 @@ export function ProfilePage() {
           </div>
         </Field>
         <div className="mt-2 flex gap-2">
-          <button onClick={() => setEditing(false)} className="neu-out flex-1 rounded-xl py-3 text-[14px] font-bold text-ink">
+          <button onClick={() => setEditing(false)} className="neu-out tap-feedback flex-1 rounded-xl py-3 text-[14px] font-bold text-ink">
             Cancel
           </button>
           <button
             onClick={save}
             disabled={busy}
-            className="flex-1 rounded-xl bg-brand py-3 text-[14px] font-bold text-white disabled:opacity-40"
+            className="tap-feedback flex-1 rounded-xl bg-brand py-3 text-[14px] font-bold text-white transition-colors hover:bg-brand-dark disabled:opacity-40"
           >
             Save
           </button>
@@ -175,17 +177,17 @@ export function ProfilePage() {
         />
       </div>
 
-      <button onClick={startEdit} className="neu-out rounded-xl py-3 text-[14px] font-bold text-ink">
+      <button onClick={startEdit} className="neu-out tap-feedback rounded-xl py-3 text-[14px] font-bold text-ink">
         Edit profile
       </button>
 
       <div className="mt-auto flex flex-col gap-2 pb-4">
-        <button onClick={() => signOut()} className="neu-out rounded-xl py-3 text-[14px] font-bold text-slate">
+        <button onClick={() => signOut()} className="neu-out tap-feedback rounded-xl py-3 text-[14px] font-bold text-slate">
           Log out
         </button>
         <button
           onClick={() => setConfirmingDelete(true)}
-          className="neu-out rounded-xl py-3 text-[14px] font-bold text-danger"
+          className="neu-out tap-feedback rounded-xl py-3 text-[14px] font-bold text-danger"
         >
           Delete my account
         </button>
