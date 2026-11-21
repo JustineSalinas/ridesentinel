@@ -50,6 +50,16 @@
 }
 
 @layer utilities {
+  /* Shared tap feedback for touch targets — buttons/links across the app had
+     no press feedback at all (flat <button>/<Link>, no transition), so taps
+     felt unresponsive. One utility instead of repeating active:scale-* everywhere. */
+  .tap-feedback {
+    transition: transform 150ms ease;
+  }
+  .tap-feedback:active {
+    transform: scale(0.96);
+  }
+
   /* Neumorphic (soft UI) surfaces — dual soft shadows against the
      monochrome --color-page canvas. "-out" reads as raised (cards, tiles,
      idle buttons); "-in" reads as recessed (inputs, pressed/active states).
