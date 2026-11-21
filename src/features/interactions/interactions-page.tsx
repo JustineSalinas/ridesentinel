@@ -1,6 +1,6 @@
 import { useQuery } from 'convex/react'
 import { Link } from 'react-router-dom'
-import { ScanLine } from 'lucide-react'
+import { ArrowLeft, ArrowRight, ScanLine, Star } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
 
 export function InteractionsPage() {
@@ -9,8 +9,12 @@ export function InteractionsPage() {
   return (
     <div className="flex flex-1 flex-col bg-page">
       <div className="flex items-center gap-3 px-6 py-5">
-        <Link to="/home" className="text-[14px] font-semibold text-slate">
-          ←
+        <Link
+          to="/home"
+          className="tap-feedback group flex h-8 w-8 items-center justify-center rounded-full text-slate transition-colors hover:bg-mist hover:text-ink"
+          aria-label="Back to home"
+        >
+          <ArrowLeft size={16} strokeWidth={2.5} className="transition-transform group-hover:-translate-x-0.5" />
         </Link>
         <div className="text-[18px] font-extrabold text-ink">Interactions</div>
       </div>
@@ -28,8 +32,12 @@ export function InteractionsPage() {
                 Scan someone&apos;s QR, or show them yours, to log your first confirmed meeting.
               </p>
             </div>
-            <Link to="/scan" className="mt-1 text-[13px] font-bold text-brand">
-              Scan a code →
+            <Link
+              to="/scan"
+              className="tap-feedback group mt-1 inline-flex items-center gap-1 text-[13px] font-bold text-brand transition-colors hover:text-brand-dark"
+            >
+              Scan a code
+              <ArrowRight size={13} strokeWidth={2.5} className="transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
         )}
@@ -65,17 +73,20 @@ function StatusBit({
   if (status === 'confirmed') {
     if (myRating) {
       return (
-        <span className="flex-shrink-0 rounded-md bg-green-50 px-2 py-1 text-[11px] font-bold text-verified">
-          You rated ★{myRating}
+        <span className="flex flex-shrink-0 items-center gap-1 rounded-md bg-green-50 px-2 py-1 text-[11px] font-bold text-verified">
+          You rated
+          <Star size={11} strokeWidth={2.5} fill="currentColor" />
+          {myRating}
         </span>
       )
     }
     return (
       <Link
         to={`/rate/${interactionId}`}
-        className="flex-shrink-0 rounded-full bg-brand px-3 py-1.5 text-[11px] font-bold text-white"
+        className="tap-feedback group flex flex-shrink-0 items-center gap-1 rounded-full bg-brand px-3 py-1.5 text-[11px] font-bold text-white transition-colors hover:bg-brand-dark"
       >
-        Rate →
+        Rate
+        <ArrowRight size={11} strokeWidth={2.5} className="transition-transform group-hover:translate-x-0.5" />
       </Link>
     )
   }
