@@ -3,6 +3,7 @@ import { useMutation } from 'convex/react'
 import { ConvexError } from 'convex/values'
 import { Link, useNavigate } from 'react-router-dom'
 import { Html5Qrcode } from 'html5-qrcode'
+import { ArrowLeft } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
 
 const ERROR_COPY: Record<string, string> = {
@@ -80,8 +81,12 @@ export function ScanPage() {
   return (
     <div className="flex min-h-dvh flex-col bg-ink text-white">
       <div className="flex items-center justify-between px-6 py-5">
-        <Link to="/home" className="font-mono text-[11px] font-bold tracking-wide text-slate-400">
-          ← HOME
+        <Link
+          to="/home"
+          className="tap-feedback group flex items-center gap-1 font-mono text-[11px] font-bold tracking-wide text-slate-400 transition-colors hover:text-white"
+        >
+          <ArrowLeft size={13} strokeWidth={2.5} className="transition-transform group-hover:-translate-x-0.5" />
+          HOME
         </Link>
         <div className="font-mono text-[11px] font-bold tracking-widest text-slate-400">SCAN</div>
       </div>
