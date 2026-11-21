@@ -3,6 +3,7 @@ import { useMutation, useQuery } from 'convex/react'
 import { Link, useNavigate } from 'react-router-dom'
 import { QRCodeSVG } from 'qrcode.react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { ArrowLeft, ArrowRight, ShieldCheck } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
 
 export function MyQrPage() {
@@ -53,8 +54,12 @@ export function MyQrPage() {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-ink p-8 text-center text-white">
         <div className="text-[15px] font-bold">Get verified to show your QR</div>
-        <Link to="/verify" className="text-[13px] font-bold text-brand">
-          Verify →
+        <Link
+          to="/verify"
+          className="tap-feedback group inline-flex items-center gap-1 text-[13px] font-bold text-brand transition-colors hover:text-blue-400"
+        >
+          Verify
+          <ArrowRight size={13} strokeWidth={2.5} className="transition-transform group-hover:translate-x-0.5" />
         </Link>
       </div>
     )
@@ -62,13 +67,20 @@ export function MyQrPage() {
 
   return (
     <div className="relative flex min-h-dvh flex-col items-center justify-center gap-6 bg-ink px-6 text-white">
-      <Link to="/home" className="absolute left-6 top-6 text-[13px] font-semibold text-slate-400">
-        ← Home
+      <Link
+        to="/home"
+        className="tap-feedback group absolute left-6 top-6 flex items-center gap-1 text-[13px] font-semibold text-slate-400 transition-colors hover:text-white"
+      >
+        <ArrowLeft size={14} strokeWidth={2.5} className="transition-transform group-hover:-translate-x-0.5" />
+        Home
       </Link>
 
       <div className="flex flex-col items-center gap-1">
         <div className="text-[15px] font-bold">{me.displayName}</div>
-        <div className="text-[12px] font-bold text-verified">✓ ID-verified</div>
+        <div className="flex items-center gap-1 text-[12px] font-bold text-verified">
+          <ShieldCheck size={13} strokeWidth={2.5} />
+          ID-verified
+        </div>
       </div>
 
       {token && (
