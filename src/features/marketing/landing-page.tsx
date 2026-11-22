@@ -294,10 +294,14 @@ export function LandingPage() {
 
             <h1
               ref={headlineRef}
-              className="font-display mt-5 text-[40px] font-extrabold leading-[1.03] tracking-[-0.03em] text-ink sm:text-[52px] lg:text-[58px]"
+              className="font-display mt-5 overflow-hidden text-[32px] font-extrabold leading-[1.1] tracking-[-0.03em] text-ink sm:text-[52px] lg:text-[58px] lg:leading-[1.03]"
             >
+              {/* Each line can wrap at narrow widths (long line + large type doesn't
+                  always fit in one row) — overflow-hidden lives on the h1 itself so a
+                  wrapped sub-line still shows, instead of clipping it like the old
+                  per-span overflow-hidden did. */}
               {HEADLINE_LINES.map((line) => (
-                <span key={line} data-line className="block overflow-hidden">
+                <span key={line} data-line className="block">
                   {line}
                 </span>
               ))}
