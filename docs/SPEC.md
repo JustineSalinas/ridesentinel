@@ -24,7 +24,7 @@
 - It is **not** a ride-hailing app: no matching, booking, payments, pricing, GPS, or navigation. Users still arrange rides on Facebook, chats, etc.
 - Core loop: **register → verify (ID + selfie, admin reviewed) → show/scan a rotating QR at pickup → both confirm the meeting → rate within 48 hours (hidden until both rate or window closes)**.
 - Three design rules: **QR codes expire**, **ratings need a confirmed interaction**, **the server decides what is true**.
-- Pilot: one community in Jaro / La Paz / Mandurriao, Iloilo City, 20–30 users, plus ≥2 named administrators. Four-day pilot (Oct 18–21, 2026). Hard deadline for everything: Oct 24, 2026.
+- Pilot: one community covering Iloilo City (not scoped to specific districts — see DECISIONS.md 2026-11-22), 20–30 users, plus ≥2 named administrators. Four-day pilot (Oct 18–21, 2026). Hard deadline for everything: Oct 24, 2026.
 
 ### 1.1 Roles
 
@@ -286,7 +286,7 @@ Users may read a rating row only if they are the rater, **or** `rating_is_reveal
 
 No triggers, no SECURITY DEFINER, no views — same guarantees, different mechanism:
 
-- "Users cannot change `role`/`tier`/`suspended_at`/`consentAt`" → there is simply no mutation that accepts those as arguments from the client. `convex/profiles.ts`'s `updateProfile` only takes `displayName`/`phone`/`rideRole`/`area` (`area` is a coarse pilot-district enum — `jaro`/`la_paz`/`mandurriao` — optional, never a precise location; see `docs/DECISIONS.md`).
+- "Users cannot change `role`/`tier`/`suspended_at`/`consentAt`" → there is simply no mutation that accepts those as arguments from the client. `convex/profiles.ts`'s `updateProfile` only takes `displayName`/`phone`/`rideRole`.
 - `auditLog` append-only → no `update`/`delete` mutation exists for it anywhere in the codebase, full stop. If you ever need to "fix" an audit row, you can't — that's the point.
 - `submit_rating`'s checks (confirmed status, window open, no duplicate, caller is a party, not suspended, 7-day pair cooldown, daily cap) → all become `if` checks inside a single `ratings.submitRating` mutation, same order, same distinct errors, implemented with indexed queries (`by_interaction_rater`, `by_raterId`) instead of SQL `WHERE`.
 - `rating_is_revealed` / `rating_summary` → plain Convex query functions (`ratings.getRevealed`, `ratings.getSummaryFor`) that recompute on every call; Convex's reactivity means the client re-renders automatically when the underlying rows change, no polling needed.
@@ -300,7 +300,7 @@ Same shape as a policy matrix, but every cell below is a promise about what a **
 
 | Table | `user` can | `admin` can |
 |---|---|---|
-| `profiles` | Read own row (`profiles.getMe`); update own `displayName`/`phone`/`rideRole`/`area` only (`profiles.updateProfile`). No query ever returns another user's row — a scan returns a hand-picked projection from a dedicated function, never the row itself. | Read any profile only through an admin-gated query; mutate `role`/`tier`/`suspendedAt` only through admin mutations that call `requireAdmin` |
+| `profiles` | Read own row (`profiles.getMe`); update own `displayName`/`phone`/`rideRole` only (`profiles.updateProfile`). No query ever returns another user's row — a scan returns a hand-picked projection from a dedicated function, never the row itself. | Read any profile only through an admin-gated query; mutate `role`/`tier`/`suspendedAt` only through admin mutations that call `requireAdmin` |
 | `verificationRequests` | Insert own (`status: 'pending'`, blocked if one is already pending); read own row — file storage ids are present but **unusable directly**, there is no public query that turns a storage id into a URL | Read all via an admin query; decide only through a mutation that calls `requireAdmin` |
 | `qrTokens` | Nothing — no public query or mutation touches this table directly | Nothing — internal to `qr.issueQr`/`qr.scanQr` |
 | `interactions` | Read only rows where they're `userA` or `userB` (query filters by caller's id, never trusts a client-supplied id) | Read all via an admin query |
@@ -336,7 +336,7 @@ Checks in order (record a `scanEvents` row with the outcome for each failure):
 3. `qrToken.userId !== caller` (`self_scan`).
 4. Atomically claim it: patch the row (`usedAt`, `usedBy`) only inside this mutation — Convex mutations are serializable transactions, so a second concurrent call reading the same row before the first commits will conflict and retry, never double-claim it. This is the Convex equivalent of the Postgres `UPDATE ... WHERE used_at IS NULL` race guard.
 5. Insert an `interactions` row (`userA = qrToken.userId`, `userB = caller`, status `scanned`).
-6. Return **only**: `{ interactionId, profile: { displayName, rideRole, area, tier, photoUrl, ratingSummary: { score|null, count, confirmedMeetings } } }` — resolved server-side inside this same mutation via `ctx.storage.getUrl()` on the owner's avatar, never exposing their storage id to the caller. `area` is the same coarse pilot-district enum as the profile field, not a precise location. **Never** phone, email, ID details, address, or any other field.
+6. Return **only**: `{ interactionId, profile: { displayName, rideRole, tier, photoUrl, ratingSummary: { score|null, count, confirmedMeetings } } }` — resolved server-side inside this same mutation via `ctx.storage.getUrl()` on the owner's avatar, never exposing their storage id to the caller. **Never** phone, email, ID details, address, or any other field.
 - Target: profile on screen ≤ 3 s on 4G.
 - Convex queries are reactive by default — A's `useQuery` on "my open interactions" updates live the moment this mutation inserts, no manual realtime subscription needed (that's the Supabase Realtime subscription, built in).
 
@@ -580,7 +580,7 @@ Surveys (SUS, TAM, confidence before/after, ISO 25010 checklist) are external (G
 
 ## 17. Open items (do not guess silently — ask the owner)
 
-1. ~~Pilot community name and the named **data protection contact**~~ — **Resolved 2026-11-12**: "RideSentinel Pilot Community — Jaro / La Paz / Mandurriao", contact `privacy@ridesentinel.app`, both shown on the Consent screen. See DECISIONS.md.
+1. ~~Pilot community name and the named **data protection contact**~~ — **Resolved 2026-11-12, updated 2026-11-22**: "RideSentinel Pilot Community — Iloilo City" (no longer scoped to named districts), contact `privacy@ridesentinel.app`, both shown on the Consent screen. See DECISIONS.md.
 2. ~~Final wording of terms of use / community guidelines~~ — **Resolved 2026-11-12**: ratified as pilot v1 (`src/features/auth/terms.ts`). A lawyer/adviser pass is still worth doing before any post-pilot public launch, but it does not block the pilot.
 3. Admin accounts and account ownership — **Partially resolved 2026-11-12**: Vercel/Convex/GitHub are owned by the project lead's accounts (team `justinesalinas-projects`); the CLI-only `admin:makeAdmin` bootstrap (DECISIONS.md, 2026-11-10) already exists and one admin account is live. Naming a **second** real, trusted human administrator is a staffing decision outside what can be inferred from the repo — still needs the owner.
 4. Whether NPC registration applies at pilot scale — **Working assumption 2026-11-12, not legal advice**: no, not yet. See DECISIONS.md for the reasoning and the trigger to revisit.

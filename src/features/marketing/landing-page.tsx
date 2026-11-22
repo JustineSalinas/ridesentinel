@@ -288,8 +288,6 @@ export function LandingPage() {
           >
             <div className="border-l-2 border-brand pl-3 font-mono text-xs font-semibold uppercase tracking-wider text-slate">
               Built for Iloilo City
-              <span className="mx-1.5 text-ink/25">·</span>
-              Jaro, La Paz, Mandurriao
             </div>
 
             <h1
@@ -588,8 +586,7 @@ export function LandingPage() {
               Straight answers before you join.
             </h2>
             <p className="mt-3 text-[14.5px] leading-relaxed text-slate">
-              Coverage spans commuters and motorcycle riders around Jaro, La Paz, and Mandurriao in
-              Iloilo City.
+              Coverage spans commuters and motorcycle riders across Iloilo City.
             </p>
           </div>
 
@@ -824,7 +821,7 @@ export function LandingPage() {
 
           <div className="mt-12 flex flex-col gap-3 border-t border-white/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="font-mono text-xs text-slate-500">
-              RideSentinel · Jaro / La Paz / Mandurriao, Iloilo City
+              RideSentinel · Iloilo City
             </div>
             <div className="font-mono text-xs text-slate-500">&copy; {new Date().getFullYear()} RideSentinel</div>
           </div>

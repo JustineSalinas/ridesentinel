@@ -18,6 +18,8 @@ import { InteractionsPage } from '@/features/interactions/interactions-page'
 import { RatePage } from '@/features/ratings/rate-page'
 import { ReportPage } from '@/features/reports/report-page'
 import { ProfilePage } from '@/features/profile/profile-page'
+import { RequestRidePage } from '@/features/requests/request-ride-page'
+import { DriverRequestsPage } from '@/features/requests/driver-requests-page'
 
 // Admin surfaces are only ever reached by admins — lazy-load the whole
 // section so riders never pay for it in their first-load bundle.
@@ -62,6 +64,8 @@ export const router = createBrowserRouter([
       { path: '/scan/result/:id', element: <ScanResultPage /> },
       { path: '/rate/:interactionId', element: <RatePage /> },
       { path: '/report', element: <ReportPage /> },
+      { path: '/request', element: <RequestRidePage /> },
+      { path: '/requests', element: <DriverRequestsPage /> },
       {
         element: <AppShell />,
         children: [

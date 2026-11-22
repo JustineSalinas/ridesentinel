@@ -187,7 +187,7 @@ export function HandshakePreview({ embedded = false }: { embedded?: boolean }) {
                   Harry V.
                 </div>
                 <div className={cn('mt-0.5 font-medium text-slate', embedded ? 'text-[11px]' : 'text-[13px]')}>
-                  Driver · Jaro pickup
+                  Driver · Iloilo City pickup
                 </div>
                 <div
                   className={cn(

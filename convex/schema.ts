@@ -25,11 +25,11 @@ export default defineSchema({
     rideRole: v.union(v.literal('driver'), v.literal('passenger')),
     displayName: v.string(),
     phone: v.optional(v.string()),
-    // Coarse pilot district, not a precise location — there is still no GPS
-    // tracking (SPEC.md §6.2). Optional so existing rows from before this
-    // field existed stay valid without a migration; `area: undefined` just
-    // means "not set," same as any other optional profile field here.
-    area: v.optional(v.union(v.literal('jaro'), v.literal('la_paz'), v.literal('mandurriao'))),
+    // Driver-only "I'm online" presence. A timestamp, not a boolean, so a
+    // driver who closes the app without going offline doesn't stay listed
+    // forever — the matching query (rideRequests.ts) treats anything older
+    // than AVAILABILITY_TTL_MS as offline, no cron needed.
+    availableSince: v.optional(v.number()),
     avatarStorageId: v.optional(v.id('_storage')),
     tier: v.union(v.literal('unverified'), v.literal('id_verified')),
     tierExpiresAt: v.optional(v.number()),
@@ -70,6 +70,31 @@ export default defineSchema({
   })
     .index('by_nonce', ['nonce'])
     .index('by_userId', ['userId']),
+
+  // Support: ride-matching requests (2026-11-22, see docs/DECISIONS.md).
+  // Deliberately *not* booking/dispatch in the TNVS sense — this only
+  // connects a passenger with an already-verified driver, city-wide across
+  // Iloilo. No fare, no payment, no routing/live GPS: the destination is a
+  // free-text note for context, not something this app geocodes or tracks.
+  // Once accepted, the two riders still meet and verify through the
+  // existing QR handshake (D3/D4) exactly like any other pickup.
+  rideRequests: defineTable({
+    passengerId: v.id('users'),
+    note: v.optional(v.string()),
+    status: v.union(
+      v.literal('open'),
+      v.literal('accepted'),
+      v.literal('cancelled'),
+      v.literal('expired'),
+    ),
+    driverId: v.optional(v.id('users')),
+    acceptedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    expiresAt: v.number(),
+  })
+    .index('by_passengerId', ['passengerId'])
+    .index('by_status', ['status'])
+    .index('by_driverId', ['driverId']),
 
   // D4 — interactions.
   interactions: defineTable({

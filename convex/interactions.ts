@@ -19,7 +19,6 @@ async function otherPartyProjection(ctx: QueryCtx, userId: Id<'users'>) {
     userId,
     displayName: profile.displayName,
     rideRole: profile.rideRole,
-    area: profile.area,
     tier: profile.tier,
     photoUrl: profile.avatarStorageId ? await ctx.storage.getUrl(profile.avatarStorageId) : null,
     ratingSummary: await getRatingSummary(ctx, userId),

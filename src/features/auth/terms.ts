@@ -3,7 +3,7 @@
 // lawyer/adviser pass before any post-pilot public launch is still worth
 // doing, but this is not blocked on one for the pilot itself.
 
-export const PILOT_COMMUNITY_NAME = 'RideSentinel Pilot Community — Jaro / La Paz / Mandurriao'
+export const PILOT_COMMUNITY_NAME = 'RideSentinel Pilot Community — Iloilo City'
 export const DATA_PROTECTION_CONTACT = 'privacy@ridesentinel.app'
 
 export const TERMS_OF_USE = `

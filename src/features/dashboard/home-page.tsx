@@ -1,8 +1,7 @@
 import { useQuery } from 'convex/react'
 import { Link, Navigate } from 'react-router-dom'
-import { QrCode, ScanLine, Star, ShieldCheck, ShieldQuestion, Users, ArrowRight, MapPin } from 'lucide-react'
+import { QrCode, ScanLine, Star, ShieldCheck, ShieldQuestion, Users, ArrowRight, MapPin, Search } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
-import { areaLabel } from '@/lib/area'
 
 export function HomePage() {
   const me = useQuery(api.profiles.getMe)
@@ -45,18 +44,10 @@ export function HomePage() {
                 Not verified
               </div>
             )}
-            {me.area && (
-              <div className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-bold text-brand">
-                <MapPin size={12} strokeWidth={2.5} />
-                {areaLabel(me.area)}
-              </div>
-            )}
           </div>
-          {/* Always shown, not conditional on the user having set a personal
-              area — this is the pilot's coverage, not a per-user fact. */}
           <div className="mt-2 flex items-center gap-1 font-mono text-[10.5px] font-semibold uppercase tracking-wider text-slate">
             <MapPin size={10} strokeWidth={2.5} />
-            Iloilo City · Jaro, La Paz, Mandurriao
+            Iloilo City
           </div>
         </div>
         <div className="neu-out flex h-12 w-12 items-center justify-center rounded-full text-[14px] font-bold text-ink">
@@ -124,6 +115,17 @@ export function HomePage() {
             <span className="text-sm font-bold">My QR</span>
           </Link>
         </div>
+
+        <Link
+          to={me.rideRole === 'passenger' ? '/request' : '/requests'}
+          className="tap-feedback flex items-center justify-between rounded-2xl bg-blue-50 px-4 py-3.5 text-[13px] font-semibold text-brand-dark transition-colors hover:bg-blue-100"
+        >
+          <span className="flex items-center gap-2">
+            <Search size={16} strokeWidth={2.2} />
+            {me.rideRole === 'passenger' ? 'Request a ride' : 'View ride requests'}
+          </span>
+          <ArrowRight size={15} strokeWidth={2.5} />
+        </Link>
 
         {summary && (
           <Link
