@@ -2,6 +2,7 @@ import { useQuery } from 'convex/react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, ScanLine, Star } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
+import { areaLabel } from '@/lib/area'
 
 export function InteractionsPage() {
   const rows = useQuery(api.interactions.listMine)
@@ -51,6 +52,7 @@ export function InteractionsPage() {
               <div className="truncate text-[14px] font-bold text-ink">{other?.displayName ?? 'Unknown rider'}</div>
               <div className="mt-0.5 text-[11.5px] text-slate">
                 {new Date(interaction.scannedAt).toLocaleDateString()}
+                {other?.area && <> · {areaLabel(other.area)}</>}
               </div>
             </div>
             <StatusBit status={interaction.status} myRating={myRating} interactionId={interaction._id} />

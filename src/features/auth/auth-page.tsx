@@ -56,6 +56,7 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
   const [showResetHint, setShowResetHint] = useState(false)
   const [displayName, setDisplayName] = useState('')
   const [rideRole, setRideRole] = useState<'driver' | 'passenger'>('driver')
+  const [area, setArea] = useState<'jaro' | 'la_paz' | 'mandurriao' | ''>('')
   const [phone, setPhone] = useState('')
   const [confirmedAdult, setConfirmedAdult] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -100,7 +101,7 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
       // very next mutation call can race it and fail with UNAUTHENTICATED.
       // Retry briefly instead of failing a registration that actually worked.
       await retryOnUnauthenticated(() =>
-        completeRegistration({ displayName, rideRole, phone: phone || undefined }),
+        completeRegistration({ displayName, rideRole, phone: phone || undefined, area: area || undefined }),
       )
       navigate('/consent')
     } catch {
@@ -365,6 +366,34 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
                     <UserRound size={15} />
                     Passenger
                   </button>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <span className={labelClass}>Your usual area (optional)</span>
+                <div className="grid grid-cols-3 gap-2">
+                  {(
+                    [
+                      ['jaro', 'Jaro'],
+                      ['la_paz', 'La Paz'],
+                      ['mandurriao', 'Mandurriao'],
+                    ] as const
+                  ).map(([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setArea(area === value ? '' : value)}
+                      aria-pressed={area === value}
+                      className={cn(
+                        'tap-feedback rounded-xl border py-2.5 text-[13px] font-bold transition-colors',
+                        area === value
+                          ? 'border-brand bg-brand/15 text-white'
+                          : 'border-white/15 bg-white/[0.03] text-slate-300 hover:border-white/30 hover:text-white',
+                      )}
+                    >
+                      {label}
+                    </button>
+                  ))}
                 </div>
               </div>
 

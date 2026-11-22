@@ -1,7 +1,8 @@
 import { useQuery } from 'convex/react'
 import { Link, Navigate } from 'react-router-dom'
-import { QrCode, ScanLine, Star, ShieldCheck, ShieldQuestion, Users, ArrowRight } from 'lucide-react'
+import { QrCode, ScanLine, Star, ShieldCheck, ShieldQuestion, Users, ArrowRight, MapPin } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
+import { areaLabel } from '@/lib/area'
 
 export function HomePage() {
   const me = useQuery(api.profiles.getMe)
@@ -32,17 +33,25 @@ export function HomePage() {
           <div className="text-[26px] font-extrabold leading-tight tracking-tight text-ink">
             Hey, {me.displayName.split(' ')[0]}.
           </div>
-          {me.verified ? (
-            <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-bold text-verified">
-              <ShieldCheck size={12} strokeWidth={2.5} />
-              ID-verified
-            </div>
-          ) : (
-            <div className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-pending">
-              <ShieldQuestion size={12} strokeWidth={2.5} />
-              Not verified
-            </div>
-          )}
+          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+            {me.verified ? (
+              <div className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-bold text-verified">
+                <ShieldCheck size={12} strokeWidth={2.5} />
+                ID-verified
+              </div>
+            ) : (
+              <div className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-pending">
+                <ShieldQuestion size={12} strokeWidth={2.5} />
+                Not verified
+              </div>
+            )}
+            {me.area && (
+              <div className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-bold text-brand">
+                <MapPin size={12} strokeWidth={2.5} />
+                {areaLabel(me.area)}
+              </div>
+            )}
+          </div>
         </div>
         <div className="neu-out flex h-12 w-12 items-center justify-center rounded-full text-[14px] font-bold text-ink">
           {initials}

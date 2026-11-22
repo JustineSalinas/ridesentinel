@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { ArrowLeft, ArrowRight, ShieldCheck, Star } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
+import { areaLabel } from '@/lib/area'
 
 export function ScanResultPage() {
   const { id } = useParams<{ id: string }>()
@@ -61,7 +62,10 @@ export function ScanResultPage() {
 
         <div className="text-center">
           <div className="text-[22px] font-extrabold text-ink">{other.displayName}</div>
-          <div className="mt-0.5 text-[13px] text-slate capitalize">{other.rideRole}</div>
+          <div className="mt-0.5 text-[13px] text-slate">
+            <span className="capitalize">{other.rideRole}</span>
+            {other.area && <> · {areaLabel(other.area)}</>}
+          </div>
         </div>
 
         <div className="flex gap-2 text-[12px] font-bold">

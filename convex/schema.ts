@@ -25,6 +25,11 @@ export default defineSchema({
     rideRole: v.union(v.literal('driver'), v.literal('passenger')),
     displayName: v.string(),
     phone: v.optional(v.string()),
+    // Coarse pilot district, not a precise location — there is still no GPS
+    // tracking (SPEC.md §6.2). Optional so existing rows from before this
+    // field existed stay valid without a migration; `area: undefined` just
+    // means "not set," same as any other optional profile field here.
+    area: v.optional(v.union(v.literal('jaro'), v.literal('la_paz'), v.literal('mandurriao'))),
     avatarStorageId: v.optional(v.id('_storage')),
     tier: v.union(v.literal('unverified'), v.literal('id_verified')),
     tierExpiresAt: v.optional(v.number()),

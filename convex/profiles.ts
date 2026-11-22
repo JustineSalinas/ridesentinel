@@ -28,6 +28,7 @@ export const completeRegistration = mutation({
     displayName: v.string(),
     rideRole: v.union(v.literal('driver'), v.literal('passenger')),
     phone: v.optional(v.string()),
+    area: v.optional(v.union(v.literal('jaro'), v.literal('la_paz'), v.literal('mandurriao'))),
   },
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx)
@@ -47,6 +48,7 @@ export const completeRegistration = mutation({
       rideRole: args.rideRole,
       displayName: args.displayName,
       phone: args.phone,
+      area: args.area,
       tier: 'unverified',
       createdAt: Date.now(),
     })
@@ -69,6 +71,7 @@ export const updateProfile = mutation({
     displayName: v.optional(v.string()),
     phone: v.optional(v.string()),
     rideRole: v.optional(v.union(v.literal('driver'), v.literal('passenger'))),
+    area: v.optional(v.union(v.literal('jaro'), v.literal('la_paz'), v.literal('mandurriao'))),
   },
   handler: async (ctx, args) => {
     const profile = await requireProfile(ctx)
@@ -76,6 +79,7 @@ export const updateProfile = mutation({
     if (args.displayName !== undefined) patch.displayName = args.displayName
     if (args.phone !== undefined) patch.phone = args.phone
     if (args.rideRole !== undefined) patch.rideRole = args.rideRole
+    if (args.area !== undefined) patch.area = args.area
     await ctx.db.patch(profile._id, patch)
   },
 })

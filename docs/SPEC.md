@@ -286,7 +286,7 @@ Users may read a rating row only if they are the rater, **or** `rating_is_reveal
 
 No triggers, no SECURITY DEFINER, no views — same guarantees, different mechanism:
 
-- "Users cannot change `role`/`tier`/`suspended_at`/`consentAt`" → there is simply no mutation that accepts those as arguments from the client. `convex/profiles.ts`'s `updateProfile` only takes `displayName`/`phone`/`rideRole`.
+- "Users cannot change `role`/`tier`/`suspended_at`/`consentAt`" → there is simply no mutation that accepts those as arguments from the client. `convex/profiles.ts`'s `updateProfile` only takes `displayName`/`phone`/`rideRole`/`area` (`area` is a coarse pilot-district enum — `jaro`/`la_paz`/`mandurriao` — optional, never a precise location; see `docs/DECISIONS.md`).
 - `auditLog` append-only → no `update`/`delete` mutation exists for it anywhere in the codebase, full stop. If you ever need to "fix" an audit row, you can't — that's the point.
 - `submit_rating`'s checks (confirmed status, window open, no duplicate, caller is a party, not suspended, 7-day pair cooldown, daily cap) → all become `if` checks inside a single `ratings.submitRating` mutation, same order, same distinct errors, implemented with indexed queries (`by_interaction_rater`, `by_raterId`) instead of SQL `WHERE`.
 - `rating_is_revealed` / `rating_summary` → plain Convex query functions (`ratings.getRevealed`, `ratings.getSummaryFor`) that recompute on every call; Convex's reactivity means the client re-renders automatically when the underlying rows change, no polling needed.
@@ -300,7 +300,7 @@ Same shape as a policy matrix, but every cell below is a promise about what a **
 
 | Table | `user` can | `admin` can |
 |---|---|---|
-| `profiles` | Read own row (`profiles.getMe`); update own `displayName`/`phone`/`rideRole` only (`profiles.updateProfile`). No query ever returns another user's row — a scan returns a hand-picked projection from a dedicated function, never the row itself. | Read any profile only through an admin-gated query; mutate `role`/`tier`/`suspendedAt` only through admin mutations that call `requireAdmin` |
+| `profiles` | Read own row (`profiles.getMe`); update own `displayName`/`phone`/`rideRole`/`area` only (`profiles.updateProfile`). No query ever returns another user's row — a scan returns a hand-picked projection from a dedicated function, never the row itself. | Read any profile only through an admin-gated query; mutate `role`/`tier`/`suspendedAt` only through admin mutations that call `requireAdmin` |
 | `verificationRequests` | Insert own (`status: 'pending'`, blocked if one is already pending); read own row — file storage ids are present but **unusable directly**, there is no public query that turns a storage id into a URL | Read all via an admin query; decide only through a mutation that calls `requireAdmin` |
 | `qrTokens` | Nothing — no public query or mutation touches this table directly | Nothing — internal to `qr.issueQr`/`qr.scanQr` |
 | `interactions` | Read only rows where they're `userA` or `userB` (query filters by caller's id, never trusts a client-supplied id) | Read all via an admin query |
@@ -336,7 +336,7 @@ Checks in order (record a `scanEvents` row with the outcome for each failure):
 3. `qrToken.userId !== caller` (`self_scan`).
 4. Atomically claim it: patch the row (`usedAt`, `usedBy`) only inside this mutation — Convex mutations are serializable transactions, so a second concurrent call reading the same row before the first commits will conflict and retry, never double-claim it. This is the Convex equivalent of the Postgres `UPDATE ... WHERE used_at IS NULL` race guard.
 5. Insert an `interactions` row (`userA = qrToken.userId`, `userB = caller`, status `scanned`).
-6. Return **only**: `{ interactionId, profile: { displayName, rideRole, tier, photoUrl, ratingSummary: { score|null, count, confirmedMeetings } } }` — resolved server-side inside this same mutation via `ctx.storage.getUrl()` on the owner's avatar, never exposing their storage id to the caller. **Never** phone, email, ID details, address, or any other field.
+6. Return **only**: `{ interactionId, profile: { displayName, rideRole, area, tier, photoUrl, ratingSummary: { score|null, count, confirmedMeetings } } }` — resolved server-side inside this same mutation via `ctx.storage.getUrl()` on the owner's avatar, never exposing their storage id to the caller. `area` is the same coarse pilot-district enum as the profile field, not a precise location. **Never** phone, email, ID details, address, or any other field.
 - Target: profile on screen ≤ 3 s on 4G.
 - Convex queries are reactive by default — A's `useQuery` on "my open interactions" updates live the moment this mutation inserts, no manual realtime subscription needed (that's the Supabase Realtime subscription, built in).
 

@@ -4,6 +4,7 @@ import { useMutation, useQuery } from 'convex/react'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../../../convex/_generated/api'
 import { cn } from '@/lib/utils'
+import { AREA_LABELS, areaLabel, type Area } from '@/lib/area'
 
 export function ProfilePage() {
   const me = useQuery(api.profiles.getMe)
@@ -16,6 +17,7 @@ export function ProfilePage() {
   const [displayName, setDisplayName] = useState('')
   const [phone, setPhone] = useState('')
   const [rideRole, setRideRole] = useState<'driver' | 'passenger'>('driver')
+  const [area, setArea] = useState<Area | ''>('')
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [busy, setBusy] = useState(false)
 
@@ -26,13 +28,14 @@ export function ProfilePage() {
     setDisplayName(me!.displayName)
     setPhone(me!.phone ?? '')
     setRideRole(me!.rideRole)
+    setArea(me!.area ?? '')
     setEditing(true)
   }
 
   async function save() {
     setBusy(true)
     try {
-      await updateProfile({ displayName, phone: phone || undefined, rideRole })
+      await updateProfile({ displayName, phone: phone || undefined, rideRole, area: area || undefined })
       setEditing(false)
     } finally {
       setBusy(false)
@@ -130,6 +133,23 @@ export function ProfilePage() {
             </button>
           </div>
         </Field>
+        <Field label="Your usual area (optional)">
+          <div className="grid grid-cols-3 gap-2">
+            {(Object.keys(AREA_LABELS) as Area[]).map((value) => (
+              <button
+                key={value}
+                onClick={() => setArea(area === value ? '' : value)}
+                className={cn(
+                  'rounded-xl border-2 py-2.5 text-[13px] font-bold transition-colors',
+                  area === value ? 'border-brand bg-blue-50 text-brand-dark' : 'border-transparent neu-out-sm text-slate',
+                  'tap-feedback',
+                )}
+              >
+                {AREA_LABELS[value]}
+              </button>
+            ))}
+          </div>
+        </Field>
         <div className="mt-2 flex gap-2">
           <button onClick={() => setEditing(false)} className="neu-out tap-feedback flex-1 rounded-xl py-3 text-[14px] font-bold text-ink">
             Cancel
@@ -159,13 +179,17 @@ export function ProfilePage() {
         </div>
         <div>
           <div className="text-[17px] font-extrabold text-ink">{me.displayName}</div>
-          <div className="text-[12.5px] capitalize text-slate">{me.rideRole}</div>
+          <div className="text-[12.5px] text-slate">
+            <span className="capitalize">{me.rideRole}</span>
+            {me.area && <> · {areaLabel(me.area)}</>}
+          </div>
         </div>
       </div>
 
       <div className="neu-out flex flex-col rounded-2xl">
         <Row label="Display name" value={me.displayName} />
         <Row label="Phone" value={me.phone ?? '—'} />
+        <Row label="Area" value={areaLabel(me.area) ?? 'Not set'} />
         <Row
           label="Tier"
           value={
