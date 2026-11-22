@@ -115,14 +115,14 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
       <div className="mx-auto flex w-full max-w-[460px] flex-col px-6 py-8 md:py-12">
         <div className="flex items-center justify-between">
           <Link to="/" aria-label="RideSentinel home">
-            <BrandMark showPilotTag />
+            <BrandMark />
           </Link>
           <Link
             to="/"
-            className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-slate-300 transition-colors hover:text-white"
+            className="tap-feedback group flex h-8 w-8 items-center justify-center rounded-full text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
+            aria-label="Back to home"
           >
-            <ArrowLeft size={14} />
-            Home
+            <ArrowLeft size={16} strokeWidth={2.2} className="transition-transform group-hover:-translate-x-0.5" />
           </Link>
         </div>
 
@@ -393,7 +393,7 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
         </motion.main>
 
         <footer className="mt-14 font-mono text-xs text-slate-300">
-          Pilot area · Jaro / La Paz / Mandurriao, Iloilo City
+          Iloilo City · Jaro / La Paz / Mandurriao
         </footer>
       </div>
     </div>
