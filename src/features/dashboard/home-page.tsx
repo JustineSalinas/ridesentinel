@@ -52,6 +52,12 @@ export function HomePage() {
               </div>
             )}
           </div>
+          {/* Always shown, not conditional on the user having set a personal
+              area — this is the pilot's coverage, not a per-user fact. */}
+          <div className="mt-2 flex items-center gap-1 font-mono text-[10.5px] font-semibold uppercase tracking-wider text-slate">
+            <MapPin size={10} strokeWidth={2.5} />
+            Iloilo City · Jaro, La Paz, Mandurriao
+          </div>
         </div>
         <div className="neu-out flex h-12 w-12 items-center justify-center rounded-full text-[14px] font-bold text-ink">
           {initials}
