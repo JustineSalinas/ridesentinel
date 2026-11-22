@@ -211,19 +211,21 @@ export function LandingPage() {
             <BrandMark />
           </Link>
 
-          <nav className="hidden items-center gap-7 text-[13.5px] font-semibold text-slate-300 md:flex">
-            <a href="#how-it-works" className="transition-colors hover:text-white">
+          <nav className="hidden items-center gap-8 text-[13.5px] font-semibold text-slate-300 md:flex">
+            <a href="#how-it-works" className="group relative py-1 transition-colors hover:text-white">
               How it works
+              <span className="absolute inset-x-0 -bottom-[1px] h-px origin-left scale-x-0 bg-brand transition-transform duration-200 group-hover:scale-x-100" />
             </a>
-            <a href="#faq" className="transition-colors hover:text-white">
+            <a href="#faq" className="group relative py-1 transition-colors hover:text-white">
               FAQ
+              <span className="absolute inset-x-0 -bottom-[1px] h-px origin-left scale-x-0 bg-brand transition-transform duration-200 group-hover:scale-x-100" />
             </a>
           </nav>
 
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <Link
               to="/login"
-              className="whitespace-nowrap px-2 py-1.5 text-[13.5px] font-semibold text-slate-200 transition-colors hover:text-white sm:px-3"
+              className="tap-feedback whitespace-nowrap px-2 py-1.5 text-[13.5px] font-semibold text-slate-200 transition-colors hover:text-white sm:px-3"
             >
               Log in
             </Link>
@@ -254,12 +256,15 @@ export function LandingPage() {
             />
           </Suspense>
         </div>
+        {/* The text column is left-aligned, not centered, so the wash has to be
+            strongest there and fade out to the right — a centered radial left
+            city labels cutting straight through the headline/paragraph. */}
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 z-0"
           style={{
             background:
-              'radial-gradient(85% 90% at 50% 15%, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.4) 55%, rgba(255,255,255,0.8) 100%)',
+              'linear-gradient(100deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.96) 38%, rgba(255,255,255,0.75) 58%, rgba(255,255,255,0.3) 78%, rgba(255,255,255,0.05) 100%), linear-gradient(to top, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 30%)',
           }}
         />
         {/* Dot-grid texture over the map, keeps the signal-grid motif without competing with it */}
