@@ -20,6 +20,7 @@ import { ReportPage } from '@/features/reports/report-page'
 import { ProfilePage } from '@/features/profile/profile-page'
 import { RequestRidePage } from '@/features/requests/request-ride-page'
 import { DriverRequestsPage } from '@/features/requests/driver-requests-page'
+import { SharedRidePage } from '@/features/requests/shared-ride-page'
 
 // Admin surfaces are only ever reached by admins — lazy-load the whole
 // section so riders never pay for it in their first-load bundle.
@@ -46,6 +47,7 @@ export const router = createBrowserRouter([
   { path: '/', element: <LandingPage /> },
   { path: '/login', element: <AuthPage initialTab="login" /> },
   { path: '/register', element: <AuthPage initialTab="register" /> },
+  { path: '/share/:token', element: <SharedRidePage /> },
   {
     element: <RequireAuth />,
     children: [

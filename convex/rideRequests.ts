@@ -1,6 +1,7 @@
 import { v, ConvexError } from 'convex/values'
 import { mutation, query } from './_generated/server'
 import { requireProfile, requireVerified, isVerified } from './lib/authz'
+import { ILOILO_DEMO_ROUTE } from './lib/iloiloRoute'
 
 const REQUEST_WINDOW_MS = 15 * 60 * 1000 // open requests auto-expire after 15 minutes
 const AVAILABILITY_TTL_MS = 15 * 60 * 1000 // a driver who went quiet this long reads as offline
@@ -137,6 +138,183 @@ export const simulateAcceptRequest = mutation({
   },
 })
 
+// assertParty: both GPS-sim and SOS are usable by either side of an
+// accepted ride — this is the one check shared by both.
+function assertParty(request: { passengerId: string; driverId?: string }, userId: string) {
+  if (request.passengerId !== userId && request.driverId !== userId) throw new ConvexError('NOT_FOUND')
+}
+
+// advanceRouteProgress: demo-only "simulate GPS tracking" — there is no
+// real device location anywhere in this app. Either side of an accepted
+// ride can nudge the shared marker along the fixed Iloilo route
+// (lib/iloiloRoute.ts); the client drives the pacing (a button or a timer),
+// this just clamps and persists the fraction so both parties' screens (and
+// the live-share page) agree on where the marker is.
+export const advanceRouteProgress = mutation({
+  args: { requestId: v.id('rideRequests'), progress: v.number() },
+  handler: async (ctx, args) => {
+    const profile = await requireProfile(ctx)
+    const request = await ctx.db.get(args.requestId)
+    if (!request) throw new ConvexError('NOT_FOUND')
+    assertParty(request, profile.userId)
+    if (request.status !== 'accepted') throw new ConvexError('NOT_ACCEPTED')
+
+    const clamped = Math.min(1, Math.max(0, args.progress))
+    await ctx.db.patch(request._id, { routeProgress: clamped })
+  },
+})
+
+// generateShareLink: passenger-only. Mints a random, unguessable token so a
+// trusted contact can open a no-login page showing this ride's sanitized,
+// read-only status (see getSharedRide). Idempotent — returns the existing
+// token if one was already minted for this ride.
+export const generateShareLink = mutation({
+  args: { requestId: v.id('rideRequests') },
+  handler: async (ctx, args) => {
+    const profile = await requireProfile(ctx)
+    const request = await ctx.db.get(args.requestId)
+    if (!request || request.passengerId !== profile.userId) throw new ConvexError('NOT_FOUND')
+    if (request.status !== 'accepted') throw new ConvexError('NOT_ACCEPTED')
+    if (request.shareToken) return request.shareToken
+
+    const token = crypto.randomUUID().replace(/-/g, '')
+    await ctx.db.patch(request._id, { shareToken: token })
+    return token
+  },
+})
+
+// getSharedRide: the ONLY public (no-auth) read in this codebase — by
+// design, since the whole point is a trusted contact with no account can
+// open it. Deliberately returns the smallest sanitized projection: no
+// phone, no email, no exact note/destination text, nothing an attacker
+// scanning random tokens could use beyond "a ride matching this token is
+// in progress." Looking up by an unguessable, server-generated token is
+// the access control here — same trust model as the QR nonce (D3).
+export const getSharedRide = query({
+  args: { token: v.string() },
+  handler: async (ctx, args) => {
+    const request = await ctx.db
+      .query('rideRequests')
+      .withIndex('by_shareToken', (q) => q.eq('shareToken', args.token))
+      .unique()
+    if (!request) return null
+
+    const driverProfile = request.driverId
+      ? await ctx.db
+          .query('profiles')
+          .withIndex('by_userId', (q) => q.eq('userId', request.driverId!))
+          .unique()
+      : null
+
+    return {
+      status: request.status,
+      routeProgress: request.routeProgress ?? 0,
+      sosActive: !!request.sosAt,
+      estimatedEtaMinutes: request.estimatedEtaMinutes,
+      driver: driverProfile
+        ? {
+            displayName: driverProfile.displayName,
+            verified: isVerified(driverProfile),
+            photoUrl: driverProfile.avatarStorageId ? await ctx.storage.getUrl(driverProfile.avatarStorageId) : null,
+          }
+        : null,
+    }
+  },
+})
+
+// sosAlert: demo-only panic button for either side of an accepted ride.
+// This does NOT call 911 or any real emergency service, and does not
+// notify anyone outside this app — it only (a) flags the ride so the
+// live-share page shows a help banner, and (b) files a `reports` row +
+// auditLog entry so an admin sees it in the real moderation queue, exactly
+// like a passenger-filed report would.
+export const sosAlert = mutation({
+  args: { requestId: v.id('rideRequests'), note: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const profile = await requireProfile(ctx)
+    const request = await ctx.db.get(args.requestId)
+    if (!request) throw new ConvexError('NOT_FOUND')
+    assertParty(request, profile.userId)
+    if (request.status !== 'accepted') throw new ConvexError('NOT_ACCEPTED')
+
+    const otherPartyId = request.passengerId === profile.userId ? request.driverId : request.passengerId
+
+    await ctx.db.patch(request._id, { sosAt: Date.now() })
+    await ctx.db.insert('reports', {
+      reporterId: profile.userId,
+      reportedUserId: otherPartyId,
+      reason: 'abusive_or_unsafe',
+      details: args.note?.slice(0, 200) ?? 'SOS triggered during an in-progress ride (demo).',
+      status: 'open',
+      createdAt: Date.now(),
+    })
+    await ctx.db.insert('auditLog', {
+      actorId: profile.userId,
+      action: 'ride.sos',
+      targetType: 'rideRequests',
+      targetId: request._id,
+      createdAt: Date.now(),
+    })
+  },
+})
+
+// checkInSafe: passenger-only "yes, I arrived safely" — separate from the
+// star rating, and the only write to safetyCheckedInAt in this codebase.
+export const checkInSafe = mutation({
+  args: { requestId: v.id('rideRequests') },
+  handler: async (ctx, args) => {
+    const profile = await requireProfile(ctx)
+    const request = await ctx.db.get(args.requestId)
+    if (!request || request.passengerId !== profile.userId) throw new ConvexError('NOT_FOUND')
+    if (request.status !== 'accepted') throw new ConvexError('NOT_ACCEPTED')
+    await ctx.db.patch(request._id, { safetyCheckedInAt: Date.now() })
+  },
+})
+
+// demoRouteCoordinates: exposes the fixed Iloilo route so the client can
+// draw it without duplicating the coordinate list.
+export const demoRouteCoordinates = query({
+  args: {},
+  handler: async () => ILOILO_DEMO_ROUTE,
+})
+
+// myActiveRideForDriver: the driver-side mirror of myActiveRequest — a
+// driver's own currently-accepted ride (if any), with the passenger's
+// hand-picked projection, so the driver app can show the same GPS-sim /
+// SOS / safety surfaces the passenger sees.
+export const myActiveRideForDriver = query({
+  args: {},
+  handler: async (ctx) => {
+    const profile = await requireProfile(ctx)
+    if (profile.rideRole !== 'driver') return null
+
+    const request = await ctx.db
+      .query('rideRequests')
+      .withIndex('by_driverId', (q) => q.eq('driverId', profile.userId))
+      .filter((q) => q.eq(q.field('status'), 'accepted'))
+      .order('desc')
+      .first()
+    if (!request) return null
+
+    const passengerProfile = await ctx.db
+      .query('profiles')
+      .withIndex('by_userId', (q) => q.eq('userId', request.passengerId))
+      .unique()
+
+    return {
+      request,
+      passenger: passengerProfile
+        ? {
+            displayName: passengerProfile.displayName,
+            photoUrl: passengerProfile.avatarStorageId
+              ? await ctx.storage.getUrl(passengerProfile.avatarStorageId)
+              : null,
+          }
+        : null,
+    }
+  },
+})
+
 // myActiveRequest: a passenger's own open/accepted request, with the
 // accepted driver's hand-picked projection once matched (same fields
 // otherPartyProjection exposes elsewhere — never phone/email).
@@ -164,6 +342,7 @@ export const myActiveRequest = query({
         driver = {
           userId: driverProfile.userId,
           displayName: driverProfile.displayName,
+          verified: isVerified(driverProfile),
           photoUrl: driverProfile.avatarStorageId
             ? await ctx.storage.getUrl(driverProfile.avatarStorageId)
             : null,

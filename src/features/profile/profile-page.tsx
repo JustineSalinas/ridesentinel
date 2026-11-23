@@ -16,6 +16,8 @@ export function ProfilePage() {
   const [displayName, setDisplayName] = useState('')
   const [phone, setPhone] = useState('')
   const [rideRole, setRideRole] = useState<'driver' | 'passenger'>('driver')
+  const [emergencyContactName, setEmergencyContactName] = useState('')
+  const [emergencyContactPhone, setEmergencyContactPhone] = useState('')
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [busy, setBusy] = useState(false)
 
@@ -26,13 +28,21 @@ export function ProfilePage() {
     setDisplayName(me!.displayName)
     setPhone(me!.phone ?? '')
     setRideRole(me!.rideRole)
+    setEmergencyContactName(me!.emergencyContactName ?? '')
+    setEmergencyContactPhone(me!.emergencyContactPhone ?? '')
     setEditing(true)
   }
 
   async function save() {
     setBusy(true)
     try {
-      await updateProfile({ displayName, phone: phone || undefined, rideRole })
+      await updateProfile({
+        displayName,
+        phone: phone || undefined,
+        rideRole,
+        emergencyContactName: emergencyContactName || undefined,
+        emergencyContactPhone: emergencyContactPhone || undefined,
+      })
       setEditing(false)
     } finally {
       setBusy(false)
@@ -130,6 +140,21 @@ export function ProfilePage() {
             </button>
           </div>
         </Field>
+        <Field label="Trusted contact name (optional)">
+          <input
+            value={emergencyContactName}
+            onChange={(e) => setEmergencyContactName(e.target.value)}
+            placeholder="Who to notify if something goes wrong"
+            className="neu-in h-11 rounded-xl px-3 text-[14px] text-ink placeholder:text-slate outline-none"
+          />
+        </Field>
+        <Field label="Trusted contact phone (optional)">
+          <input
+            value={emergencyContactPhone}
+            onChange={(e) => setEmergencyContactPhone(e.target.value)}
+            className="neu-in h-11 rounded-xl px-3 text-[14px] text-ink outline-none"
+          />
+        </Field>
         <div className="mt-2 flex gap-2">
           <button onClick={() => setEditing(false)} className="neu-out tap-feedback flex-1 rounded-xl py-3 text-[14px] font-bold text-ink">
             Cancel
@@ -166,6 +191,7 @@ export function ProfilePage() {
       <div className="neu-out flex flex-col rounded-2xl">
         <Row label="Display name" value={me.displayName} />
         <Row label="Phone" value={me.phone ?? '—'} />
+        <Row label="Trusted contact" value={me.emergencyContactName ?? '—'} />
         <Row
           label="Tier"
           value={

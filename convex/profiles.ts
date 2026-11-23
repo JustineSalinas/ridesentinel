@@ -69,6 +69,8 @@ export const updateProfile = mutation({
     displayName: v.optional(v.string()),
     phone: v.optional(v.string()),
     rideRole: v.optional(v.union(v.literal('driver'), v.literal('passenger'))),
+    emergencyContactName: v.optional(v.string()),
+    emergencyContactPhone: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const profile = await requireProfile(ctx)
@@ -76,6 +78,8 @@ export const updateProfile = mutation({
     if (args.displayName !== undefined) patch.displayName = args.displayName
     if (args.phone !== undefined) patch.phone = args.phone
     if (args.rideRole !== undefined) patch.rideRole = args.rideRole
+    if (args.emergencyContactName !== undefined) patch.emergencyContactName = args.emergencyContactName.slice(0, 60)
+    if (args.emergencyContactPhone !== undefined) patch.emergencyContactPhone = args.emergencyContactPhone.slice(0, 20)
     await ctx.db.patch(profile._id, patch)
   },
 })

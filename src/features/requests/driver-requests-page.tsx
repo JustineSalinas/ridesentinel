@@ -1,16 +1,47 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery } from 'convex/react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, MapPin, Users } from 'lucide-react'
+import { ArrowLeft, MapPin, ShieldAlert, Users } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
 import { cn } from '@/lib/utils'
+import { Map, MapRoute, RouteProgress, RouteMarker, MarkerContent } from '@/components/ui/map'
+
+const SIM_STEP_MS = 1200
+const SIM_STEP = 0.08
 
 export function DriverRequestsPage() {
   const me = useQuery(api.profiles.getMe)
   const open = useQuery(api.rideRequests.listOpenForDriver)
+  const activeRide = useQuery(api.rideRequests.myActiveRideForDriver)
+  const route = useQuery(api.rideRequests.demoRouteCoordinates)
   const setAvailability = useMutation(api.rideRequests.setAvailability)
   const acceptRequest = useMutation(api.rideRequests.acceptRequest)
+  const advanceRouteProgress = useMutation(api.rideRequests.advanceRouteProgress)
+  const sosAlert = useMutation(api.rideRequests.sosAlert)
   const [accepting, setAccepting] = useState<string | null>(null)
+  const [gpsRunning, setGpsRunning] = useState(false)
+  const [sosState, setSosState] = useState<'idle' | 'confirm' | 'sent'>('idle')
+  const gpsTimer = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const requestId = activeRide?.request?._id
+  const progress = activeRide?.request?.routeProgress ?? 0
+  const arrived = progress >= 1
+  const progressRef = useRef(progress)
+  progressRef.current = progress
+
+  useEffect(() => {
+    return () => {
+      if (gpsTimer.current) clearInterval(gpsTimer.current)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!requestId && gpsTimer.current) {
+      clearInterval(gpsTimer.current)
+      gpsTimer.current = null
+      setGpsRunning(false)
+    }
+  }, [requestId])
 
   if (me === undefined) return null
 
@@ -27,6 +58,33 @@ export function DriverRequestsPage() {
     } finally {
       setAccepting(null)
     }
+  }
+
+  function toggleGps() {
+    if (!requestId) return
+    if (gpsRunning) {
+      if (gpsTimer.current) clearInterval(gpsTimer.current)
+      gpsTimer.current = null
+      setGpsRunning(false)
+      return
+    }
+    setGpsRunning(true)
+    gpsTimer.current = setInterval(async () => {
+      const next = Math.min(1, progressRef.current + SIM_STEP)
+      progressRef.current = next
+      await advanceRouteProgress({ requestId, progress: next })
+      if (next >= 1 && gpsTimer.current) {
+        clearInterval(gpsTimer.current)
+        gpsTimer.current = null
+        setGpsRunning(false)
+      }
+    }, SIM_STEP_MS)
+  }
+
+  async function confirmSos() {
+    if (!requestId) return
+    await sosAlert({ requestId })
+    setSosState('sent')
   }
 
   return (
@@ -59,6 +117,97 @@ export function DriverRequestsPage() {
             <span className={cn('h-2.5 w-2.5 rounded-full', online ? 'bg-white' : 'bg-mist')} />
             {online ? "You're online — tap to go offline" : 'Go online'}
           </button>
+        )}
+
+        {activeRide?.request && activeRide.passenger && (
+          <div className="flex flex-col gap-3">
+            <div className="neu-out-sm flex items-center gap-3 rounded-2xl p-3.5">
+              <div className="h-11 w-11 flex-shrink-0 overflow-hidden rounded-full bg-mist">
+                {activeRide.passenger.photoUrl && (
+                  <img src={activeRide.passenger.photoUrl} alt="" className="h-full w-full object-cover" />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-[14px] font-bold text-ink">{activeRide.passenger.displayName}</div>
+                <div className="text-[11.5px] text-slate">Active ride — scan their QR when you meet</div>
+              </div>
+            </div>
+
+            <div className="neu-out-sm rounded-2xl p-3">
+              <div className="mb-2 flex items-center justify-between">
+                <div className="text-[12.5px] font-bold text-ink">Live tracking (demo)</div>
+                <button
+                  type="button"
+                  onClick={toggleGps}
+                  disabled={arrived}
+                  className="tap-feedback rounded-full bg-brand px-3 py-1.5 text-[11.5px] font-bold text-white disabled:opacity-50"
+                >
+                  {arrived ? 'Arrived' : gpsRunning ? 'Pause' : progress > 0 ? 'Resume' : 'Start simulated GPS'}
+                </button>
+              </div>
+              {route && route.length > 1 && (
+                <div className="h-44 overflow-hidden rounded-xl">
+                  <Map
+                    className="h-full w-full"
+                    viewport={{ center: route[Math.floor(route.length / 2)], zoom: 12.5, bearing: 0, pitch: 0 }}
+                  >
+                    <MapRoute coordinates={route} progress={progress} color="#94a3b8">
+                      <RouteProgress color="#2563eb" width={4} />
+                      <RouteMarker at="progress">
+                        <MarkerContent>
+                          <div className="h-3.5 w-3.5 rounded-full border-2 border-white bg-brand shadow" />
+                        </MarkerContent>
+                      </RouteMarker>
+                    </MapRoute>
+                  </Map>
+                </div>
+              )}
+              <p className="mt-1.5 text-[10.5px] text-slate/80">
+                Simulated movement along a fixed Iloilo City route for the demo — not your real GPS.
+              </p>
+            </div>
+
+            <div className="neu-out-sm rounded-2xl p-3">
+              {sosState === 'idle' && (
+                <button
+                  type="button"
+                  onClick={() => setSosState('confirm')}
+                  className="tap-feedback flex h-10 w-full items-center justify-center gap-1.5 rounded-xl bg-red-50 text-[12.5px] font-bold text-danger"
+                >
+                  <ShieldAlert size={14} strokeWidth={2.4} />
+                  SOS — I need help
+                </button>
+              )}
+              {sosState === 'confirm' && (
+                <div className="flex flex-col gap-2">
+                  <p className="text-[12px] text-ink">
+                    This flags your ride for review and logs an incident report. Send it?
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={confirmSos}
+                      className="tap-feedback flex-1 rounded-xl bg-danger py-2 text-[12.5px] font-bold text-white"
+                    >
+                      Yes, send SOS
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSosState('idle')}
+                      className="tap-feedback flex-1 rounded-xl border border-mist py-2 text-[12.5px] font-bold text-slate"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+              {sosState === 'sent' && (
+                <div className="text-center text-[12.5px] font-semibold text-danger">
+                  SOS sent — logged for review. This is a demo and does not call 911.
+                </div>
+              )}
+            </div>
+          </div>
         )}
 
         {online && (

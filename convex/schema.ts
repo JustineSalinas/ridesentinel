@@ -35,6 +35,13 @@ export default defineSchema({
     tierExpiresAt: v.optional(v.number()),
     suspendedAt: v.optional(v.number()),
     consentAt: v.optional(v.number()),
+    // Trusted-contact fields (2026-11-23, see docs/DECISIONS.md). Purely a
+    // label + number the rider types in themselves — never verified, never
+    // auto-dialed by this app. Used only to (a) show on the live-share page
+    // who a viewer should call, and (b) prefill the share-link message. No
+    // SMS/notification is ever actually sent to this number by the server.
+    emergencyContactName: v.optional(v.string()),
+    emergencyContactPhone: v.optional(v.string()),
     createdAt: v.number(),
   }).index('by_userId', ['userId']),
 
@@ -102,12 +109,30 @@ export default defineSchema({
     estimatedFareMinPhp: v.optional(v.number()),
     estimatedFareMaxPhp: v.optional(v.number()),
     estimatedEtaMinutes: v.optional(v.number()),
+    // Demo GPS simulation (2026-11-23, see docs/DECISIONS.md). routeProgress
+    // is a 0–1 fraction along a FIXED, hardcoded Iloilo City route
+    // (convex/lib/iloiloRoute.ts) — there is no real device GPS, geocoding,
+    // or routing anywhere in this app. Advanced only by the rider/driver's
+    // own "simulate" button, for walkthroughs.
+    routeProgress: v.optional(v.number()),
+    // Live-share (2026-11-23): a random, unguessable token that makes this
+    // ride's (sanitized, read-only) status visible with no login, so a
+    // trusted contact can follow along. Rotates to undefined on cancel.
+    shareToken: v.optional(v.string()),
+    // SOS (2026-11-23): demo-only panic flag. Setting this creates a
+    // `reports` row and an auditLog entry — it does NOT call 911/any real
+    // emergency service or notify anyone outside this app.
+    sosAt: v.optional(v.number()),
+    // Post-ride safety check-in (2026-11-23): the passenger's own
+    // "Yes, I arrived safely" confirmation, separate from the star rating.
+    safetyCheckedInAt: v.optional(v.number()),
     createdAt: v.number(),
     expiresAt: v.number(),
   })
     .index('by_passengerId', ['passengerId'])
     .index('by_status', ['status'])
-    .index('by_driverId', ['driverId']),
+    .index('by_driverId', ['driverId'])
+    .index('by_shareToken', ['shareToken']),
 
   // D4 — interactions.
   interactions: defineTable({
