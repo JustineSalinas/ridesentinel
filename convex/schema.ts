@@ -74,10 +74,20 @@ export default defineSchema({
   // Support: ride-matching requests (2026-11-22, see docs/DECISIONS.md).
   // Deliberately *not* booking/dispatch in the TNVS sense — this only
   // connects a passenger with an already-verified driver, city-wide across
-  // Iloilo. No fare, no payment, no routing/live GPS: the destination is a
-  // free-text note for context, not something this app geocodes or tracks.
-  // Once accepted, the two riders still meet and verify through the
+  // Iloilo. No real fare, no payment, no routing/live GPS: the destination
+  // is a free-text note for context, not something this app geocodes or
+  // tracks. Once accepted, the two riders still meet and verify through the
   // existing QR handshake (D3/D4) exactly like any other pickup.
+  //
+  // estimatedFareMinPhp/MaxPhp/estimatedEtaMinutes (2026-11-22, optional so
+  // rows created before this field existed stay valid with no migration):
+  // a demo-only
+  // display estimate, not a quote — generated client-independent on the
+  // server from a fixed mock range, with no distance, routing, or location
+  // input. Intentionally not a real fare: a real fare/dispatch feature is
+  // the TNVS/accreditation line this app stays on the safe side of
+  // (docs/DECISIONS.md). UI must always label these "estimate" / "not a
+  // quote" so this never reads as real pricing.
   rideRequests: defineTable({
     passengerId: v.id('users'),
     note: v.optional(v.string()),
@@ -89,6 +99,9 @@ export default defineSchema({
     ),
     driverId: v.optional(v.id('users')),
     acceptedAt: v.optional(v.number()),
+    estimatedFareMinPhp: v.optional(v.number()),
+    estimatedFareMaxPhp: v.optional(v.number()),
+    estimatedEtaMinutes: v.optional(v.number()),
     createdAt: v.number(),
     expiresAt: v.number(),
   })

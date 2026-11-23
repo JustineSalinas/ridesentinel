@@ -53,7 +53,7 @@ export function InteractionsPage() {
                 {new Date(interaction.scannedAt).toLocaleDateString()}
               </div>
             </div>
-            <StatusBit status={interaction.status} myRating={myRating} interactionId={interaction._id} />
+            <StatusBit status={interaction.status} myRating={myRating?.stars} interactionId={interaction._id} />
           </div>
         ))}
       </div>

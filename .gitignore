@@ -33,3 +33,6 @@ convex/_generated
 .gstack/
 android-twa/
 *.keystore
+
+.vercel
+.env*

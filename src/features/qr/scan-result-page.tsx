@@ -111,7 +111,34 @@ export function ScanResultPage() {
           </>
         )}
 
-        {status === 'scanned' && interaction.bConfirmedAt && (
+        {status === 'scanned' && myRole === 'A' && interaction.bConfirmedAt && (
+          <>
+            <div className="mt-2 rounded-2xl bg-blue-50 px-4 py-3 text-center text-[13px] text-brand-dark">
+              {other.displayName} confirmed. Check the photo matches the person in front of you, then confirm.
+            </div>
+            <div className="mt-auto flex w-full gap-3 pt-6">
+              <button
+                onClick={async () => {
+                  await cancelInteraction({ interactionId, reason: 'face_mismatch', report: true })
+                  navigate('/home')
+                }}
+                className="neu-out tap-feedback flex-1 rounded-xl py-3.5 text-[14px] font-bold text-danger"
+              >
+                Not the person
+              </button>
+              <button
+                onClick={async () => {
+                  await confirmMeeting({ interactionId })
+                }}
+                className="tap-feedback flex-[1.3] rounded-xl bg-brand py-3.5 text-[14px] font-bold text-white transition-colors hover:bg-brand-dark"
+              >
+                This is the person
+              </button>
+            </div>
+          </>
+        )}
+
+        {status === 'scanned' && myRole === 'B' && interaction.bConfirmedAt && (
           <div className="neu-in mt-4 rounded-2xl px-4 py-3 text-center text-[13px] text-slate">
             Waiting for {other.displayName} to confirm on their end…
           </div>

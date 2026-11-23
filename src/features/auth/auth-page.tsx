@@ -3,13 +3,26 @@ import { useAuthActions } from '@convex-dev/auth/react'
 import { useConvexAuth, useMutation } from 'convex/react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, useReducedMotion } from 'framer-motion'
-import { ArrowLeft, Bike, Eye, EyeOff, UserRound } from 'lucide-react'
+import { ArrowLeft, Bike, Eye, EyeOff, ShieldCheck, Sparkles, UserRound } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
 import { BrandMark } from '@/components/brand-mark'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button-variants'
 
 type Tab = 'login' | 'register'
+
+// Demo-only quick-switch accounts for the Tuesday walkthrough — intentionally
+// a real one-click login (password included), not just an email pre-fill
+// like the earlier 2026-11-12 "quick access" row. Fine for throwaway pilot
+// test accounts shown to a live audience, but this is a deliberate exception
+// to "credentials never belong in a public JS bundle" — never extend this
+// pattern to real user accounts (see docs/DECISIONS.md).
+const DEMO_PASSWORD = 'simpassword123'
+const DEMO_ACCOUNTS = [
+  { label: 'Driver', email: 'sim-driver-1795322665138@example.com', icon: Bike },
+  { label: 'Passenger', email: 'sim-passenger-1795322665138@example.com', icon: UserRound },
+  { label: 'Admin', email: 'sim-admin-1795322700000@example.com', icon: ShieldCheck },
+] as const
 
 async function retryOnUnauthenticated<T>(fn: () => Promise<T>, attempts = 5, delayMs = 200): Promise<T> {
   for (let i = 0; i < attempts; i++) {
@@ -39,7 +52,7 @@ const labelClass = 'text-[13px] font-semibold text-slate-200'
 
 export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
   const [tab, setTab] = useState<Tab>(initialTab)
-  const { signIn } = useAuthActions()
+  const { signIn, signOut } = useAuthActions()
   const completeRegistration = useMutation(api.profiles.completeRegistration)
   const { isAuthenticated } = useConvexAuth()
   const isAuthenticatedRef = useRef(isAuthenticated)
@@ -60,6 +73,7 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
   const [confirmedAdult, setConfirmedAdult] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [demoSwitching, setDemoSwitching] = useState<string | null>(null)
 
   function switchTab(next: Tab) {
     setTab(next)
@@ -85,6 +99,21 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
       setError('Incorrect email or password.')
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  async function demoLogin(account: (typeof DEMO_ACCOUNTS)[number]) {
+    setError(null)
+    setDemoSwitching(account.label)
+    try {
+      await signOut().catch(() => {})
+      await signIn('password', { email: account.email, password: DEMO_PASSWORD, flow: 'signIn' })
+      await waitUntil(isAuthenticatedRef)
+      navigate('/home')
+    } catch {
+      setError(`Could not switch to the demo ${account.label.toLowerCase()} account.`)
+    } finally {
+      setDemoSwitching(null)
     }
   }
 
@@ -168,6 +197,29 @@ export function AuthPage({ initialTab = 'login' }: { initialTab?: Tab }) {
               Register
             </button>
           </div>
+
+          {tab === 'login' && (
+            <div className="mt-4 rounded-xl border border-dashed border-white/20 bg-white/[0.03] px-3.5 py-3">
+              <div className="flex items-center gap-1.5 text-[11.5px] font-bold uppercase tracking-wide text-slate-300">
+                <Sparkles size={12} strokeWidth={2.4} />
+                Pilot demo — quick access
+              </div>
+              <div className="mt-2.5 grid grid-cols-3 gap-2">
+                {DEMO_ACCOUNTS.map((account) => (
+                  <button
+                    key={account.label}
+                    type="button"
+                    onClick={() => demoLogin(account)}
+                    disabled={demoSwitching !== null}
+                    className="tap-feedback flex flex-col items-center gap-1 rounded-lg border border-white/15 bg-white/[0.03] py-2.5 text-[12px] font-bold text-slate-200 transition-colors hover:border-white/30 hover:text-white disabled:opacity-50"
+                  >
+                    <account.icon size={15} strokeWidth={2.2} />
+                    {demoSwitching === account.label ? '…' : account.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {error && (
             <div

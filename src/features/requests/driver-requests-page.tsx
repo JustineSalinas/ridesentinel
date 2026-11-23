@@ -85,6 +85,11 @@ export function DriverRequestsPage() {
                     <MapPin size={11} strokeWidth={2.5} />
                     {request.note || 'No details given'}
                   </div>
+                  {request.estimatedFareMinPhp !== undefined && (
+                    <div className="mt-0.5 text-[11.5px] font-semibold text-slate">
+                      Est. ₱{request.estimatedFareMinPhp}–{request.estimatedFareMaxPhp}
+                    </div>
+                  )}
                 </div>
                 <button
                   type="button"

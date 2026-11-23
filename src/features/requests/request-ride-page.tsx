@@ -2,13 +2,14 @@ import { useState } from 'react'
 import { useMutation, useQuery } from 'convex/react'
 import { ConvexError } from 'convex/values'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, MapPin, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, MapPin, Sparkles, X } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
 
 const ERROR_COPY: Record<string, string> = {
   NOT_A_PASSENGER: 'Only passenger accounts can request a ride.',
   NOT_VERIFIED: 'Get ID-verified before requesting a ride.',
   REQUEST_ALREADY_OPEN: "You've already got an open request.",
+  DEMO_NO_DRIVER: 'No verified driver account exists yet to simulate with.',
 }
 
 export function RequestRidePage() {
@@ -16,10 +17,12 @@ export function RequestRidePage() {
   const active = useQuery(api.rideRequests.myActiveRequest)
   const requestRide = useMutation(api.rideRequests.requestRide)
   const cancelRequest = useMutation(api.rideRequests.cancelRequest)
+  const simulateAccept = useMutation(api.rideRequests.simulateAcceptRequest)
 
   const [note, setNote] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [simulating, setSimulating] = useState(false)
 
   if (me === undefined || active === undefined) return null
 
@@ -41,6 +44,20 @@ export function RequestRidePage() {
     await cancelRequest({ requestId: active.request._id })
   }
 
+  async function simulate() {
+    if (!active?.request) return
+    setError(null)
+    setSimulating(true)
+    try {
+      await simulateAccept({ requestId: active.request._id })
+    } catch (e) {
+      const code = e instanceof ConvexError ? (e.data as string) : undefined
+      setError((code && ERROR_COPY[code]) ?? 'Could not simulate a match. Try again.')
+    } finally {
+      setSimulating(false)
+    }
+  }
+
   return (
     <div className="flex min-h-dvh flex-col bg-page">
       <div className="flex items-center gap-3 px-6 py-5">
@@ -58,8 +75,9 @@ export function RequestRidePage() {
         {!active?.request && (
           <>
             <p className="text-[13.5px] leading-snug text-slate">
-              This finds an already-verified driver online in Iloilo City — it doesn&apos;t set a fare or
-              book anything. You still agree on details with your driver once matched.
+              This finds an already-verified driver online in Iloilo City. You&apos;ll see a rough fare
+              estimate once matched — it&apos;s a ballpark, not a quote. You still agree on the actual fare
+              and details with your driver in person.
             </p>
 
             {error && <div className="rounded-2xl bg-red-50 px-4 py-3 text-[13px] text-danger">{error}</div>}
@@ -99,6 +117,15 @@ export function RequestRidePage() {
               Verified drivers online anywhere in Iloilo City can see your request. This expires after 15
               minutes if no one accepts.
             </p>
+            {active.request.estimatedFareMinPhp !== undefined && (
+              <div className="neu-in rounded-xl px-4 py-2.5 text-[12.5px] font-semibold text-slate">
+                Est. fare ₱{active.request.estimatedFareMinPhp}–{active.request.estimatedFareMaxPhp}{' '}
+                <span className="font-normal text-slate/80">(ballpark, not a quote)</span>
+              </div>
+            )}
+
+            {error && <div className="rounded-2xl bg-red-50 px-4 py-3 text-[13px] text-danger">{error}</div>}
+
             <button
               type="button"
               onClick={cancel}
@@ -107,6 +134,22 @@ export function RequestRidePage() {
               <X size={14} strokeWidth={2.5} />
               Cancel request
             </button>
+
+            <div className="mt-4 w-full max-w-[280px] border-t border-mist pt-4">
+              <button
+                type="button"
+                onClick={simulate}
+                disabled={simulating}
+                className="tap-feedback flex h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-mist text-[12.5px] font-bold text-slate transition-colors hover:bg-mist/40 disabled:opacity-50"
+              >
+                <Sparkles size={14} strokeWidth={2.4} />
+                {simulating ? 'Simulating…' : 'Demo: simulate a driver accepting'}
+              </button>
+              <p className="mt-1.5 text-[11px] text-slate/80">
+                For walkthroughs only — matches instantly with a real verified driver account instead of
+                waiting for one to accept live.
+              </p>
+            </div>
           </div>
         )}
 
@@ -119,8 +162,18 @@ export function RequestRidePage() {
             </div>
             <div>
               <div className="text-[18px] font-extrabold text-ink">{active.driver.displayName}</div>
-              <div className="mt-0.5 text-[13px] text-slate">is on the way</div>
+              {active.request.estimatedEtaMinutes !== undefined && (
+                <div className="mt-0.5 text-[13px] text-slate">
+                  ~{active.request.estimatedEtaMinutes} min away
+                </div>
+              )}
             </div>
+            {active.request.estimatedFareMinPhp !== undefined && (
+              <div className="neu-in rounded-xl px-4 py-2.5 text-[12.5px] font-semibold text-slate">
+                Est. fare ₱{active.request.estimatedFareMinPhp}–{active.request.estimatedFareMaxPhp}{' '}
+                <span className="font-normal text-slate/80">(ballpark, not a quote)</span>
+              </div>
+            )}
             <p className="max-w-[260px] text-[13px] leading-snug text-slate">
               When they arrive, scan their QR to confirm it&apos;s really them before you get on.
             </p>

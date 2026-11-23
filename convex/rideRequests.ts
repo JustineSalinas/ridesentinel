@@ -9,6 +9,20 @@ function isOnline(availableSince: number | undefined): boolean {
   return !!availableSince && Date.now() - availableSince < AVAILABILITY_TTL_MS
 }
 
+// mockFareEstimate: a demo-only display number, not a real fare quote.
+// There is no distance, geocoding, or routing input here on purpose — see
+// the rideRequests comment in schema.ts. Never wire this to anything that
+// collects or moves money; it exists purely so a demo/walkthrough shows a
+// fare-shaped number next to a request.
+function mockFareEstimate() {
+  const base = 40 + Math.floor(Math.random() * 40) // ₱40–79 base
+  return {
+    estimatedFareMinPhp: base,
+    estimatedFareMaxPhp: base + 20,
+    estimatedEtaMinutes: 3 + Math.floor(Math.random() * 7), // 3–9 min
+  }
+}
+
 // setAvailability: driver-only "I'm online" toggle. Passengers don't have
 // one — there's nothing for a passenger to be "available" for.
 export const setAvailability = mutation({
@@ -48,6 +62,7 @@ export const requestRide = mutation({
       status: 'open',
       createdAt: now,
       expiresAt: now + REQUEST_WINDOW_MS,
+      ...mockFareEstimate(),
     })
   },
 })
@@ -81,6 +96,42 @@ export const acceptRequest = mutation({
     await ctx.db.patch(request._id, {
       status: 'accepted',
       driverId: profile.userId,
+      acceptedAt: Date.now(),
+    })
+  },
+})
+
+// simulateAcceptRequest: demo-only convenience for live walkthroughs (e.g.
+// a capstone defense) so a presenter doesn't need a second logged-in driver
+// session just to show the "matched" state. Passenger-only, and only on
+// their own open request. Matches with any already-verified driver profile
+// in the system — preferring one currently online — never a synthetic/fake
+// account, so the "driver" shown is always a real verified profile. This is
+// not a bypass of verification or the QR handshake: everything downstream
+// (QR scan, confirm, rate) still goes through the real flow untouched.
+export const simulateAcceptRequest = mutation({
+  args: { requestId: v.id('rideRequests') },
+  handler: async (ctx, args) => {
+    const profile = await requireProfile(ctx)
+    if (profile.rideRole !== 'passenger') throw new ConvexError('NOT_A_PASSENGER')
+
+    const request = await ctx.db.get(args.requestId)
+    if (!request || request.passengerId !== profile.userId) throw new ConvexError('NOT_FOUND')
+    if (request.status !== 'open') throw new ConvexError('NOT_OPEN')
+
+    const drivers = await ctx.db
+      .query('profiles')
+      .filter((q) => q.eq(q.field('rideRole'), 'driver'))
+      .filter((q) => q.eq(q.field('tier'), 'id_verified'))
+      .take(50)
+    if (drivers.length === 0) throw new ConvexError('DEMO_NO_DRIVER')
+
+    const online = drivers.filter((d) => isOnline(d.availableSince))
+    const driver = online[0] ?? drivers[0]
+
+    await ctx.db.patch(request._id, {
+      status: 'accepted',
+      driverId: driver.userId,
       acceptedAt: Date.now(),
     })
   },
