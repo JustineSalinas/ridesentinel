@@ -1,19 +1,81 @@
-import { Navigation2, AlertTriangle, Moon, Pause, Play } from 'lucide-react'
-import { Map, MapRoute, RouteProgress, RouteMarker, MarkerContent } from '@/components/ui/map'
+import { useRef } from 'react'
+import {
+  Navigation2,
+  AlertTriangle,
+  Moon,
+  Pause,
+  Play,
+  ArrowUp,
+  CornerUpLeft,
+  CornerUpRight,
+  Flag,
+  LocateFixed,
+  TriangleAlert,
+  Maximize,
+} from 'lucide-react'
+import { Map, MapRoute, RouteProgress, RouteMarker, MarkerContent, type MapRef } from '@/components/ui/map'
 import { stepIndexForProgress, ILOILO_DEMO_STEPS } from '../../../convex/lib/iloiloRoute'
 import { cn } from '@/lib/utils'
 
 type Step = (typeof ILOILO_DEMO_STEPS)[number]
 
-function remainingDistanceLabel(steps: Step[], stepIndex: number) {
-  const meters = steps.slice(stepIndex).reduce((sum, s) => sum + s.distanceM, 0)
+function remainingMeters(steps: Step[], stepIndex: number) {
+  return steps.slice(stepIndex).reduce((sum, s) => sum + s.distanceM, 0)
+}
+
+function distanceLabel(meters: number) {
   return meters >= 1000 ? `${(meters / 1000).toFixed(1)} km` : `${meters} m`
 }
 
-// RideNavigationCard: a Grab/Maxim-style turn-by-turn screen — a near
-// full-bleed map with a floating distance/ETA pill and turn banner
-// overlaid on top of it, same visual language as those apps' routing
-// screen. Shared by the passenger (request-ride-page.tsx) and driver
+function turnDirection(instruction: string): 'left' | 'right' | 'arrive' | 'straight' {
+  const lower = instruction.toLowerCase()
+  if (lower.includes('arrive')) return 'arrive'
+  if (lower.includes('left')) return 'left'
+  if (lower.includes('right')) return 'right'
+  return 'straight'
+}
+
+function TurnIcon({ direction, size }: { direction: ReturnType<typeof turnDirection>; size: number }) {
+  if (direction === 'left') return <CornerUpLeft size={size} strokeWidth={2.6} />
+  if (direction === 'right') return <CornerUpRight size={size} strokeWidth={2.6} />
+  if (direction === 'arrive') return <Flag size={size} strokeWidth={2.6} />
+  return <ArrowUp size={size} strokeWidth={2.6} />
+}
+
+// Decorative lane-guidance row, matching the "which lane to take" strip
+// Grab/Waze show under the big turn instruction — static, not driven by
+// any real lane data (there is none), just a visual cue toward the same
+// direction as the current step.
+function LaneGuidance({ direction }: { direction: ReturnType<typeof turnDirection> }) {
+  const lanes = [0, 1, 2, 3]
+  const activeLane = direction === 'left' ? 0 : direction === 'right' ? 3 : 1
+  return (
+    <div className="flex items-center gap-1.5 px-4 pb-3">
+      {lanes.map((lane) => (
+        <div
+          key={lane}
+          className={cn(
+            'flex h-6 w-6 items-center justify-center rounded',
+            lane === activeLane ? 'bg-white text-ink' : 'bg-white/15 text-white/40',
+          )}
+        >
+          <ArrowUp
+            size={13}
+            strokeWidth={3}
+            className={cn(lane === activeLane && direction === 'left' && '-rotate-45', lane === activeLane && direction === 'right' && 'rotate-45')}
+          />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// RideNavigationCard: a Grab/Maxim-style turn-by-turn navigator — a big
+// top instruction banner (distance + street + lane strip, like the
+// reference screenshot), a near full-bleed map below it with floating
+// recenter/report controls, and a bottom bar with the remaining
+// time/distance, arrival clock, and the demo's start/pause control.
+// Shared by the passenger (request-ride-page.tsx) and driver
 // (driver-requests-page.tsx) apps, and the public share page in read-only
 // form. Everything here is demo data — a fixed Iloilo City route and a
 // fixed instruction list (convex/lib/iloiloRoute.ts) advanced by
@@ -43,28 +105,69 @@ export function RideNavigationCard({
   onSimulateDeviation?: () => void
   readOnly?: boolean
 }) {
+  const mapRef = useRef<MapRef | null>(null)
   const stepIndex = stepIndexForProgress(progress)
   const currentStep = steps[stepIndex]
-  const nextStep = steps[stepIndex + 1]
+  const direction = currentStep ? turnDirection(currentStep.instruction) : 'straight'
   const routeColor = deviationActive ? '#ef4444' : '#2563eb'
+  const remaining = remainingMeters(steps, stepIndex)
+  const remainingMin = etaMinutes !== undefined ? Math.max(1, Math.round(etaMinutes * (1 - progress))) : undefined
+  const arrivalClock =
+    remainingMin !== undefined
+      ? new Date(Date.now() + remainingMin * 60_000).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
+      : undefined
+  const currentPoint = route.length ? route[Math.min(route.length - 1, Math.round(progress * (route.length - 1)))] : null
+
+  function recenter() {
+    if (!mapRef.current || !currentPoint) return
+    mapRef.current.flyTo({ center: currentPoint, zoom: 15, duration: 600 })
+  }
+
+  function fitOverview() {
+    if (!mapRef.current || route.length < 2) return
+    const lngs = route.map((p) => p[0])
+    const lats = route.map((p) => p[1])
+    mapRef.current.fitBounds(
+      [
+        [Math.min(...lngs), Math.min(...lats)],
+        [Math.max(...lngs), Math.max(...lats)],
+      ],
+      { padding: 32, duration: 600 },
+    )
+  }
 
   return (
     <div className={cn('overflow-hidden rounded-[22px]', nightMode ? 'neu-dark-out-sm' : 'neu-out-sm')}>
-      <div className="flex items-center justify-between px-3.5 pt-3">
-        <div className={cn('flex items-center gap-1.5 text-[12px] font-bold', nightMode ? 'text-slate-100' : 'text-ink')}>
-          {nightMode && <Moon size={12} strokeWidth={2.4} className="text-slate-300" />}
-          Live tracking (demo)
+      {/* Big top instruction banner — the "490 m / Upper Cross St" block
+          from the reference screenshot. Always rendered against a fixed
+          dark surface (not --color-ink), same as the rest of this
+          always-dark navigation chrome. */}
+      {!arrived && currentStep ? (
+        <div className={cn('bg-canvas-ink', deviationActive && 'bg-danger')}>
+          <div className="flex items-center gap-3 px-4 pt-3.5">
+            <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-white text-ink">
+              <TurnIcon direction={direction} size={22} />
+            </div>
+            <div className="min-w-0 flex-1 text-white">
+              <div className="text-[22px] font-extrabold leading-tight">
+                {currentStep.distanceM > 0 ? distanceLabel(currentStep.distanceM) : 'Now'}
+              </div>
+              <div className="truncate text-[13px] font-semibold text-slate-200">{currentStep.instruction}</div>
+            </div>
+          </div>
+          <LaneGuidance direction={direction} />
         </div>
-        {!arrived && (
-          <span className={cn('text-[10.5px] font-bold uppercase tracking-wide', nightMode ? 'text-slate-400' : 'text-slate/70')}>
-            {steps.length ? `Step ${stepIndex + 1} of ${steps.length}` : ''}
-          </span>
-        )}
-      </div>
+      ) : (
+        <div className="flex items-center gap-2 bg-verified px-4 py-3.5 text-white">
+          <Flag size={20} strokeWidth={2.4} />
+          <div className="text-[15px] font-extrabold">You&apos;ve arrived</div>
+        </div>
+      )}
 
       {route.length > 1 && (
         <div className="relative mx-3 mt-2 h-64 overflow-hidden rounded-[18px]">
           <Map
+            ref={mapRef}
             className="h-full w-full"
             theme={nightMode ? 'dark' : 'light'}
             viewport={{ center: route[Math.floor(route.length / 2)], zoom: 12.5, bearing: 0, pitch: 0 }}
@@ -94,34 +197,36 @@ export function RideNavigationCard({
             </MapRoute>
           </Map>
 
-          {/* Floating ETA/distance pill, top-left — same placement Grab
-              uses for "8 min · 1.3 km". */}
-          {!arrived && (
-            <div className="absolute left-2.5 top-2.5 rounded-full bg-canvas-ink/90 px-3 py-1.5 text-[11.5px] font-bold text-white shadow-lg backdrop-blur-sm">
-              {etaMinutes !== undefined ? `${etaMinutes} min` : 'Demo route'} · {remainingDistanceLabel(steps, stepIndex)}
-            </div>
-          )}
-
-          {/* Floating turn banner, top, like Waze/Grab's active-navigation
-              instruction card. */}
-          {!arrived && currentStep && (
-            <div
-              className="absolute left-2.5 right-2.5 top-11 flex items-center gap-2.5 rounded-2xl px-3.5 py-2.5 shadow-lg backdrop-blur-sm"
-              style={{ backgroundColor: deviationActive ? 'rgba(220,38,38,0.94)' : 'rgba(30,58,138,0.94)' }}
+          {/* Floating right-side controls, like Grab's recenter/report
+              column next to the map. */}
+          <div className="absolute right-2.5 top-2.5 flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={recenter}
+              aria-label="Recenter on current position"
+              className="tap-feedback flex h-9 w-9 items-center justify-center rounded-full bg-canvas-ink/90 text-white shadow-lg backdrop-blur-sm"
             >
-              <Navigation2 size={18} strokeWidth={2.6} className="flex-shrink-0 text-white" />
-              <div className="min-w-0 flex-1 text-white">
-                <div className="truncate text-[13px] font-bold">{currentStep.instruction}</div>
-                {currentStep.distanceM > 0 && <div className="text-[10.5px] opacity-85">in {currentStep.distanceM} m</div>}
-              </div>
-            </div>
-          )}
-
-          {arrived && (
-            <div className="absolute left-2.5 top-2.5 rounded-full bg-verified px-3 py-1.5 text-[11.5px] font-bold text-white shadow-lg">
-              Arrived
-            </div>
-          )}
+              <LocateFixed size={16} strokeWidth={2.4} />
+            </button>
+            <button
+              type="button"
+              onClick={fitOverview}
+              aria-label="View full route"
+              className="tap-feedback flex h-9 w-9 items-center justify-center rounded-full bg-canvas-ink/90 text-white shadow-lg backdrop-blur-sm"
+            >
+              <Maximize size={15} strokeWidth={2.4} />
+            </button>
+            {!readOnly && onSimulateDeviation && !arrived && (
+              <button
+                type="button"
+                onClick={onSimulateDeviation}
+                aria-label="Demo: simulate route deviation"
+                className="tap-feedback flex h-9 w-9 items-center justify-center rounded-full bg-canvas-ink/90 text-pending shadow-lg backdrop-blur-sm"
+              >
+                <TriangleAlert size={16} strokeWidth={2.4} />
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -132,8 +237,31 @@ export function RideNavigationCard({
         </div>
       )}
 
-      <div className="flex items-center justify-between gap-2 px-3.5 py-3">
-        {!readOnly && onToggleGps ? (
+      {/* Bottom bar — ETA/distance + arrival clock on the left (like
+          "13 min · 7.0 km" / "10:48 am" in the reference), the demo's
+          start/pause control on the right. */}
+      <div className="flex items-center justify-between gap-2 bg-canvas-ink px-4 py-3">
+        <div className="text-white">
+          {!arrived ? (
+            <>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-[16px] font-extrabold">{remainingMin !== undefined ? `${remainingMin} min` : 'Demo'}</span>
+                <span className="text-[12px] text-slate-300">· {distanceLabel(remaining)}</span>
+              </div>
+              {arrivalClock && (
+                <div className="text-[10.5px] font-semibold text-brand-dark" style={{ color: '#60a5fa' }}>
+                  Arrive ~{arrivalClock}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="flex items-center gap-1.5 text-[12px] font-semibold text-slate-300">
+              {nightMode && <Moon size={12} strokeWidth={2.4} />}
+              Live tracking (demo) — complete
+            </div>
+          )}
+        </div>
+        {!readOnly && onToggleGps && (
           <button
             type="button"
             onClick={onToggleGps}
@@ -142,19 +270,6 @@ export function RideNavigationCard({
           >
             {arrived ? null : gpsRunning ? <Pause size={13} strokeWidth={2.6} /> : <Play size={13} strokeWidth={2.6} />}
             {arrived ? 'Arrived' : gpsRunning ? 'Pause' : progress > 0 ? 'Resume' : 'Start navigation'}
-          </button>
-        ) : (
-          <span className={cn('text-[11px]', nightMode ? 'text-slate-300' : 'text-slate')}>
-            {nextStep ? `Next: ${nextStep.instruction}` : 'Simulated Iloilo City route'}
-          </span>
-        )}
-        {!readOnly && onSimulateDeviation && !arrived && (
-          <button
-            type="button"
-            onClick={onSimulateDeviation}
-            className="tap-feedback text-[11px] font-semibold text-slate/70 underline-offset-2 hover:underline"
-          >
-            Demo: simulate deviation
           </button>
         )}
       </div>
