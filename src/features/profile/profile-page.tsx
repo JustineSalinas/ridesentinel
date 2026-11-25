@@ -1,9 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuthActions } from '@convex-dev/auth/react'
 import { useMutation, useQuery } from 'convex/react'
 import { useNavigate } from 'react-router-dom'
+import { Moon, Sun, Bell } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
 import { cn } from '@/lib/utils'
+import { getStoredTheme, setStoredTheme, type Theme } from '@/lib/theme'
+import { notificationPermission, requestNotificationPermission } from '@/lib/notify'
 
 export function ProfilePage() {
   const me = useQuery(api.profiles.getMe)
@@ -20,6 +23,17 @@ export function ProfilePage() {
   const [emergencyContactPhone, setEmergencyContactPhone] = useState('')
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [theme, setTheme] = useState<Theme>(() => getStoredTheme())
+  const [notifPermission, setNotifPermission] = useState(() => notificationPermission())
+
+  useEffect(() => {
+    setStoredTheme(theme)
+  }, [theme])
+
+  async function enableNotifications() {
+    const result = await requestNotificationPermission()
+    setNotifPermission(result)
+  }
 
   if (me === undefined) return null
   if (me === null) return null
@@ -201,6 +215,45 @@ export function ProfilePage() {
           }
           last
         />
+      </div>
+
+      <div className="neu-out flex flex-col rounded-2xl">
+        <button
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          className="tap-feedback flex items-center justify-between px-4 py-3.5 text-[13.5px] font-semibold text-ink"
+        >
+          <span className="flex items-center gap-2">
+            {theme === 'dark' ? <Moon size={15} strokeWidth={2.2} /> : <Sun size={15} strokeWidth={2.2} />}
+            Dark mode
+          </span>
+          <span className={cn('h-5 w-9 rounded-full p-0.5 transition-colors', theme === 'dark' ? 'bg-brand' : 'bg-mist')}>
+            <span
+              className={cn(
+                'block h-4 w-4 rounded-full bg-white shadow transition-transform',
+                theme === 'dark' && 'translate-x-4',
+              )}
+            />
+          </span>
+        </button>
+        <button
+          onClick={enableNotifications}
+          disabled={notifPermission === 'unsupported' || notifPermission === 'granted'}
+          className="flex items-center justify-between border-t border-white/60 px-4 py-3.5 text-left text-[13.5px] font-semibold text-ink disabled:opacity-60"
+        >
+          <span className="flex items-center gap-2">
+            <Bell size={15} strokeWidth={2.2} />
+            Notifications (demo)
+          </span>
+          <span className="text-[11.5px] font-normal text-slate">
+            {notifPermission === 'granted'
+              ? 'Enabled'
+              : notifPermission === 'denied'
+                ? 'Blocked by browser'
+                : notifPermission === 'unsupported'
+                  ? 'Not supported here'
+                  : 'Tap to enable'}
+          </span>
+        </button>
       </div>
 
       <button onClick={startEdit} className="neu-out tap-feedback rounded-xl py-3 text-[14px] font-bold text-ink">

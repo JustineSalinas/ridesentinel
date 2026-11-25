@@ -123,9 +123,25 @@ export default defineSchema({
     // `reports` row and an auditLog entry — it does NOT call 911/any real
     // emergency service or notify anyone outside this app.
     sosAt: v.optional(v.number()),
+    // Set by an admin from the incident dashboard (2026-11-25) once an SOS
+    // has been looked at — separate from the underlying `reports` row's own
+    // status so "resolved on the live map" and "handled as a report" can be
+    // tracked independently.
+    sosResolvedAt: v.optional(v.number()),
     // Post-ride safety check-in (2026-11-23): the passenger's own
     // "Yes, I arrived safely" confirmation, separate from the star rating.
     safetyCheckedInAt: v.optional(v.number()),
+    // Mid-ride scheduled check-in (2026-11-25): a SEPARATE confirmation from
+    // safetyCheckedInAt — this one fires partway through the simulated
+    // route, not at arrival. Demo-only: the "schedule" is just "progress
+    // crossed 50%", decided client-side, not a real cron/timer.
+    midRideCheckInAt: v.optional(v.number()),
+    // Route-deviation alert (2026-11-25): demo-only. Either party can flag
+    // "pretend the route just went off-path" with simulateRouteDeviation;
+    // cleared the next time advanceRouteProgress runs (resuming the route
+    // "resolves" it). There is no real GPS to compare against — this never
+    // gets set from actual position data.
+    routeDeviationAt: v.optional(v.number()),
     createdAt: v.number(),
     expiresAt: v.number(),
   })

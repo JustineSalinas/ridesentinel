@@ -1,7 +1,7 @@
 import { v, ConvexError } from 'convex/values'
 import { mutation, query } from './_generated/server'
 import { requireProfile, requireVerified, isVerified } from './lib/authz'
-import { ILOILO_DEMO_ROUTE } from './lib/iloiloRoute'
+import { ILOILO_DEMO_ROUTE, ILOILO_DEMO_STEPS } from './lib/iloiloRoute'
 
 const REQUEST_WINDOW_MS = 15 * 60 * 1000 // open requests auto-expire after 15 minutes
 const AVAILABILITY_TTL_MS = 15 * 60 * 1000 // a driver who went quiet this long reads as offline
@@ -160,8 +160,49 @@ export const advanceRouteProgress = mutation({
     if (request.status !== 'accepted') throw new ConvexError('NOT_ACCEPTED')
 
     const clamped = Math.min(1, Math.max(0, args.progress))
-    await ctx.db.patch(request._id, { routeProgress: clamped })
+    // Resuming movement "resolves" a simulated deviation — there's no real
+    // GPS to compare against, so advancing the demo route is the only
+    // signal this codebase has for "back on track".
+    await ctx.db.patch(request._id, { routeProgress: clamped, routeDeviationAt: undefined })
   },
+})
+
+// simulateRouteDeviation: demo-only — either party can flag "pretend the
+// route just went off-path". There is no real GPS/geo-fence check behind
+// this; it exists so the demo can show what a deviation alert looks like
+// on both apps and the live-share page.
+export const simulateRouteDeviation = mutation({
+  args: { requestId: v.id('rideRequests') },
+  handler: async (ctx, args) => {
+    const profile = await requireProfile(ctx)
+    const request = await ctx.db.get(args.requestId)
+    if (!request) throw new ConvexError('NOT_FOUND')
+    assertParty(request, profile.userId)
+    if (request.status !== 'accepted') throw new ConvexError('NOT_ACCEPTED')
+    await ctx.db.patch(request._id, { routeDeviationAt: Date.now() })
+  },
+})
+
+// midRideCheckIn: the passenger's "yes, still okay" response to the
+// scheduled mid-ride prompt — separate from checkInSafe, which is the
+// post-ride, arrival-time confirmation.
+export const midRideCheckIn = mutation({
+  args: { requestId: v.id('rideRequests') },
+  handler: async (ctx, args) => {
+    const profile = await requireProfile(ctx)
+    const request = await ctx.db.get(args.requestId)
+    if (!request || request.passengerId !== profile.userId) throw new ConvexError('NOT_FOUND')
+    if (request.status !== 'accepted') throw new ConvexError('NOT_ACCEPTED')
+    await ctx.db.patch(request._id, { midRideCheckInAt: Date.now() })
+  },
+})
+
+// demoRouteSteps: the fixed turn-by-turn instruction list for the
+// navigation screen, same "hardcoded, not a routing API" rule as
+// demoRouteCoordinates below.
+export const demoRouteSteps = query({
+  args: {},
+  handler: async () => ILOILO_DEMO_STEPS,
 })
 
 // generateShareLink: passenger-only. Mints a random, unguessable token so a
@@ -209,7 +250,8 @@ export const getSharedRide = query({
     return {
       status: request.status,
       routeProgress: request.routeProgress ?? 0,
-      sosActive: !!request.sosAt,
+      sosActive: !!request.sosAt && !request.sosResolvedAt,
+      routeDeviationActive: !!request.routeDeviationAt,
       estimatedEtaMinutes: request.estimatedEtaMinutes,
       driver: driverProfile
         ? {

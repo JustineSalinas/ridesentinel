@@ -39,6 +39,12 @@ export function AdminHomePage() {
             </span>
           )}
         </Link>
+        <Link to="/admin/live-map" className="px-5 py-2.5 text-[13.5px] font-semibold text-slate-400 hover:text-white">
+          Live map
+        </Link>
+        <Link to="/admin/incidents" className="px-5 py-2.5 text-[13.5px] font-semibold text-slate-400 hover:text-white">
+          Incidents
+        </Link>
         <Link to="/admin/audit" className="px-5 py-2.5 text-[13.5px] font-semibold text-slate-400 hover:text-white">
           Audit log
         </Link>
@@ -66,7 +72,7 @@ export function AdminHomePage() {
         </div>
 
         {metrics && (
-          <div className="mt-8 grid max-w-xl grid-cols-3 gap-3">
+          <div className="mt-8 grid max-w-2xl grid-cols-3 gap-3">
             <Metric
               label="Scan success"
               value={metrics.scanSuccessRate !== null ? `${Math.round(metrics.scanSuccessRate * 100)}%` : '—'}
@@ -78,13 +84,23 @@ export function AdminHomePage() {
               target="≥80%"
             />
             <Metric
-              label="Verify turnaround"
+              label="Verify turnaround (median)"
               value={
                 metrics.medianTurnaroundMs !== null
                   ? `${(metrics.medianTurnaroundMs / 3_600_000).toFixed(1)}h`
                   : '—'
               }
               target="≤24h"
+            />
+            <Metric
+              label="Verify turnaround (avg)"
+              value={metrics.avgTurnaroundMs !== null ? `${(metrics.avgTurnaroundMs / 3_600_000).toFixed(1)}h` : '—'}
+              target={`${metrics.totalDecided} decided`}
+            />
+            <Metric
+              label="Pending >24h"
+              value={String(metrics.pendingOver24h)}
+              target="0 ideally"
             />
           </div>
         )}

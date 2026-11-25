@@ -229,16 +229,120 @@ export const getPilotMetrics = query({
     const confirmedCount = interactions.filter((i) => i.status === 'confirmed').length
     const confirmationRate = interactions.length ? confirmedCount / interactions.length : null
 
-    const decided = (await ctx.db.query('verificationRequests').take(500)).filter((r) => r.decidedAt)
+    const allRequests = await ctx.db.query('verificationRequests').take(500)
+    const decided = allRequests.filter((r) => r.decidedAt)
     const turnarounds = decided.map((r) => r.decidedAt! - r.createdAt).sort((a, b) => a - b)
     const medianTurnaroundMs = turnarounds.length ? turnarounds[Math.floor(turnarounds.length / 2)] : null
+    const avgTurnaroundMs = turnarounds.length
+      ? turnarounds.reduce((sum, ms) => sum + ms, 0) / turnarounds.length
+      : null
+
+    const now = Date.now()
+    const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000
+    const pendingOver24h = allRequests.filter(
+      (r) => r.status === 'pending' && now - r.createdAt > TWENTY_FOUR_HOURS_MS,
+    ).length
 
     return {
       scanSuccessRate,
       confirmationRate,
       medianTurnaroundMs,
+      avgTurnaroundMs,
+      pendingOver24h,
+      totalDecided: decided.length,
       totalScans: scans.length,
       totalInteractions: interactions.length,
     }
+  },
+})
+
+// adminListActiveRides: every currently-accepted ride, for the live-map
+// dashboard. Demo-scoped like the rest of the ride-tracking feature set —
+// the "location" each ride shows is still just routeProgress along the
+// one fixed Iloilo route (lib/iloiloRoute.ts), never a real position.
+export const adminListActiveRides = query({
+  args: {},
+  handler: async (ctx) => {
+    await requireAdmin(ctx)
+    const rides = await ctx.db
+      .query('rideRequests')
+      .withIndex('by_status', (q) => q.eq('status', 'accepted'))
+      .order('desc')
+      .take(100)
+
+    const rows = []
+    for (const ride of rides) {
+      const [passenger, driver] = await Promise.all([
+        ctx.db.query('profiles').withIndex('by_userId', (q) => q.eq('userId', ride.passengerId)).unique(),
+        ride.driverId
+          ? ctx.db.query('profiles').withIndex('by_userId', (q) => q.eq('userId', ride.driverId!)).unique()
+          : null,
+      ])
+      rows.push({
+        requestId: ride._id,
+        routeProgress: ride.routeProgress ?? 0,
+        sosActive: !!ride.sosAt && !ride.sosResolvedAt,
+        routeDeviationActive: !!ride.routeDeviationAt,
+        passengerName: passenger?.displayName ?? 'Unknown',
+        driverName: driver?.displayName ?? 'Unknown',
+      })
+    }
+    return rows
+  },
+})
+
+// adminListSosIncidents: SOS-flagged rides, newest first — a dedicated
+// view separate from the general reports queue (listOpenReports above),
+// since an SOS is time-sensitive in a way a routine report isn't.
+export const adminListSosIncidents = query({
+  args: {},
+  handler: async (ctx) => {
+    await requireAdmin(ctx)
+    const rides = await ctx.db.query('rideRequests').order('desc').take(300)
+    const sosRides = rides.filter((r) => r.sosAt).slice(0, 50)
+
+    const rows = []
+    for (const ride of sosRides) {
+      const [passenger, driver] = await Promise.all([
+        ctx.db.query('profiles').withIndex('by_userId', (q) => q.eq('userId', ride.passengerId)).unique(),
+        ride.driverId
+          ? ctx.db.query('profiles').withIndex('by_userId', (q) => q.eq('userId', ride.driverId!)).unique()
+          : null,
+      ])
+      rows.push({
+        requestId: ride._id,
+        sosAt: ride.sosAt!,
+        sosResolvedAt: ride.sosResolvedAt,
+        status: ride.status,
+        passengerName: passenger?.displayName ?? 'Unknown',
+        driverName: driver?.displayName ?? 'Unknown',
+      })
+    }
+    return rows
+  },
+})
+
+// resolveSosIncident: marks an SOS as looked-at from the incident
+// dashboard. Separate from reports.handleReport — this only clears the
+// urgent "needs eyes now" flag; the underlying reports row (filed by
+// sosAlert) still goes through the normal moderation queue if it needs
+// an action like warn/suspend.
+export const resolveSosIncident = mutation({
+  args: { requestId: v.id('rideRequests'), reason: v.string() },
+  handler: async (ctx, args) => {
+    const admin = await requireAdmin(ctx)
+    const ride = await ctx.db.get(args.requestId)
+    if (!ride) throw new ConvexError('NOT_FOUND')
+    if (!args.reason.trim()) throw new ConvexError('REASON_REQUIRED')
+
+    await ctx.db.patch(ride._id, { sosResolvedAt: Date.now() })
+    await ctx.db.insert('auditLog', {
+      actorId: admin.userId,
+      action: 'ride.sos.resolve',
+      targetType: 'rideRequests',
+      targetId: ride._id,
+      reason: args.reason,
+      createdAt: Date.now(),
+    })
   },
 })

@@ -32,6 +32,12 @@ const AdminReportsPage = lazy(() =>
   import('@/features/admin/admin-reports-page').then((m) => ({ default: m.AdminReportsPage })),
 )
 const AdminAuditPage = lazy(() => import('@/features/admin/admin-audit-page').then((m) => ({ default: m.AdminAuditPage })))
+const AdminLiveMapPage = lazy(() =>
+  import('@/features/admin/admin-live-map-page').then((m) => ({ default: m.AdminLiveMapPage })),
+)
+const AdminIncidentsPage = lazy(() =>
+  import('@/features/admin/admin-incidents-page').then((m) => ({ default: m.AdminIncidentsPage })),
+)
 
 function AdminFallback() {
   return <div className="flex min-h-dvh items-center justify-center bg-page text-sm text-slate">Loading…</div>
@@ -111,6 +117,22 @@ export const router = createBrowserRouter([
         element: (
           <Suspense fallback={<AdminFallback />}>
             <AdminAuditPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/admin/live-map',
+        element: (
+          <Suspense fallback={<AdminFallback />}>
+            <AdminLiveMapPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: '/admin/incidents',
+        element: (
+          <Suspense fallback={<AdminFallback />}>
+            <AdminIncidentsPage />
           </Suspense>
         ),
       },

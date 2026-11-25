@@ -2,7 +2,7 @@ import { useQuery } from 'convex/react'
 import { useParams } from 'react-router-dom'
 import { ShieldAlert, ShieldCheck } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
-import { Map, MapRoute, RouteProgress, RouteMarker, MarkerContent } from '@/components/ui/map'
+import { RideNavigationCard } from './ride-navigation'
 
 // No-auth, public page: what a passenger's trusted contact opens from the
 // link generated on request-ride-page.tsx. Only ever shows the sanitized
@@ -13,6 +13,7 @@ export function SharedRidePage() {
   const { token } = useParams<{ token: string }>()
   const shared = useQuery(api.rideRequests.getSharedRide, token ? { token } : 'skip')
   const route = useQuery(api.rideRequests.demoRouteCoordinates)
+  const steps = useQuery(api.rideRequests.demoRouteSteps)
 
   return (
     <div className="flex min-h-dvh flex-col items-center bg-page px-6 py-10">
@@ -60,22 +61,17 @@ export function SharedRidePage() {
               </div>
             </div>
 
-            {route && route.length > 1 && (
-              <div className="h-56 overflow-hidden rounded-2xl">
-                <Map
-                  className="h-full w-full"
-                  viewport={{ center: route[Math.floor(route.length / 2)], zoom: 12.5, bearing: 0, pitch: 0 }}
-                >
-                  <MapRoute coordinates={route} progress={shared.routeProgress} color="#94a3b8">
-                    <RouteProgress color="#2563eb" width={4} />
-                    <RouteMarker at="progress">
-                      <MarkerContent>
-                        <div className="h-3.5 w-3.5 rounded-full border-2 border-white bg-brand shadow" />
-                      </MarkerContent>
-                    </RouteMarker>
-                  </MapRoute>
-                </Map>
-              </div>
+            {route && steps && (
+              <RideNavigationCard
+                route={route}
+                steps={steps}
+                progress={shared.routeProgress}
+                gpsRunning={false}
+                arrived={shared.routeProgress >= 1}
+                etaMinutes={shared.estimatedEtaMinutes}
+                deviationActive={shared.routeDeviationActive}
+                readOnly
+              />
             )}
 
             <p className="text-center text-[11px] leading-snug text-slate/80">

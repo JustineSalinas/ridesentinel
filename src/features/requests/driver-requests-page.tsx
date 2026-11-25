@@ -1,33 +1,48 @@
 import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery } from 'convex/react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, MapPin, ShieldAlert, Users } from 'lucide-react'
+import { ArrowLeft, MapPin, Moon, ShieldAlert, Users } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
 import { cn } from '@/lib/utils'
-import { Map, MapRoute, RouteProgress, RouteMarker, MarkerContent } from '@/components/ui/map'
+import { RideNavigationCard } from './ride-navigation'
+import { notify } from '@/lib/notify'
 
 const SIM_STEP_MS = 1200
 const SIM_STEP = 0.08
+
+function isNightHour(hour: number) {
+  return hour >= 22 || hour < 5
+}
 
 export function DriverRequestsPage() {
   const me = useQuery(api.profiles.getMe)
   const open = useQuery(api.rideRequests.listOpenForDriver)
   const activeRide = useQuery(api.rideRequests.myActiveRideForDriver)
   const route = useQuery(api.rideRequests.demoRouteCoordinates)
+  const steps = useQuery(api.rideRequests.demoRouteSteps)
   const setAvailability = useMutation(api.rideRequests.setAvailability)
   const acceptRequest = useMutation(api.rideRequests.acceptRequest)
   const advanceRouteProgress = useMutation(api.rideRequests.advanceRouteProgress)
+  const simulateRouteDeviation = useMutation(api.rideRequests.simulateRouteDeviation)
   const sosAlert = useMutation(api.rideRequests.sosAlert)
   const [accepting, setAccepting] = useState<string | null>(null)
   const [gpsRunning, setGpsRunning] = useState(false)
   const [sosState, setSosState] = useState<'idle' | 'confirm' | 'sent'>('idle')
+  const [nowHour, setNowHour] = useState(() => new Date().getHours())
   const gpsTimer = useRef<ReturnType<typeof setInterval> | null>(null)
+  const notifiedForRide = useRef<string | null>(null)
 
   const requestId = activeRide?.request?._id
   const progress = activeRide?.request?.routeProgress ?? 0
   const arrived = progress >= 1
+  const nightMode = isNightHour(nowHour)
   const progressRef = useRef(progress)
   progressRef.current = progress
+
+  useEffect(() => {
+    const id = setInterval(() => setNowHour(new Date().getHours()), 5 * 60 * 1000)
+    return () => clearInterval(id)
+  }, [])
 
   useEffect(() => {
     return () => {
@@ -42,6 +57,13 @@ export function DriverRequestsPage() {
       setGpsRunning(false)
     }
   }, [requestId])
+
+  useEffect(() => {
+    if (requestId && activeRide?.passenger && notifiedForRide.current !== requestId) {
+      notifiedForRide.current = requestId
+      notify('New ride matched', `You're now taking ${activeRide.passenger.displayName}.`)
+    }
+  }, [requestId, activeRide?.passenger])
 
   if (me === undefined) return null
 
@@ -81,9 +103,15 @@ export function DriverRequestsPage() {
     }, SIM_STEP_MS)
   }
 
+  async function deviate() {
+    if (!requestId) return
+    await simulateRouteDeviation({ requestId })
+  }
+
   async function confirmSos() {
     if (!requestId) return
     await sosAlert({ requestId })
+    notify('SOS sent', 'Your SOS alert was logged for review.')
     setSosState('sent')
   }
 
@@ -121,6 +149,13 @@ export function DriverRequestsPage() {
 
         {activeRide?.request && activeRide.passenger && (
           <div className="flex flex-col gap-3">
+            {nightMode && (
+              <div className="flex items-center gap-2 rounded-2xl bg-ink px-4 py-2.5 text-[12px] font-bold text-slate-100">
+                <Moon size={14} strokeWidth={2.4} />
+                Night ride mode active for this trip.
+              </div>
+            )}
+
             <div className="neu-out-sm flex items-center gap-3 rounded-2xl p-3.5">
               <div className="h-11 w-11 flex-shrink-0 overflow-hidden rounded-full bg-mist">
                 {activeRide.passenger.photoUrl && (
@@ -133,39 +168,19 @@ export function DriverRequestsPage() {
               </div>
             </div>
 
-            <div className="neu-out-sm rounded-2xl p-3">
-              <div className="mb-2 flex items-center justify-between">
-                <div className="text-[12.5px] font-bold text-ink">Live tracking (demo)</div>
-                <button
-                  type="button"
-                  onClick={toggleGps}
-                  disabled={arrived}
-                  className="tap-feedback rounded-full bg-brand px-3 py-1.5 text-[11.5px] font-bold text-white disabled:opacity-50"
-                >
-                  {arrived ? 'Arrived' : gpsRunning ? 'Pause' : progress > 0 ? 'Resume' : 'Start simulated GPS'}
-                </button>
-              </div>
-              {route && route.length > 1 && (
-                <div className="h-44 overflow-hidden rounded-xl">
-                  <Map
-                    className="h-full w-full"
-                    viewport={{ center: route[Math.floor(route.length / 2)], zoom: 12.5, bearing: 0, pitch: 0 }}
-                  >
-                    <MapRoute coordinates={route} progress={progress} color="#94a3b8">
-                      <RouteProgress color="#2563eb" width={4} />
-                      <RouteMarker at="progress">
-                        <MarkerContent>
-                          <div className="h-3.5 w-3.5 rounded-full border-2 border-white bg-brand shadow" />
-                        </MarkerContent>
-                      </RouteMarker>
-                    </MapRoute>
-                  </Map>
-                </div>
-              )}
-              <p className="mt-1.5 text-[10.5px] text-slate/80">
-                Simulated movement along a fixed Iloilo City route for the demo — not your real GPS.
-              </p>
-            </div>
+            {route && steps && (
+              <RideNavigationCard
+                route={route}
+                steps={steps}
+                progress={progress}
+                gpsRunning={gpsRunning}
+                arrived={arrived}
+                onToggleGps={toggleGps}
+                nightMode={nightMode}
+                deviationActive={!!activeRide.request.routeDeviationAt}
+                onSimulateDeviation={deviate}
+              />
+            )}
 
             <div className="neu-out-sm rounded-2xl p-3">
               {sosState === 'idle' && (

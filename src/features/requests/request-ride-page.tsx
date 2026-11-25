@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery } from 'convex/react'
 import { ConvexError } from 'convex/values'
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ArrowRight, MapPin, ShieldCheck, ShieldAlert, Share2, Sparkles, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, MapPin, Moon, ShieldCheck, ShieldAlert, Share2, Sparkles, X } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
-import { Map, MapRoute, RouteProgress, RouteMarker, MarkerContent } from '@/components/ui/map'
+import { RideNavigationCard } from './ride-navigation'
+import { notify } from '@/lib/notify'
 
 const ERROR_COPY: Record<string, string> = {
   NOT_A_PASSENGER: 'Only passenger accounts can request a ride.',
@@ -18,18 +19,26 @@ const ERROR_COPY: Record<string, string> = {
 // tracking" button — not a real location update interval.
 const SIM_STEP_MS = 1200
 const SIM_STEP = 0.08
+const MID_RIDE_CHECKIN_THRESHOLD = 0.5
+
+function isNightHour(hour: number) {
+  return hour >= 22 || hour < 5
+}
 
 export function RequestRidePage() {
   const me = useQuery(api.profiles.getMe)
   const active = useQuery(api.rideRequests.myActiveRequest)
   const route = useQuery(api.rideRequests.demoRouteCoordinates)
+  const steps = useQuery(api.rideRequests.demoRouteSteps)
   const requestRide = useMutation(api.rideRequests.requestRide)
   const cancelRequest = useMutation(api.rideRequests.cancelRequest)
   const simulateAccept = useMutation(api.rideRequests.simulateAcceptRequest)
   const advanceRouteProgress = useMutation(api.rideRequests.advanceRouteProgress)
+  const simulateRouteDeviation = useMutation(api.rideRequests.simulateRouteDeviation)
   const generateShareLink = useMutation(api.rideRequests.generateShareLink)
   const sosAlert = useMutation(api.rideRequests.sosAlert)
   const checkInSafe = useMutation(api.rideRequests.checkInSafe)
+  const midRideCheckIn = useMutation(api.rideRequests.midRideCheckIn)
 
   const [note, setNote] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -38,12 +47,21 @@ export function RequestRidePage() {
   const [gpsRunning, setGpsRunning] = useState(false)
   const [shareUrl, setShareUrl] = useState<string | null>(null)
   const [sosState, setSosState] = useState<'idle' | 'confirm' | 'sent'>('idle')
+  const [nowHour, setNowHour] = useState(() => new Date().getHours())
   const gpsTimer = useRef<ReturnType<typeof setInterval> | null>(null)
+  const wasAccepted = useRef(false)
+  const autoSharedForNight = useRef(false)
 
   const requestId = active?.request?._id
   const progress = active?.request?.routeProgress ?? 0
   const progressRef = useRef(progress)
   progressRef.current = progress
+  const nightMode = isNightHour(nowHour)
+
+  useEffect(() => {
+    const id = setInterval(() => setNowHour(new Date().getHours()), 5 * 60 * 1000)
+    return () => clearInterval(id)
+  }, [])
 
   useEffect(() => {
     return () => {
@@ -60,6 +78,26 @@ export function RequestRidePage() {
       setGpsRunning(false)
     }
   }, [active?.request?.status])
+
+  // Notify (demo push) the moment a request flips open -> accepted.
+  useEffect(() => {
+    const accepted = active?.request?.status === 'accepted'
+    if (accepted && !wasAccepted.current && active?.driver) {
+      notify('Driver matched!', `${active.driver.displayName} accepted your ride request.`)
+    }
+    wasAccepted.current = accepted
+  }, [active?.request?.status, active?.driver])
+
+  // Night ride mode auto-shares the live link once, so a trusted contact is
+  // already watching without the rider having to remember to tap it.
+  useEffect(() => {
+    if (nightMode && requestId && active?.request?.status === 'accepted' && !autoSharedForNight.current) {
+      autoSharedForNight.current = true
+      generateShareLink({ requestId }).then((token) => {
+        setShareUrl(`${window.location.origin}/share/${token}`)
+      })
+    }
+  }, [nightMode, requestId, active?.request?.status, generateShareLink])
 
   if (me === undefined || active === undefined) return null
 
@@ -116,6 +154,11 @@ export function RequestRidePage() {
     }, SIM_STEP_MS)
   }
 
+  async function deviate() {
+    if (!requestId) return
+    await simulateRouteDeviation({ requestId })
+  }
+
   async function share() {
     if (!requestId) return
     const token = await generateShareLink({ requestId })
@@ -125,6 +168,7 @@ export function RequestRidePage() {
   async function confirmSos() {
     if (!requestId) return
     await sosAlert({ requestId })
+    notify('SOS sent', 'Your SOS alert was logged for review.')
     setSosState('sent')
   }
 
@@ -133,8 +177,15 @@ export function RequestRidePage() {
     await checkInSafe({ requestId })
   }
 
+  async function midCheckIn() {
+    if (!requestId) return
+    await midRideCheckIn({ requestId })
+  }
+
   const arrived = progress >= 1
   const checkedIn = !!active?.request?.safetyCheckedInAt
+  const midCheckedIn = !!active?.request?.midRideCheckInAt
+  const showMidRidePrompt = progress >= MID_RIDE_CHECKIN_THRESHOLD && !arrived && !midCheckedIn
 
   return (
     <div className="flex min-h-dvh flex-col bg-page">
@@ -233,6 +284,13 @@ export function RequestRidePage() {
 
         {active?.request && active.request.status === 'accepted' && active.driver && (
           <div className="flex flex-1 flex-col gap-4 overflow-y-auto pb-4">
+            {nightMode && (
+              <div className="flex items-center gap-2 rounded-2xl bg-ink px-4 py-2.5 text-[12px] font-bold text-slate-100">
+                <Moon size={14} strokeWidth={2.4} />
+                Night ride mode — your live status is auto-shared and SOS is one tap away.
+              </div>
+            )}
+
             <div className="flex flex-col items-center gap-3 pt-2 text-center">
               <div className="neu-out h-20 w-20 overflow-hidden rounded-full bg-mist">
                 {active.driver.photoUrl && (
@@ -265,41 +323,43 @@ export function RequestRidePage() {
 
             {error && <div className="rounded-2xl bg-red-50 px-4 py-3 text-[13px] text-danger">{error}</div>}
 
-            {/* Demo GPS tracking */}
-            <div className="neu-out-sm rounded-2xl p-3">
-              <div className="mb-2 flex items-center justify-between">
-                <div className="text-[12.5px] font-bold text-ink">Live tracking (demo)</div>
-                <button
-                  type="button"
-                  onClick={toggleGps}
-                  disabled={arrived}
-                  className="tap-feedback rounded-full bg-brand px-3 py-1.5 text-[11.5px] font-bold text-white disabled:opacity-50"
-                >
-                  {arrived ? 'Arrived' : gpsRunning ? 'Pause' : progress > 0 ? 'Resume' : 'Start simulated GPS'}
-                </button>
-              </div>
-              {route && route.length > 1 && (
-                <div className="h-44 overflow-hidden rounded-xl">
-                  <Map
-                    className="h-full w-full"
-                    viewport={{ center: route[Math.floor(route.length / 2)], zoom: 12.5, bearing: 0, pitch: 0 }}
+            {route && steps && (
+              <RideNavigationCard
+                route={route}
+                steps={steps}
+                progress={progress}
+                gpsRunning={gpsRunning}
+                arrived={arrived}
+                onToggleGps={toggleGps}
+                etaMinutes={active.request.estimatedEtaMinutes}
+                nightMode={nightMode}
+                deviationActive={!!active.request.routeDeviationAt}
+                onSimulateDeviation={deviate}
+              />
+            )}
+
+            {/* Scheduled mid-ride check-in */}
+            {showMidRidePrompt && (
+              <div className="neu-out-sm rounded-2xl p-3 text-center">
+                <div className="mb-2 text-[12.5px] font-bold text-ink">Still doing okay?</div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={midCheckIn}
+                    className="tap-feedback flex-1 rounded-xl bg-verified py-2 text-[12.5px] font-bold text-white"
                   >
-                    <MapRoute coordinates={route} progress={progress} color="#94a3b8" activeColor="#94a3b8">
-                      <RouteProgress color="#2563eb" width={4} />
-                      <RouteMarker at="progress">
-                        <MarkerContent>
-                          <div className="h-3.5 w-3.5 rounded-full border-2 border-white bg-brand shadow" />
-                        </MarkerContent>
-                      </RouteMarker>
-                    </MapRoute>
-                  </Map>
+                    Yes, I&apos;m okay
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSosState('confirm')}
+                    className="tap-feedback flex-1 rounded-xl border border-danger py-2 text-[12.5px] font-bold text-danger"
+                  >
+                    I need help
+                  </button>
                 </div>
-              )}
-              <p className="mt-1.5 text-[10.5px] text-slate/80">
-                Simulated movement along a fixed Iloilo City route for the demo — not your driver&apos;s real
-                location.
-              </p>
-            </div>
+              </div>
+            )}
 
             {/* Live-share with a trusted contact */}
             <div className="neu-out-sm rounded-2xl p-3">

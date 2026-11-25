@@ -24,6 +24,41 @@
   --color-danger: #dc2626;
 }
 
+/* Dark mode (2026-11-25): a toggle in Profile sets `dark` on <html> and
+   persists the choice in localStorage. Redefining the same custom
+   properties the @theme block above declares is enough to re-skin every
+   screen, since every utility (bg-page, text-ink, neu-out, …) already
+   reads from these vars — no per-component dark variant needed except the
+   neumorphic shadow pairs, which bake in light-page-specific rgba values. */
+:root.dark {
+  --color-ink: #e2e8f0;
+  --color-slate: #94a3b8;
+  --color-page: #0b1220;
+  --color-mist: #1e293b;
+  --color-paper: #111827;
+  --color-brand: #3b82f6;
+  --color-brand-dark: #1d4ed8;
+  --color-verified: #22c55e;
+  --color-pending: #f59e0b;
+  --color-danger: #f87171;
+}
+
+.dark .neu-out {
+  box-shadow:
+    6px 6px 14px rgba(0, 0, 0, 0.55),
+    -6px -6px 14px rgba(71, 85, 105, 0.25);
+}
+.dark .neu-out-sm {
+  box-shadow:
+    3px 3px 7px rgba(0, 0, 0, 0.5),
+    -3px -3px 7px rgba(71, 85, 105, 0.22);
+}
+.dark .neu-in {
+  box-shadow:
+    inset 4px 4px 9px rgba(0, 0, 0, 0.5),
+    inset -4px -4px 9px rgba(71, 85, 105, 0.2);
+}
+
 @layer base {
   html,
   body,
