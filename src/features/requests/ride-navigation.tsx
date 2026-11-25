@@ -50,17 +50,17 @@ function LaneGuidance({ direction }: { direction: ReturnType<typeof turnDirectio
   const lanes = [0, 1, 2, 3]
   const activeLane = direction === 'left' ? 0 : direction === 'right' ? 3 : 1
   return (
-    <div className="flex items-center gap-1.5 px-4 pb-3">
+    <div className="flex items-center gap-2 px-4 pb-3.5 pt-0.5">
       {lanes.map((lane) => (
         <div
           key={lane}
           className={cn(
-            'flex h-6 w-6 items-center justify-center rounded',
+            'flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md',
             lane === activeLane ? 'bg-white text-ink' : 'bg-white/15 text-white/40',
           )}
         >
           <ArrowUp
-            size={13}
+            size={14}
             strokeWidth={3}
             className={cn(lane === activeLane && direction === 'left' && '-rotate-45', lane === activeLane && direction === 'right' && 'rotate-45')}
           />
@@ -144,7 +144,7 @@ export function RideNavigationCard({
           always-dark navigation chrome. */}
       {!arrived && currentStep ? (
         <div className={cn('bg-canvas-ink', deviationActive && 'bg-danger')}>
-          <div className="flex items-center gap-3 px-4 pt-3.5">
+          <div className="flex items-center gap-3 px-4 pb-3 pt-3.5">
             <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-white text-ink">
               <TurnIcon direction={direction} size={22} />
             </div>
@@ -169,7 +169,7 @@ export function RideNavigationCard({
           <Map
             ref={mapRef}
             className="h-full w-full"
-            theme={nightMode ? 'dark' : 'light'}
+            theme="light"
             viewport={{ center: route[Math.floor(route.length / 2)], zoom: 12.5, bearing: 0, pitch: 0 }}
           >
             {/* Casing: a wider pale line under the colored route, the same
