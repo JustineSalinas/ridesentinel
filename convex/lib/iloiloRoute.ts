@@ -1,24 +1,24 @@
-// A fixed, hardcoded line through real Iloilo City districts (Jaro ->
-// Mandurriao -> City Proper), used only to animate a marker for the demo
+// A fixed, hardcoded line roughly following the real Jaro -> La Paz ->
+// City Proper corridor, used only to animate a marker for the demo
 // "simulate GPS tracking" buttons (SPEC.md stays out of real routing —
 // see docs/DECISIONS.md, 2026-11-23). Not fetched from any routing API,
 // not tied to a request's actual note/destination — every simulated ride
 // moves along this same path.
+//
+// 2026-11-25: the original version detoured west to Mandurriao and back,
+// which made the line double back on itself and cross its own path on
+// screen — looked obviously fake ("the routing circled"). Replaced with a
+// single coherent line: longitude and latitude both move in one direction
+// only (east and south respectively) from one point to the next, so it
+// can never visually cross or loop.
 export const ILOILO_DEMO_ROUTE: [number, number][] = [
-  [122.5644, 10.7272], // Jaro Plaza
-  [122.5658, 10.7211],
-  [122.5679, 10.7149],
-  [122.5661, 10.7101], // Iloilo Doctors' / Jalandoni St area
-  [122.5636, 10.7057],
-  [122.5612, 10.7021], // Mandurriao approach
-  [122.5588, 10.6995], // Mandurriao
-  [122.5571, 10.7034],
-  [122.5583, 10.7079],
-  [122.5612, 10.7118],
-  [122.5634, 10.7088], // SM City Iloilo area
-  [122.5651, 10.7046],
-  [122.5665, 10.7006], // Diversion Rd towards City Proper
-  [122.5693, 10.6978],
+  [122.5644, 10.7297], // Jaro Plaza
+  [122.5649, 10.7230], // Lopez Jaena St, Jaro
+  [122.5656, 10.7170],
+  [122.5663, 10.7110], // La Paz
+  [122.5671, 10.705], // Jalandoni St
+  [122.5686, 10.699], // Diversion Rd
+  [122.5704, 10.6975],
   [122.5721, 10.6968], // Iloilo City Proper / Esplanade
 ]
 
@@ -27,14 +27,12 @@ export const ILOILO_DEMO_ROUTE: [number, number][] = [
 // at — fixed text matched to a fixed route, same as the route itself: not
 // generated from any real routing/directions API.
 export const ILOILO_DEMO_STEPS: { atIndex: number; instruction: string; distanceM: number }[] = [
-  { atIndex: 0, instruction: 'Head south from Jaro Plaza', distanceM: 700 },
-  { atIndex: 2, instruction: 'Continue onto Jalandoni Street', distanceM: 550 },
-  { atIndex: 4, instruction: 'Keep straight toward Mandurriao', distanceM: 480 },
-  { atIndex: 6, instruction: "You're passing through Mandurriao", distanceM: 430 },
-  { atIndex: 8, instruction: 'Turn left toward SM City Iloilo', distanceM: 470 },
-  { atIndex: 10, instruction: 'Continue past SM City Iloilo', distanceM: 460 },
-  { atIndex: 12, instruction: 'Merge onto Diversion Road', distanceM: 420 },
-  { atIndex: 14, instruction: 'Arrive at Iloilo City Proper / Esplanade', distanceM: 0 },
+  { atIndex: 0, instruction: 'Head south from Jaro Plaza onto Lopez Jaena Street', distanceM: 650 },
+  { atIndex: 2, instruction: 'Continue straight through Jaro toward La Paz', distanceM: 600 },
+  { atIndex: 3, instruction: 'Keep straight through La Paz', distanceM: 560 },
+  { atIndex: 4, instruction: 'Continue onto Jalandoni Street', distanceM: 520 },
+  { atIndex: 5, instruction: 'Merge onto Diversion Road', distanceM: 480 },
+  { atIndex: 7, instruction: 'Arrive at Iloilo City Proper / Esplanade', distanceM: 0 },
 ]
 
 /** Which step a route-progress fraction (0–1) currently sits in. */
