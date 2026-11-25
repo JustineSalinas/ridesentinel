@@ -15,7 +15,11 @@ export const getMe = query({
       .withIndex('by_userId', (q) => q.eq('userId', userId))
       .unique()
     if (!profile) return null
-    return { ...profile, verified: isVerified(profile) }
+    return {
+      ...profile,
+      verified: isVerified(profile),
+      photoUrl: profile.avatarStorageId ? await ctx.storage.getUrl(profile.avatarStorageId) : null,
+    }
   },
 })
 

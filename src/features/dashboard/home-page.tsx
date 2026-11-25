@@ -24,12 +24,12 @@ export function HomePage() {
 
   return (
     <div className="flex flex-1 flex-col" style={{ background: 'var(--hero-gradient)' }}>
-      <div className="flex items-center justify-between px-6 pb-2 pt-6">
+      <div className="flex items-start justify-between px-6 pb-3 pt-8">
         <div>
           <div className="text-[26px] font-extrabold leading-tight tracking-tight text-ink">
             Hey, {me.displayName.split(' ')[0]}.
           </div>
-          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+          <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
             {me.verified ? (
               <div className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-1 text-[11px] font-bold text-verified">
                 <ShieldCheck size={12} strokeWidth={2.5} />
@@ -42,13 +42,17 @@ export function HomePage() {
               </div>
             )}
           </div>
-          <div className="mt-2 flex items-center gap-1 font-mono text-[10.5px] font-semibold uppercase tracking-wider text-slate">
+          <div className="mt-2.5 flex items-center gap-1 font-mono text-[10.5px] font-semibold uppercase tracking-wider text-slate">
             <MapPin size={10} strokeWidth={2.5} />
             Iloilo City
           </div>
         </div>
-        <div className="neu-out flex h-12 w-12 items-center justify-center rounded-full text-[14px] font-bold text-ink">
-          {initials}
+        <div className="neu-out flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-full text-[14px] font-bold text-ink">
+          {me.photoUrl ? (
+            <img src={me.photoUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            initials
+          )}
         </div>
       </div>
 

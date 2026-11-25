@@ -188,13 +188,17 @@ export function ProfilePage() {
   return (
     <div className="flex flex-1 flex-col gap-5 bg-page px-6 py-6">
       <div className="flex items-center gap-3">
-        <div className="neu-out flex h-16 w-16 items-center justify-center rounded-full text-[17px] font-bold text-ink">
-          {me.displayName
-            .split(' ')
-            .map((p) => p[0])
-            .slice(0, 2)
-            .join('')
-            .toUpperCase()}
+        <div className="neu-out flex h-16 w-16 items-center justify-center overflow-hidden rounded-full text-[17px] font-bold text-ink">
+          {me.photoUrl ? (
+            <img src={me.photoUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            me.displayName
+              .split(' ')
+              .map((p) => p[0])
+              .slice(0, 2)
+              .join('')
+              .toUpperCase()
+          )}
         </div>
         <div>
           <div className="text-[17px] font-extrabold text-ink">{me.displayName}</div>
