@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery } from 'convex/react'
 import { ConvexError } from 'convex/values'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, MapPin, Moon, ShieldCheck, ShieldAlert, Share2, Sparkles, X } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
 import { RideNavigationCard } from './ride-navigation'
@@ -40,7 +40,8 @@ export function RequestRidePage() {
   const checkInSafe = useMutation(api.rideRequests.checkInSafe)
   const midRideCheckIn = useMutation(api.rideRequests.midRideCheckIn)
 
-  const [note, setNote] = useState('')
+  const location = useLocation()
+  const [note, setNote] = useState(() => (location.state as { note?: string } | null)?.note ?? '')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [simulating, setSimulating] = useState(false)
@@ -188,7 +189,7 @@ export function RequestRidePage() {
   const showMidRidePrompt = progress >= MID_RIDE_CHECKIN_THRESHOLD && !arrived && !midCheckedIn
 
   return (
-    <div className="flex min-h-dvh flex-col bg-page">
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
       <div className="flex items-center gap-3 px-6 py-5">
         <Link
           to="/home"

@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom'
-import { Home, QrCode, ScanLine, CircleUserRound } from 'lucide-react'
+import { Home, QrCode, ScanLine, CircleUserRound, MessageCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const tabs = [
   { to: '/home', label: 'Home', icon: Home },
   { to: '/qr', label: 'My QR', icon: QrCode },
   { to: '/scan', label: 'Scan', icon: ScanLine },
+  { to: '/messages', label: 'Messages', icon: MessageCircle },
   { to: '/profile', label: 'Profile', icon: CircleUserRound },
 ]
 

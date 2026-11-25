@@ -19,7 +19,10 @@ import { InteractionsPage } from '@/features/interactions/interactions-page'
 import { RatePage } from '@/features/ratings/rate-page'
 import { ReportPage } from '@/features/reports/report-page'
 import { ProfilePage } from '@/features/profile/profile-page'
+import { MessagesPage } from '@/features/messages/messages-page'
+import { ConversationPage } from '@/features/messages/conversation-page'
 import { RequestRidePage } from '@/features/requests/request-ride-page'
+import { ChooseDestinationPage } from '@/features/requests/choose-destination-page'
 import { DriverRequestsPage } from '@/features/requests/driver-requests-page'
 import { SharedRidePage } from '@/features/requests/shared-ride-page'
 
@@ -83,12 +86,15 @@ export const router = createBrowserRouter([
           { path: '/rate/:interactionId', element: <RatePage /> },
           { path: '/report', element: <ReportPage /> },
           { path: '/request', element: <RequestRidePage /> },
+          { path: '/request/where-to', element: <ChooseDestinationPage /> },
           { path: '/requests', element: <DriverRequestsPage /> },
+          { path: '/messages/:rideRequestId', element: <ConversationPage /> },
           {
             element: <AppShell />,
             children: [
               { path: '/home', element: <HomePage /> },
               { path: '/interactions', element: <InteractionsPage /> },
+              { path: '/messages', element: <MessagesPage /> },
               { path: '/profile', element: <ProfilePage /> },
             ],
           },

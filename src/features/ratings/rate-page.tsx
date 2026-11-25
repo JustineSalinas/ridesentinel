@@ -23,7 +23,7 @@ export function RatePage() {
 
   if (data === undefined || mine === undefined) return null
   if (data === null || !data.other) {
-    return <div className="flex min-h-dvh items-center justify-center bg-page p-8 text-center text-slate">Not found.</div>
+    return <div className="mx-auto flex min-h-dvh w-full max-w-md items-center justify-center bg-page p-8 text-center text-slate">Not found.</div>
   }
 
   const alreadyRated = !!mine || submitted
@@ -41,7 +41,7 @@ export function RatePage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-page">
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
       <div className="flex items-center justify-between px-6 py-5">
         <Link
           to="/home"

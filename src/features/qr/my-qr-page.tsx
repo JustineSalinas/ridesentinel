@@ -52,7 +52,7 @@ export function MyQrPage() {
 
   if (!me?.verified) {
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-ink p-8 text-center text-white">
+      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center gap-3 bg-ink p-8 text-center text-white">
         <div className="text-[15px] font-bold">Get verified to show your QR</div>
         <Link
           to="/verify"
@@ -66,7 +66,7 @@ export function MyQrPage() {
   }
 
   return (
-    <div className="relative flex min-h-dvh flex-col items-center justify-center gap-6 bg-ink px-6 text-white">
+    <div className="relative mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center gap-6 bg-ink px-6 text-white">
       <Link
         to="/home"
         className="tap-feedback group absolute left-6 top-6 flex items-center gap-1 text-[13px] font-semibold text-slate-400 transition-colors hover:text-white"

@@ -44,7 +44,7 @@ export function VerifyPage() {
   }
 
   if (request === undefined) {
-    return <div className="flex min-h-dvh items-center justify-center bg-page text-sm text-slate">Loading…</div>
+    return <div className="mx-auto flex min-h-dvh w-full max-w-md items-center justify-center bg-page text-sm text-slate">Loading…</div>
   }
 
   if (request && request.status !== 'rejected') {
@@ -52,7 +52,7 @@ export function VerifyPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-page">
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
       <div className="px-6 py-5">
         <div className="text-[11px] font-bold uppercase tracking-widest text-slate">Verification</div>
         <h1 className="mt-1 text-[21px] font-extrabold tracking-tight text-ink">Get ID-verified</h1>
@@ -169,7 +169,7 @@ function StatusView({ status, reason }: { status: 'pending' | 'approved'; reason
   const iconColor = status === 'approved' ? '#16A34A' : '#D97706'
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-page px-7 text-center">
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center gap-4 bg-page px-7 text-center">
       <div className={`neu-out flex h-16 w-16 items-center justify-center rounded-full ${circleClass}`}>
         {status === 'approved' ? (
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true">

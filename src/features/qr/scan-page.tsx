@@ -79,7 +79,7 @@ export function ScanPage() {
   }, [])
 
   return (
-    <div className="flex min-h-dvh flex-col bg-ink text-white">
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-ink text-white">
       <div className="flex items-center justify-between px-6 py-5">
         <Link
           to="/home"

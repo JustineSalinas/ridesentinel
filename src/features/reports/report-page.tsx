@@ -42,7 +42,7 @@ export function ReportPage() {
 
   if (submitted) {
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-page px-8 text-center">
+      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center gap-3 bg-page px-8 text-center">
         <div className="neu-out flex h-16 w-16 items-center justify-center rounded-full">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path d="M5 13l4 4L19 7" stroke="#2563EB" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
@@ -63,7 +63,7 @@ export function ReportPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-page">
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
       <div className="flex items-center justify-between px-6 py-5">
         <button
           onClick={() => navigate(-1)}

@@ -13,10 +13,16 @@ import {
   Handshake,
   IdCard,
   Minus,
+  MessageCircle,
+  Moon,
+  Navigation2,
   Plus,
+  Radar,
   ScanFace,
+  Search,
   Share2,
   ShieldAlert,
+  ShieldCheck,
   TrendingUp,
   UserRound,
   X,
@@ -26,6 +32,9 @@ import { AndroidGlyph, AppleGlyph } from '@/components/platform-icons'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { cn } from '@/lib/utils'
 import { useScrollReveal } from '@/hooks/use-scroll-reveal'
+import { MapRoute, RouteProgress, RouteMarker, MarkerContent } from '@/components/ui/map'
+import { ILOILO_DEMO_ROUTE } from '../../../convex/lib/iloiloRoute'
+
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -34,7 +43,7 @@ gsap.registerPlugin(ScrollTrigger)
 // gradient/background color stand in until it's ready.
 const Map = lazy(() => import('@/components/ui/map').then((m) => ({ default: m.Map })))
 
-const HEADLINE_LINES = ['Know who you’re meeting', 'before you ride.']
+const HEADLINE_LINES = ['Your ride, verified', 'end to end.']
 
 const ROLE_FLOWS = [
   {
@@ -158,10 +167,58 @@ const TRUST_FEATURES = [
   },
 ] as const
 
+// Pilot feature set (2026-11-25) — everything added on top of the core
+// ID-verification/handshake loop above. Labeled "pilot/demo" throughout
+// the app itself (see docs/DECISIONS.md): ride matching, fare/ETA, and
+// GPS tracking here are simulated for the pilot, not a real dispatch or
+// payment system.
+const APP_FEATURES = [
+  {
+    icon: Search,
+    title: 'Request a ride',
+    body: 'Get matched with an already-verified driver online nearby in Iloilo City, with a ballpark fare and ETA before you commit.',
+  },
+  {
+    icon: Navigation2,
+    title: 'Turn-by-turn tracking',
+    body: 'Follow the trip on a live map with simulated GPS, step-by-step directions, and an arrival estimate — the same view your driver sees.',
+  },
+  {
+    icon: Share2,
+    title: 'Live trip sharing',
+    body: 'Send a trusted contact a link that shows your ride status in real time. No login required on their end, no phone number shown.',
+  },
+  {
+    icon: ShieldAlert,
+    title: 'One-tap SOS',
+    body: "Flag a problem mid-ride and it's logged for an admin to review immediately — not a silent toast that goes nowhere.",
+  },
+  {
+    icon: Moon,
+    title: 'Night ride mode',
+    body: 'Rides between 10pm and 5am automatically share your live status and keep SOS one tap away, no extra steps.',
+  },
+  {
+    icon: ShieldCheck,
+    title: 'Verified badge at match time',
+    body: "See your driver's ID-verified badge the moment you're matched, not buried three taps into a profile.",
+  },
+  {
+    icon: MessageCircle,
+    title: 'In-app messages',
+    body: 'Message your driver or passenger directly, and see app updates and announcements, all in one inbox.',
+  },
+  {
+    icon: Radar,
+    title: 'Admin live ops',
+    body: 'Admins can watch every active ride on a map and respond to SOS incidents from a dedicated, time-sensitive queue.',
+  },
+] as const
+
 const FAQ = [
   [
     'Is this a ride-hailing app?',
-    "No. There's no matching, booking, pricing, or payment. You still arrange the ride yourselves. RideSentinel only confirms who you're meeting at pickup.",
+    "Not a real one. The pilot includes a ride-matching flow with a simulated fare estimate and GPS tracking so you can try the full experience, but there's no live routing, real dispatch, or payment behind it. The part that's real is the ID-verification and pickup handshake.",
   ],
   [
     'What happens to my ID photo?',
@@ -187,6 +244,46 @@ export function LandingPage() {
   const stepsRef = useScrollReveal<HTMLDivElement>()
   const faqRef = useScrollReveal<HTMLDivElement>()
   const headlineRef = useRef<HTMLHeadingElement>(null)
+
+  // Hero motorcycle animation: cruises the fixed demo route in a loop,
+  // eased (slow pull away from a stop, slow roll into the next one) rather
+  // than a flat linear crawl, which read as mechanical/unrealistic. Frozen
+  // mid-route under prefers-reduced-motion — it's decorative, not
+  // information, so it's fine to just stop moving rather than try to
+  // respect reduced motion with a slower/no-op version of the same loop.
+  const [heroRouteT, setHeroRouteT] = useState(0)
+  useEffect(() => {
+    if (reduceMotion) {
+      setHeroRouteT(0.4)
+      return
+    }
+    const ONE_WAY_MS = 11000
+    const PAUSE_MS = 1100
+    const easeInOutSine = (x: number) => -(Math.cos(Math.PI * x) - 1) / 2
+    let raf: number
+    let start: number | null = null
+    let phase: 'forward' | 'pausing' = 'forward'
+    let pauseStart = 0
+
+    function tick(now: number) {
+      if (start === null) start = now
+      if (phase === 'forward') {
+        const linear = Math.min(1, (now - start) / ONE_WAY_MS)
+        setHeroRouteT(easeInOutSine(linear))
+        if (linear >= 1) {
+          phase = 'pausing'
+          pauseStart = now
+        }
+      } else if (now - pauseStart >= PAUSE_MS) {
+        start = now
+        phase = 'forward'
+        setHeroRouteT(0)
+      }
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [reduceMotion])
 
   useEffect(() => {
     if (reduceMotion) return
@@ -252,8 +349,22 @@ export function LandingPage() {
               theme="light"
               interactive={false}
               attributionControl={false}
-              viewport={{ center: [122.549, 10.705], zoom: 12.6, bearing: 0, pitch: 0 }}
-            />
+              viewport={{ center: [122.555, 10.712], zoom: 14.6, bearing: 0, pitch: 0 }}
+            >
+              <MapRoute coordinates={ILOILO_DEMO_ROUTE} color="#cbd5e1" width={3}>
+                <RouteProgress color="#1e3a8a" width={3} />
+                <RouteMarker at={heroRouteT}>
+                  <MarkerContent>
+                    <div className="relative flex h-8 w-8 items-center justify-center">
+                      <span className="absolute h-8 w-8 animate-ping rounded-full bg-brand opacity-30" />
+                      <span className="relative flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-brand text-white shadow-lg">
+                        <Bike size={13} strokeWidth={2.4} />
+                      </span>
+                    </div>
+                  </MarkerContent>
+                </RouteMarker>
+              </MapRoute>
+            </Map>
           </Suspense>
         </div>
         {/* The text column is left-aligned, not centered, so the wash has to be
@@ -306,9 +417,9 @@ export function LandingPage() {
             </h1>
 
             <p className="mt-5 max-w-md text-[15.5px] leading-relaxed text-slate">
-              Informal motorcycle rides in Iloilo City get arranged in group chats, leaving both people
-              guessing at pickup. RideSentinel verifies both riders with a photo ID check, a 60-second QR
-              handshake, and blind ratings.
+              Request a ride, watch it approach on a live map, and know it&apos;s really them before you
+              get on — an ID-verified driver, a 60-second QR handshake, and a trip you can share with
+              someone who cares where you are. Built for Iloilo City, not adapted from somewhere else.
             </p>
 
             <div className="mt-7 flex flex-wrap items-center gap-3">
@@ -327,20 +438,20 @@ export function LandingPage() {
               </Link>
             </div>
 
-            <div className="mt-4 flex items-center gap-2.5 text-[12.5px] font-semibold text-slate">
+            <div className="mt-4 flex items-center gap-2.5 text-[12.5px] font-semibold leading-none text-slate">
               <a
                 href="/ridesentinel.apk"
                 download
-                className="inline-flex items-center gap-1.5 text-ink transition-colors hover:text-brand"
+                className="inline-flex items-center gap-1.5 leading-none text-ink transition-colors hover:text-brand"
               >
-                <AndroidGlyph className="h-3.5 w-3.5" />
-                Download for Android
+                <AndroidGlyph className="h-3.5 w-3.5 flex-shrink-0 self-center" />
+                <span className="leading-none">Download for Android</span>
               </a>
-              <span className="text-ink/20">·</span>
-              <span className="inline-flex items-center gap-1.5 text-slate-400">
-                <AppleGlyph className="h-3.5 w-3.5" />
-                iOS
-                <span className="rounded-full bg-mist px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-slate">
+              <span className="leading-none text-ink/20">·</span>
+              <span className="inline-flex items-center gap-1.5 leading-none text-slate-400">
+                <AppleGlyph className="h-3.5 w-3.5 flex-shrink-0 self-center" />
+                <span className="leading-none">iOS</span>
+                <span className="inline-flex items-center rounded-full bg-mist px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase leading-none tracking-wider text-slate">
                   Soon
                 </span>
               </span>
@@ -359,10 +470,11 @@ export function LandingPage() {
             A trust layer for rides you already arrange yourself.
           </h2>
           <p className="mt-4 max-w-2xl text-[14.5px] leading-relaxed text-slate">
-            RideSentinel isn&apos;t a ride-hailing app. It doesn&apos;t book, match, or dispatch anyone.
-            It&apos;s the verification layer that sits beside however you already find a motorcycle ride
-            in Iloilo City, a Facebook group, a regular driver, word of mouth, and answers the one
-            question those arrangements can&apos;t: is this actually the person you&apos;re supposed to be
+            RideSentinel isn&apos;t a real dispatch or payment platform. The pilot does include a
+            ride-matching flow with simulated GPS tracking, so you can see it end to end, but the fare
+            shown is a ballpark estimate, not a quote, and the route is a demo, not live routing.
+            Underneath all of that sits the verification layer that answers the one question group
+            chats and word of mouth can&apos;t: is this actually the person you&apos;re supposed to be
             meeting?
           </p>
 
@@ -510,6 +622,38 @@ export function LandingPage() {
         </div>
       </section>
 
+      {/* Band 1.4: Pilot feature set — everything added on top of the core
+          verification/handshake loop. All demo/simulated for the pilot;
+          see the honest-comparison band right after this one for what
+          that does and doesn't mean. */}
+      <section id="features" className="border-b border-mist bg-page px-5 py-14 text-ink md:px-10 md:py-20">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="font-display text-[28px] font-bold tracking-tight text-ink md:text-[34px]">
+            What&apos;s in the app
+          </h2>
+          <p className="mt-3 max-w-2xl text-[14.5px] leading-relaxed text-slate">
+            Built around the pilot: finding a ride, knowing where it is, and staying safe along the way.
+          </p>
+
+          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {APP_FEATURES.map(({ icon: Icon, title, body }) => (
+              <div
+                key={title}
+                className="group rounded-xl border border-mist bg-paper p-5 transition-all duration-200 hover:-translate-y-1 hover:border-brand/30 hover:shadow-lg"
+              >
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 text-brand transition-transform duration-200 group-hover:scale-110">
+                  <Icon size={18} strokeWidth={2.2} />
+                </div>
+                <h3 className="font-display mt-3.5 text-[15.5px] font-bold tracking-tight text-ink">
+                  {title}
+                </h3>
+                <p className="mt-1.5 text-[13px] leading-relaxed text-slate">{body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Band 1.5: Honest comparison — what RideSentinel adds that the alternatives don't */}
       <section className="border-b border-mist bg-page px-5 py-14 text-ink md:px-10 md:py-20">
         <div className="mx-auto max-w-5xl">
@@ -568,12 +712,16 @@ export function LandingPage() {
           </div>
 
           <p className="mt-4 max-w-2xl text-[12.5px] leading-relaxed text-slate">
-            RideSentinel doesn&apos;t book, match, or track rides on purpose. You still arrange the ride
-            yourselves, the same way you do today. See the{' '}
+            The pilot&apos;s ride-matching and GPS tracking are simulated on purpose — there&apos;s no real
+            dispatch engine, live routing, or payment processing behind them. See the{' '}
             <a href="#how-it-works" className="font-bold text-brand hover:text-brand-dark">
               scope boundary
             </a>{' '}
-            above for what &ldquo;ID-verified&rdquo; does and doesn&apos;t mean.
+            above for what &ldquo;ID-verified&rdquo; does and doesn&apos;t mean, and the{' '}
+            <a href="#features" className="font-bold text-brand hover:text-brand-dark">
+              feature list
+            </a>{' '}
+            above that for everything in the pilot.
           </p>
         </div>
       </section>
@@ -737,7 +885,7 @@ export function LandingPage() {
               theme="dark"
               interactive={false}
               attributionControl={false}
-              viewport={{ center: [122.549, 10.705], zoom: 12.4, bearing: 0, pitch: 0 }}
+              viewport={{ center: [122.555, 10.712], zoom: 14.4, bearing: 0, pitch: 0 }}
             />
           </Suspense>
         </div>

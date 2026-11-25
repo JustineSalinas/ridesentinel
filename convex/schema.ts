@@ -252,4 +252,29 @@ export default defineSchema({
     msToProfile: v.optional(v.number()),
     createdAt: v.number(),
   }).index('by_createdAt', ['createdAt']),
+
+  // Messages tab (2026-11-25, see docs/DECISIONS.md): broadcast content
+  // (app updates / ads) every non-admin user sees, read-only — there is no
+  // authoring UI for this yet, entries are seeded directly. `kind` drives
+  // the badge shown in the UI; neither kind is targeted/personalized.
+  announcements: defineTable({
+    kind: v.union(v.literal('update'), v.literal('ad')),
+    title: v.string(),
+    body: v.string(),
+    ctaLabel: v.optional(v.string()),
+    ctaUrl: v.optional(v.string()),
+    createdAt: v.number(),
+  }).index('by_createdAt', ['createdAt']),
+
+  // Direct messages between the two sides of a ride (2026-11-25) — scoped
+  // to a `rideRequests` row rather than a generic friend/conversation
+  // system, since that's the only relationship between two users this app
+  // already has. Only ever readable/writable by that ride's passenger and
+  // driver (convex/messages.ts).
+  rideMessages: defineTable({
+    rideRequestId: v.id('rideRequests'),
+    senderId: v.id('users'),
+    body: v.string(),
+    createdAt: v.number(),
+  }).index('by_rideRequestId', ['rideRequestId']),
 })

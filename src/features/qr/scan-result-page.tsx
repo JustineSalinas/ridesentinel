@@ -15,11 +15,11 @@ export function ScanResultPage() {
   const reduceMotion = useReducedMotion()
 
   if (data === undefined) {
-    return <div className="flex min-h-dvh items-center justify-center bg-page text-slate">Loading…</div>
+    return <div className="mx-auto flex min-h-dvh w-full max-w-md items-center justify-center bg-page text-slate">Loading…</div>
   }
   if (data === null || !data.other) {
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-page p-8 text-center">
+      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col items-center justify-center gap-3 bg-page p-8 text-center">
         <div className="text-[15px] font-bold text-ink">This meeting isn&apos;t available anymore.</div>
         <Link
           to="/home"
@@ -36,7 +36,7 @@ export function ScanResultPage() {
   const status = interaction.status
 
   return (
-    <div className="flex min-h-dvh flex-col bg-page">
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
       <div className="flex items-center justify-between px-6 py-5">
         <Link
           to="/home"

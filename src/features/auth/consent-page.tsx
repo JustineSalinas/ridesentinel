@@ -40,7 +40,7 @@ export function ConsentPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-page">
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
       <div className="px-6 py-5">
         <div className="text-[11px] font-bold uppercase tracking-widest text-slate">
           Before you continue

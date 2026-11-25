@@ -116,7 +116,7 @@ export function DriverRequestsPage() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-page">
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col bg-page">
       <div className="flex items-center gap-3 px-6 py-5">
         <Link
           to="/home"

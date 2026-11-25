@@ -113,16 +113,26 @@ export function HomePage() {
           </Link>
         </div>
 
-        <Link
-          to={me.rideRole === 'passenger' ? '/request' : '/requests'}
-          className="tap-feedback flex items-center justify-between rounded-2xl bg-blue-50 px-4 py-3.5 text-[13px] font-semibold text-brand-dark transition-colors hover:bg-blue-100"
-        >
-          <span className="flex items-center gap-2">
+        {me.rideRole === 'passenger' ? (
+          <Link
+            to="/request/where-to"
+            className="tap-feedback neu-in flex items-center gap-2.5 rounded-2xl px-4 py-3.5 text-[13.5px] font-semibold text-slate transition-colors hover:text-ink"
+          >
             <Search size={16} strokeWidth={2.2} />
-            {me.rideRole === 'passenger' ? 'Request a ride' : 'View ride requests'}
-          </span>
-          <ArrowRight size={15} strokeWidth={2.5} />
-        </Link>
+            Where to?
+          </Link>
+        ) : (
+          <Link
+            to="/requests"
+            className="tap-feedback flex items-center justify-between rounded-2xl bg-blue-50 px-4 py-3.5 text-[13px] font-semibold text-brand-dark transition-colors hover:bg-blue-100"
+          >
+            <span className="flex items-center gap-2">
+              <Search size={16} strokeWidth={2.2} />
+              View ride requests
+            </span>
+            <ArrowRight size={15} strokeWidth={2.5} />
+          </Link>
+        )}
 
         {summary && (
           <Link
