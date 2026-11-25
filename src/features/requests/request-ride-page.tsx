@@ -239,10 +239,21 @@ export function RequestRidePage() {
 
         {active?.request && active.request.status === 'open' && (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
-            <div className="neu-out flex h-16 w-16 items-center justify-center rounded-full text-brand">
-              <MapPin size={24} strokeWidth={2} />
+            <div className="relative flex h-16 w-16 items-center justify-center">
+              <span className="absolute h-16 w-16 animate-ping rounded-full bg-brand/20" />
+              <span className="absolute h-16 w-16 animate-pulse rounded-full bg-brand/10" />
+              <div className="neu-out relative flex h-16 w-16 items-center justify-center rounded-full text-brand">
+                <MapPin size={24} strokeWidth={2} className="animate-bounce" />
+              </div>
             </div>
-            <div className="text-[17px] font-bold text-ink">Looking for a driver…</div>
+            <div className="flex items-center gap-1 text-[17px] font-bold text-ink">
+              Looking for a driver
+              <span className="flex gap-0.5">
+                <span className="h-1 w-1 animate-bounce rounded-full bg-ink [animation-delay:-0.3s]" />
+                <span className="h-1 w-1 animate-bounce rounded-full bg-ink [animation-delay:-0.15s]" />
+                <span className="h-1 w-1 animate-bounce rounded-full bg-ink" />
+              </span>
+            </div>
             <p className="max-w-[260px] text-[13px] leading-snug text-slate">
               Verified drivers online anywhere in Iloilo City can see your request. This expires after 15
               minutes if no one accepts.

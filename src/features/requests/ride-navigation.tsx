@@ -42,37 +42,9 @@ function TurnIcon({ direction, size }: { direction: ReturnType<typeof turnDirect
   return <ArrowUp size={size} strokeWidth={2.6} />
 }
 
-// Decorative lane-guidance row, matching the "which lane to take" strip
-// Grab/Waze show under the big turn instruction — static, not driven by
-// any real lane data (there is none), just a visual cue toward the same
-// direction as the current step.
-function LaneGuidance({ direction }: { direction: ReturnType<typeof turnDirection> }) {
-  const lanes = [0, 1, 2, 3]
-  const activeLane = direction === 'left' ? 0 : direction === 'right' ? 3 : 1
-  return (
-    <div className="flex items-center gap-2 px-4 pb-3.5 pt-0.5">
-      {lanes.map((lane) => (
-        <div
-          key={lane}
-          className={cn(
-            'flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md',
-            lane === activeLane ? 'bg-white text-ink' : 'bg-white/15 text-white/40',
-          )}
-        >
-          <ArrowUp
-            size={14}
-            strokeWidth={3}
-            className={cn(lane === activeLane && direction === 'left' && '-rotate-45', lane === activeLane && direction === 'right' && 'rotate-45')}
-          />
-        </div>
-      ))}
-    </div>
-  )
-}
-
 // RideNavigationCard: a Grab/Maxim-style turn-by-turn navigator — a big
-// top instruction banner (distance + street + lane strip, like the
-// reference screenshot), a near full-bleed map below it with floating
+// top instruction banner (direction icon + distance + street), a near
+// full-bleed map below it with floating
 // recenter/report controls, and a bottom bar with the remaining
 // time/distance, arrival clock, and the demo's start/pause control.
 // Shared by the passenger (request-ride-page.tsx) and driver
@@ -143,19 +115,16 @@ export function RideNavigationCard({
           dark surface (not --color-ink), same as the rest of this
           always-dark navigation chrome. */}
       {!arrived && currentStep ? (
-        <div className={cn('bg-canvas-ink', deviationActive && 'bg-danger')}>
-          <div className="flex items-center gap-3 px-4 pb-3 pt-3.5">
-            <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-white text-ink">
-              <TurnIcon direction={direction} size={22} />
-            </div>
-            <div className="min-w-0 flex-1 text-white">
-              <div className="text-[22px] font-extrabold leading-tight">
-                {currentStep.distanceM > 0 ? distanceLabel(currentStep.distanceM) : 'Now'}
-              </div>
-              <div className="truncate text-[13px] font-semibold text-slate-200">{currentStep.instruction}</div>
-            </div>
+        <div className={cn('flex items-center gap-3 px-4 py-3.5', deviationActive ? 'bg-danger' : 'bg-canvas-ink')}>
+          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-white text-ink">
+            <TurnIcon direction={direction} size={22} />
           </div>
-          <LaneGuidance direction={direction} />
+          <div className="min-w-0 flex-1 text-white">
+            <div className="text-[22px] font-extrabold leading-tight">
+              {currentStep.distanceM > 0 ? distanceLabel(currentStep.distanceM) : 'Now'}
+            </div>
+            <div className="truncate text-[13px] font-semibold text-slate-200">{currentStep.instruction}</div>
+          </div>
         </div>
       ) : (
         <div className="flex items-center gap-2 bg-verified px-4 py-3.5 text-white">

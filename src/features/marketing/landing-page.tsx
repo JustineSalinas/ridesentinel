@@ -33,7 +33,21 @@ import { buttonVariants } from '@/components/ui/button-variants'
 import { cn } from '@/lib/utils'
 import { useScrollReveal } from '@/hooks/use-scroll-reveal'
 import { MapRoute, RouteProgress, RouteMarker, MarkerContent } from '@/components/ui/map'
-import { ILOILO_DEMO_ROUTE } from '../../../convex/lib/iloiloRoute'
+// General Luna Avenue, Iloilo City Proper — real coordinates, not
+// hand-guessed: pulled from OpenStreetMap (Nominatim), west to east,
+// deduplicating a cluster of overlapping segment endpoints at the
+// eastern (President Roxas/Sampaguita) end. Used only for the decorative
+// hero animation below; the app's own ride-simulation demo route
+// (convex/lib/iloiloRoute.ts) is unrelated and untouched.
+const LUNA_STREET_ROUTE: [number, number][] = [
+  [122.5543, 10.6997],
+  [122.555, 10.6998],
+  [122.5558, 10.7],
+  [122.5578, 10.7001],
+  [122.5608, 10.7005],
+  [122.5656, 10.7012],
+  [122.5683, 10.7019],
+]
 
 
 gsap.registerPlugin(ScrollTrigger)
@@ -257,8 +271,8 @@ export function LandingPage() {
       setHeroRouteT(0.4)
       return
     }
-    const ONE_WAY_MS = 11000
-    const PAUSE_MS = 1100
+    const ONE_WAY_MS = 32000
+    const PAUSE_MS = 1600
     const easeInOutSine = (x: number) => -(Math.cos(Math.PI * x) - 1) / 2
     let raf: number
     let start: number | null = null
@@ -349,9 +363,9 @@ export function LandingPage() {
               theme="light"
               interactive={false}
               attributionControl={false}
-              viewport={{ center: [122.555, 10.712], zoom: 14.6, bearing: 0, pitch: 0 }}
+              viewport={{ center: [122.5613, 10.7008], zoom: 14.6, bearing: 0, pitch: 0 }}
             >
-              <MapRoute coordinates={ILOILO_DEMO_ROUTE} color="#cbd5e1" width={3}>
+              <MapRoute coordinates={LUNA_STREET_ROUTE} color="#cbd5e1" width={3}>
                 <RouteProgress color="#1e3a8a" width={3} />
                 <RouteMarker at={heroRouteT}>
                   <MarkerContent>
@@ -885,7 +899,7 @@ export function LandingPage() {
               theme="dark"
               interactive={false}
               attributionControl={false}
-              viewport={{ center: [122.555, 10.712], zoom: 14.4, bearing: 0, pitch: 0 }}
+              viewport={{ center: [122.5613, 10.7008], zoom: 14.4, bearing: 0, pitch: 0 }}
             />
           </Suspense>
         </div>
