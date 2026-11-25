@@ -23,7 +23,7 @@ export function OfflineBanner() {
   return (
     <div
       role="status"
-      className="bg-ink px-4 py-2 text-center text-[13px] font-semibold text-white"
+      className="bg-canvas-ink px-4 py-2 text-center text-[13px] font-semibold text-white"
     >
       You're offline — a data connection is needed for RideSentinel to work.
     </div>

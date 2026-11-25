@@ -23,10 +23,7 @@ export function HomePage() {
     .toUpperCase()
 
   return (
-    <div
-      className="flex flex-1 flex-col"
-      style={{ background: 'radial-gradient(130% 100% at 100% 0%, #EFF6FF 0%, #F1F5F9 55%)' }}
-    >
+    <div className="flex flex-1 flex-col" style={{ background: 'var(--hero-gradient)' }}>
       <div className="flex items-center justify-between px-6 pb-2 pt-6">
         <div>
           <div className="text-[26px] font-extrabold leading-tight tracking-tight text-ink">
@@ -102,7 +99,7 @@ export function HomePage() {
         <div className="flex gap-3">
           <Link
             to="/scan"
-            className="tap-feedback flex flex-1 items-center justify-center gap-2 rounded-full bg-ink py-4 text-white transition-colors hover:bg-ink/90"
+            className="tap-feedback flex flex-1 items-center justify-center gap-2 rounded-full bg-canvas-ink py-4 text-white transition-colors hover:bg-canvas-ink/90"
           >
             <ScanLine size={18} strokeWidth={2} />
             <span className="text-sm font-bold">Scan</span>

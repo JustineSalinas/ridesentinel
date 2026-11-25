@@ -150,7 +150,7 @@ export function DriverRequestsPage() {
         {activeRide?.request && activeRide.passenger && (
           <div className="flex flex-col gap-3">
             {nightMode && (
-              <div className="flex items-center gap-2 rounded-2xl bg-ink px-4 py-2.5 text-[12px] font-bold text-slate-100">
+              <div className="flex items-center gap-2 rounded-2xl bg-canvas-ink px-4 py-2.5 text-[12px] font-bold text-slate-100">
                 <Moon size={14} strokeWidth={2.4} />
                 Night ride mode active for this trip.
               </div>

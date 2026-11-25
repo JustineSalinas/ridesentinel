@@ -285,7 +285,7 @@ export function RequestRidePage() {
         {active?.request && active.request.status === 'accepted' && active.driver && (
           <div className="flex flex-1 flex-col gap-4 overflow-y-auto pb-4">
             {nightMode && (
-              <div className="flex items-center gap-2 rounded-2xl bg-ink px-4 py-2.5 text-[12px] font-bold text-slate-100">
+              <div className="flex items-center gap-2 rounded-2xl bg-canvas-ink px-4 py-2.5 text-[12px] font-bold text-slate-100">
                 <Moon size={14} strokeWidth={2.4} />
                 Night ride mode — your live status is auto-shared and SOS is one tap away.
               </div>

@@ -3,6 +3,7 @@ import { createBrowserRouter } from 'react-router-dom'
 import { AppShell } from '@/components/app-shell'
 import { PlaceholderScreen } from '@/components/placeholder-screen'
 import { RequireAuth, RequireAdmin } from '@/components/require-auth'
+import { ThemeAdaptive } from '@/components/theme-adaptive'
 import { LandingPage } from '@/features/marketing/landing-page'
 import { AuthPage } from '@/features/auth/auth-page'
 import { ConsentPage } from '@/features/auth/consent-page'
@@ -53,13 +54,16 @@ export const router = createBrowserRouter([
   { path: '/', element: <LandingPage /> },
   { path: '/login', element: <AuthPage initialTab="login" /> },
   { path: '/register', element: <AuthPage initialTab="register" /> },
-  { path: '/share/:token', element: <SharedRidePage /> },
+  {
+    path: '/share/:token',
+    element: <ThemeAdaptive />,
+    children: [{ index: true, element: <SharedRidePage /> }],
+  },
   {
     element: <RequireAuth />,
     children: [
-      { path: '/consent', element: <ConsentPage /> },
-      { path: '/verify', element: <VerifyPage /> },
-      { path: '/verify/status', element: <VerifyPage /> },
+      // /qr and /scan are deliberately dark-canvas screens, outside
+      // ThemeAdaptive — see that file's comment.
       { path: '/qr', element: <MyQrPage /> },
       {
         path: '/scan',
@@ -69,17 +73,25 @@ export const router = createBrowserRouter([
           </Suspense>
         ),
       },
-      { path: '/scan/result/:id', element: <ScanResultPage /> },
-      { path: '/rate/:interactionId', element: <RatePage /> },
-      { path: '/report', element: <ReportPage /> },
-      { path: '/request', element: <RequestRidePage /> },
-      { path: '/requests', element: <DriverRequestsPage /> },
       {
-        element: <AppShell />,
+        element: <ThemeAdaptive />,
         children: [
-          { path: '/home', element: <HomePage /> },
-          { path: '/interactions', element: <InteractionsPage /> },
-          { path: '/profile', element: <ProfilePage /> },
+          { path: '/consent', element: <ConsentPage /> },
+          { path: '/verify', element: <VerifyPage /> },
+          { path: '/verify/status', element: <VerifyPage /> },
+          { path: '/scan/result/:id', element: <ScanResultPage /> },
+          { path: '/rate/:interactionId', element: <RatePage /> },
+          { path: '/report', element: <ReportPage /> },
+          { path: '/request', element: <RequestRidePage /> },
+          { path: '/requests', element: <DriverRequestsPage /> },
+          {
+            element: <AppShell />,
+            children: [
+              { path: '/home', element: <HomePage /> },
+              { path: '/interactions', element: <InteractionsPage /> },
+              { path: '/profile', element: <ProfilePage /> },
+            ],
+          },
         ],
       },
     ],

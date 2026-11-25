@@ -22,41 +22,97 @@
   --color-verified: #16a34a;
   --color-pending: #d97706;
   --color-danger: #dc2626;
+
+  /* Fixed dark-navy constant for surfaces that must stay dark regardless
+     of the dark-mode toggle (neu-dark-*, below) — kept separate from
+     --color-ink, which doubles as "primary text" on theme-adaptive
+     screens and DOES flip to a light value there in dark mode. */
+  --color-canvas-ink: #0f172a;
+
+  /* Home page's hero backdrop — a plain var so it can flip in dark mode
+     (see the .dark .theme-adaptive block below) without the component
+     hardcoding a light-only hex gradient in an inline style. */
+  --hero-gradient: radial-gradient(130% 100% at 100% 0%, #eff6ff 0%, #f1f5f9 55%);
 }
 
-/* Dark mode (2026-11-25): a toggle in Profile sets `dark` on <html> and
-   persists the choice in localStorage. Redefining the same custom
-   properties the @theme block above declares is enough to re-skin every
-   screen, since every utility (bg-page, text-ink, neu-out, …) already
-   reads from these vars — no per-component dark variant needed except the
-   neumorphic shadow pairs, which bake in light-page-specific rgba values. */
-:root.dark {
-  --color-ink: #e2e8f0;
-  --color-slate: #94a3b8;
-  --color-page: #0b1220;
-  --color-mist: #1e293b;
-  --color-paper: #111827;
-  --color-brand: #3b82f6;
-  --color-brand-dark: #1d4ed8;
-  --color-verified: #22c55e;
-  --color-pending: #f59e0b;
-  --color-danger: #f87171;
+/* Dark mode (2026-11-25, revised): a toggle in Profile sets `dark` on
+   <html> and persists the choice in localStorage. The override below is
+   scoped to `.theme-adaptive` (src/components/theme-adaptive.tsx), NOT
+   `:root` — `--color-ink` doubles app-wide as "a fixed dark navy surface"
+   (bg-ink pills, the Auth/My QR/Scan canvases, the admin sidebar, all
+   paired with hardcoded white text) as well as "primary text on a light
+   screen". Flipping it globally turned those fixed-dark surfaces white
+   with white text on them. Scoping to the explicitly-opted-in light-canvas
+   routes keeps both meanings intact.
+
+   Palette is iOS's dark system colors (systemBackground/secondarySystem-
+   Background/separator/systemBlue/systemGreen/systemOrange/systemRed),
+   not just an inverted version of the light tokens — true near-black page,
+   elevated card surfaces one step lighter, vivid saturated accents. */
+.dark .theme-adaptive {
+  --color-ink: #f2f2f7;
+  --color-slate: #98989f;
+  --color-page: #000000;
+  --color-mist: #2c2c2e;
+  --color-paper: #1c1c1e;
+  --color-brand: #0a84ff;
+  --color-brand-dark: #409cff;
+  --color-verified: #30d158;
+  --color-pending: #ff9f0a;
+  --color-danger: #ff453a;
+  --hero-gradient: radial-gradient(130% 100% at 100% 0%, #0a1830 0%, #000000 55%);
 }
 
-.dark .neu-out {
-  box-shadow:
-    6px 6px 14px rgba(0, 0, 0, 0.55),
-    -6px -6px 14px rgba(71, 85, 105, 0.25);
+/* iOS doesn't do neumorphism — on a true-black canvas a soft dual-shadow
+   has no light source to read against, which is what looked "flat/off"
+   rather than premium. Dark mode gets flat elevated cards (surface color
+   one step up from the page, a hairline border) instead of an embossed
+   shadow pair. */
+.dark .theme-adaptive .neu-out,
+.dark .theme-adaptive .neu-out-sm {
+  background: var(--color-paper);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
-.dark .neu-out-sm {
-  box-shadow:
-    3px 3px 7px rgba(0, 0, 0, 0.5),
-    -3px -3px 7px rgba(71, 85, 105, 0.22);
+.dark .theme-adaptive .neu-in {
+  background: color-mix(in srgb, var(--color-paper) 88%, black);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
-.dark .neu-in {
-  box-shadow:
-    inset 4px 4px 9px rgba(0, 0, 0, 0.5),
-    inset -4px -4px 9px rgba(71, 85, 105, 0.2);
+
+/* Soft status-tint chips (bg-{red,amber,green,blue}-50/100) are literal
+   Tailwind palette colors, not --color-* tokens, so they don't pick up the
+   override above on their own — re-tint them against the dark palette
+   instead of leaving light, washed-out chips floating on black. */
+.dark .theme-adaptive .bg-red-50 {
+  background-color: color-mix(in srgb, var(--color-danger) 16%, transparent);
+}
+.dark .theme-adaptive .bg-amber-50 {
+  background-color: color-mix(in srgb, var(--color-pending) 16%, transparent);
+}
+.dark .theme-adaptive .bg-green-50 {
+  background-color: color-mix(in srgb, var(--color-verified) 16%, transparent);
+}
+.dark .theme-adaptive .bg-blue-50 {
+  background-color: color-mix(in srgb, var(--color-brand) 16%, transparent);
+}
+.dark .theme-adaptive .bg-amber-100,
+.dark .theme-adaptive .hover\:bg-amber-100:hover {
+  background-color: color-mix(in srgb, var(--color-pending) 26%, transparent);
+}
+.dark .theme-adaptive .bg-green-100 {
+  background-color: color-mix(in srgb, var(--color-verified) 26%, transparent);
+}
+.dark .theme-adaptive .hover\:bg-blue-100:hover {
+  background-color: color-mix(in srgb, var(--color-brand) 26%, transparent);
+}
+.dark .theme-adaptive .border-red-50 {
+  border-color: color-mix(in srgb, var(--color-danger) 30%, transparent);
+}
+.dark .theme-adaptive .text-amber-700,
+.dark .theme-adaptive .text-amber-800 {
+  color: var(--color-pending);
+}
+.dark .theme-adaptive .text-green-800 {
+  color: var(--color-verified);
 }
 
 @layer base {
@@ -124,22 +180,25 @@
       -6px -6px 14px rgba(96, 155, 255, 0.35);
   }
 
-  /* Dark-canvas counterparts for the intentionally-dark screens (Auth, My
-     QR) — same soft-UI language, against --color-ink instead of page. */
+  /* Dark-canvas counterparts for surfaces that must stay dark regardless
+     of the app's dark-mode toggle (Auth, My QR, and the in-ride night-mode
+     banner on theme-adaptive screens) — against --color-canvas-ink, a
+     fixed constant, NOT --color-ink (which flips to a light value on
+     theme-adaptive screens in dark mode). */
   .neu-dark-out {
-    background: var(--color-ink);
+    background: var(--color-canvas-ink);
     box-shadow:
       6px 6px 14px rgba(0, 0, 0, 0.55),
       -6px -6px 14px rgba(71, 85, 105, 0.3);
   }
   .neu-dark-in {
-    background: var(--color-ink);
+    background: var(--color-canvas-ink);
     box-shadow:
       inset 4px 4px 9px rgba(0, 0, 0, 0.5),
       inset -4px -4px 9px rgba(71, 85, 105, 0.25);
   }
   .neu-dark-out-sm {
-    background: var(--color-ink);
+    background: var(--color-canvas-ink);
     box-shadow:
       3px 3px 7px rgba(0, 0, 0, 0.5),
       -3px -3px 7px rgba(71, 85, 105, 0.25);
