@@ -115,6 +115,19 @@
   color: var(--color-verified);
 }
 
+/* Declares this page's actual theme to the browser — the counterpart to
+   index.html's <meta name="color-scheme">. Chromium's "force dark colors
+   for web content" (Android Chrome/Brave) backs off auto-darkening pages
+   that set this, but only for the areas it applies to; keeping it in sync
+   with .theme-adaptive's own dark override means a viewer never sees the
+   browser's heuristic re-theme fighting with ours. */
+:root {
+  color-scheme: light;
+}
+.dark .theme-adaptive {
+  color-scheme: dark;
+}
+
 @layer base {
   html,
   body,

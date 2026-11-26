@@ -5,6 +5,14 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#2563EB" />
+    <!-- Tells Chromium-based browsers (Android Chrome/Brave's "force dark
+         colors for web content") that this page already declares its own
+         color scheme, so they skip their auto-darken repaint — without
+         this, the app's light theme could get forcibly re-themed by the
+         browser even though the app itself never switched to dark. The
+         actual light/dark value is kept in sync with the app's own toggle
+         by src/lib/theme.ts (see the matching `color-scheme` CSS below). -->
+    <meta name="color-scheme" content="light" />
     <meta
       name="description"
       content="RideSentinel — know who you are meeting before you ride."
