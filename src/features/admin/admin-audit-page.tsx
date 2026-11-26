@@ -1,41 +1,22 @@
 import { useQuery } from 'convex/react'
-import { Link } from 'react-router-dom'
 import { api } from '../../../convex/_generated/api'
+import { AdminSidebar } from './admin-sidebar'
 
 export function AdminAuditPage() {
   const log = useQuery(api.admin.listAuditLog)
 
   return (
-    <div className="flex min-h-dvh bg-mist">
-      <div className="flex w-56 flex-shrink-0 flex-col gap-0.5 bg-ink py-6">
-        <div className="flex items-center gap-2 px-5 pb-5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand font-mono text-[11px] font-bold text-white">
-            RS
-          </div>
-          <div className="text-sm font-extrabold text-white">RideSentinel</div>
-        </div>
-        <Link to="/admin/verifications" className="px-5 py-2.5 text-[13.5px] font-semibold text-slate-400">
-          Verifications
-        </Link>
-        <Link to="/admin/reports" className="px-5 py-2.5 text-[13.5px] font-semibold text-slate-400">
-          Reports
-        </Link>
-        <Link
-          to="/admin/audit"
-          className="bg-slate-800 px-5 py-2.5 text-[13.5px] font-semibold text-white"
-        >
-          Audit log
-        </Link>
-      </div>
+    <div className="flex min-h-dvh flex-col bg-mist md:flex-row">
+      <AdminSidebar active="/admin/audit" />
 
-      <div className="flex-1 p-9">
+      <div className="flex-1 p-5 md:p-9">
         <div className="text-[20px] font-extrabold">Audit log</div>
         <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-slate-400">
           Read-only · newest first
         </div>
 
-        <div className="mt-5 overflow-hidden rounded-xl border border-mist bg-paper">
-          <table className="w-full text-left">
+        <div className="mt-5 overflow-x-auto rounded-xl border border-mist bg-paper">
+          <table className="w-full min-w-[640px] text-left">
             <thead>
               <tr className="border-b border-mist text-[11px] font-bold uppercase tracking-wide text-slate-400">
                 <th className="px-4 py-2.5">Time</th>

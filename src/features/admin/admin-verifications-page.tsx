@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useMutation, useQuery } from 'convex/react'
-import { Link } from 'react-router-dom'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
+import { AdminSidebar } from './admin-sidebar'
 
 export function AdminVerificationsPage() {
   const pending = useQuery(api.admin.listPendingVerifications)
@@ -11,30 +11,11 @@ export function AdminVerificationsPage() {
   const selected = selectedId ?? pending?.[0]?._id ?? null
 
   return (
-    <div className="flex min-h-dvh bg-mist">
-      <div className="flex w-56 flex-shrink-0 flex-col gap-0.5 bg-ink py-6">
-        <div className="flex items-center gap-2 px-5 pb-5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand font-mono text-[11px] font-bold text-white">
-            RS
-          </div>
-          <div className="text-sm font-extrabold text-white">RideSentinel</div>
-        </div>
-        <Link
-          to="/admin/verifications"
-          className="flex items-center justify-between bg-slate-800 px-5 py-2.5 text-[13.5px] font-semibold text-white"
-        >
-          Verifications
-          {!!pending?.length && (
-            <span className="rounded-full bg-brand px-1.5 font-mono text-[11px]">{pending.length}</span>
-          )}
-        </Link>
-        <Link to="/admin" className="px-5 py-2.5 text-[13.5px] font-semibold text-slate-400">
-          Overview
-        </Link>
-      </div>
+    <div className="flex min-h-dvh flex-col bg-mist md:flex-row">
+      <AdminSidebar active="/admin/verifications" />
 
-      <div className="flex flex-1 gap-7 p-9">
-        <div className="flex w-[340px] flex-shrink-0 flex-col gap-3">
+      <div className="flex flex-1 flex-col gap-5 p-5 md:flex-row md:gap-7 md:p-9">
+        <div className="flex w-full flex-shrink-0 flex-col gap-3 md:w-[340px]">
           <div>
             <div className="text-[20px] font-extrabold">Verification queue</div>
             <div className="font-mono text-[11px] font-bold uppercase tracking-widest text-slate-400">

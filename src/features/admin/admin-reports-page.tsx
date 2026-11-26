@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useMutation, useQuery } from 'convex/react'
-import { Link } from 'react-router-dom'
 import { api } from '../../../convex/_generated/api'
 import type { Id } from '../../../convex/_generated/dataModel'
+import { AdminSidebar } from './admin-sidebar'
 
 export function AdminReportsPage() {
   const reports = useQuery(api.admin.listOpenReports)
@@ -10,33 +10,11 @@ export function AdminReportsPage() {
   const selected = selectedId ?? reports?.[0]?._id ?? null
 
   return (
-    <div className="flex min-h-dvh bg-mist">
-      <div className="flex w-56 flex-shrink-0 flex-col gap-0.5 bg-ink py-6">
-        <div className="flex items-center gap-2 px-5 pb-5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand font-mono text-[11px] font-bold text-white">
-            RS
-          </div>
-          <div className="text-sm font-extrabold text-white">RideSentinel</div>
-        </div>
-        <Link to="/admin/verifications" className="px-5 py-2.5 text-[13.5px] font-semibold text-slate-400">
-          Verifications
-        </Link>
-        <Link
-          to="/admin/reports"
-          className="flex items-center justify-between bg-slate-800 px-5 py-2.5 text-[13.5px] font-semibold text-white"
-        >
-          Reports
-          {!!reports?.length && (
-            <span className="rounded-full bg-danger px-1.5 font-mono text-[11px]">{reports.length}</span>
-          )}
-        </Link>
-        <Link to="/admin/audit" className="px-5 py-2.5 text-[13.5px] font-semibold text-slate-400">
-          Audit log
-        </Link>
-      </div>
+    <div className="flex min-h-dvh flex-col bg-mist md:flex-row">
+      <AdminSidebar active="/admin/reports" />
 
-      <div className="flex flex-1 gap-7 p-9">
-        <div className="flex w-[340px] flex-shrink-0 flex-col gap-3">
+      <div className="flex flex-1 flex-col gap-5 p-5 md:flex-row md:gap-7 md:p-9">
+        <div className="flex w-full flex-shrink-0 flex-col gap-3 md:w-[340px]">
           <div className="text-[20px] font-extrabold">Reports</div>
           {reports?.length === 0 && (
             <div className="rounded-xl border border-dashed border-mist bg-paper/60 px-4 py-6 text-center text-[13px] text-slate">
