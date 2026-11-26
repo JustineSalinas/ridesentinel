@@ -47,7 +47,10 @@ if (typeof window !== "undefined") loadMapLibre().catch(() => {});
 
 const defaultStyles = {
   dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
-  light: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+  // Voyager instead of Positron: real color (blue water, green parks,
+  // distinct road/building tones) rather than the near-grayscale look —
+  // same free, keyless CARTO basemap service, just a different style.
+  light: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
 };
 
 // A tile-less, dependency-free style with a transparent background. Use it for
