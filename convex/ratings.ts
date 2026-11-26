@@ -1,12 +1,25 @@
 import { v, ConvexError } from 'convex/values'
 import { mutation, query } from './_generated/server'
-import { requireProfile } from './lib/authz'
+import { requireProfile, getUserIdOrNull } from './lib/authz'
 import { getRatingSummary } from './lib/ratings'
 
+// Deliberately doesn't use requireProfile: this is queried unconditionally
+// on Home the moment a session authenticates, including the brief window
+// right after sign-up before completeRegistration's profile row exists (or
+// for an orphaned auth account whose registration never completed) — a
+// thrown Error there surfaces as an unhandled React error screen instead
+// of the graceful "redirect to /register" Home already does when getMe
+// returns null. Mirrors getMe's own null-safe shape.
 export const getMySummary = query({
   args: {},
   handler: async (ctx) => {
-    const profile = await requireProfile(ctx)
+    const userId = await getUserIdOrNull(ctx)
+    if (!userId) return null
+    const profile = await ctx.db
+      .query('profiles')
+      .withIndex('by_userId', (q) => q.eq('userId', userId))
+      .unique()
+    if (!profile) return null
     return await getRatingSummary(ctx, profile.userId)
   },
 })

@@ -14,6 +14,13 @@ export function HomePage() {
     // Signed in but never finished registration (completeRegistration never ran).
     return <Navigate to="/register" replace />
   }
+  if (me.role === 'admin') {
+    // Every login path (including the demo quick-access buttons) lands on
+    // /home regardless of role — this is the one place that catches an
+    // admin account and sends it to the real console instead of the rider
+    // app, rather than needing every sign-in call site to know the role.
+    return <Navigate to="/admin" replace />
+  }
 
   const initials = me.displayName
     .split(' ')
