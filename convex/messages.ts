@@ -16,9 +16,15 @@ export const listAnnouncements = query({
   },
 })
 
-// listMyConversations: every ride (accepted or further along) the caller
-// was a side of, with the other party's name/photo and the most recent
-// message preview — the inbox list above each actual thread.
+// listMyConversations: one row per distinct other party, not per ride —
+// the same two people can have many rideRequests over time (every
+// "Request a ride" is its own row), and showing each as a separate thread
+// read as duplicate/broken rather than a normal chat history. Messages
+// still live scoped to a single rideRequestId underneath (see
+// listMessagesForRide/sendMessage below); this just picks, per other
+// party, whichever one ride currently carries the liveliest thread —
+// preferring an actually-accepted ride over a past one, then whichever
+// has the most recent activity.
 export const listMyConversations = query({
   args: {},
   handler: async (ctx) => {
@@ -28,36 +34,54 @@ export const listMyConversations = query({
       ctx.db.query('rideRequests').withIndex('by_passengerId', (q) => q.eq('passengerId', profile.userId)).collect(),
       ctx.db.query('rideRequests').withIndex('by_driverId', (q) => q.eq('driverId', profile.userId)).collect(),
     ])
-    const rides = [...asPassenger, ...asDriver]
-      .filter((r) => r.driverId && r.status !== 'open' && r.status !== 'expired')
-      .sort((a, b) => b.createdAt - a.createdAt)
+    const rides = [...asPassenger, ...asDriver].filter((r) => r.driverId && r.status !== 'open' && r.status !== 'expired')
 
-    const rows = []
+    // Per other-party, keep the single best ride: active beats inactive,
+    // then most recent activity (last message, else the ride itself) wins.
+    const bestByParty = new Map<string, { ride: (typeof rides)[number]; lastMessage: { body: string; createdAt: number } | null; activity: number }>()
     for (const ride of rides) {
       const otherPartyId = ride.passengerId === profile.userId ? ride.driverId! : ride.passengerId
-      const otherProfile = await ctx.db
-        .query('profiles')
-        .withIndex('by_userId', (q) => q.eq('userId', otherPartyId))
-        .unique()
-      if (!otherProfile) continue
-
       const lastMessage = await ctx.db
         .query('rideMessages')
         .withIndex('by_rideRequestId', (q) => q.eq('rideRequestId', ride._id))
         .order('desc')
         .first()
+      const activity = lastMessage?.createdAt ?? ride.createdAt
+      const existing = bestByParty.get(otherPartyId)
+      const thisIsActive = ride.status === 'accepted'
+      const existingIsActive = existing?.ride.status === 'accepted'
+      const better =
+        !existing ||
+        (thisIsActive && !existingIsActive) ||
+        (thisIsActive === existingIsActive && activity > existing.activity)
+      if (better) {
+        bestByParty.set(otherPartyId, {
+          ride,
+          lastMessage: lastMessage ? { body: lastMessage.body, createdAt: lastMessage.createdAt } : null,
+          activity,
+        })
+      }
+    }
+
+    const rows = []
+    for (const [otherPartyId, best] of bestByParty) {
+      const otherProfile = await ctx.db
+        .query('profiles')
+        .withIndex('by_userId', (q) => q.eq('userId', otherPartyId as import('./_generated/dataModel').Id<'users'>))
+        .unique()
+      if (!otherProfile) continue
 
       rows.push({
-        rideRequestId: ride._id,
-        rideStatus: ride.status,
+        rideRequestId: best.ride._id,
+        rideStatus: best.ride.status,
         otherParty: {
           displayName: otherProfile.displayName,
           photoUrl: otherProfile.avatarStorageId ? await ctx.storage.getUrl(otherProfile.avatarStorageId) : null,
         },
-        lastMessage: lastMessage ? { body: lastMessage.body, createdAt: lastMessage.createdAt } : null,
+        lastMessage: best.lastMessage,
       })
     }
-    return rows
+    return rows.sort((a, b) => (b.lastMessage?.createdAt ?? 0) - (a.lastMessage?.createdAt ?? 0))
   },
 })
 
