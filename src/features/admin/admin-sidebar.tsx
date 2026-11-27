@@ -42,7 +42,7 @@ export function AdminSidebar({ active }: { active: string }) {
   ]
 
   return (
-    <div className="flex w-full flex-shrink-0 flex-col gap-0.5 overflow-x-auto bg-ink md:w-56 md:overflow-visible md:py-6">
+    <div className="flex w-full flex-shrink-0 flex-col gap-0.5 bg-ink md:w-56 md:py-6">
       <div className="flex flex-shrink-0 items-center justify-between gap-1.5 px-3 py-3 md:px-4 md:pb-5 md:pt-0">
         <div className="flex min-w-0 items-center gap-2">
           <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-brand font-mono text-[11px] font-bold text-white">
@@ -60,7 +60,7 @@ export function AdminSidebar({ active }: { active: string }) {
         </button>
       </div>
 
-      <div className="flex flex-shrink-0 gap-0.5 px-2 pb-2 md:flex-col md:px-0 md:pb-0">
+      <div className="flex flex-shrink-0 gap-0.5 overflow-x-auto px-2 pb-2 md:flex-col md:overflow-visible md:px-0 md:pb-0">
         {links.map(({ to, label, count, tone }) => {
           const isActive = active === to
           return (
