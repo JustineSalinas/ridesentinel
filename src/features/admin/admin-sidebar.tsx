@@ -1,5 +1,7 @@
 import { useQuery } from 'convex/react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuthActions } from '@convex-dev/auth/react'
+import { LogOut } from 'lucide-react'
 import { api } from '../../../convex/_generated/api'
 import { cn } from '@/lib/utils'
 
@@ -18,6 +20,13 @@ import { cn } from '@/lib/utils'
 // viewport left next to nothing for content.
 export function AdminSidebar({ active }: { active: string }) {
   const me = useQuery(api.profiles.getMe)
+  const { signOut } = useAuthActions()
+  const navigate = useNavigate()
+
+  async function handleLogOut() {
+    await signOut()
+    navigate('/login')
+  }
   const pending = useQuery(api.admin.listPendingVerifications)
   const reports = useQuery(api.admin.listOpenReports)
   const incidents = useQuery(api.admin.adminListSosIncidents)
@@ -34,11 +43,21 @@ export function AdminSidebar({ active }: { active: string }) {
 
   return (
     <div className="flex w-full flex-shrink-0 flex-col gap-0.5 overflow-x-auto bg-ink md:w-56 md:overflow-visible md:py-6">
-      <div className="flex flex-shrink-0 items-center gap-2 px-5 py-3 md:pb-5 md:pt-0">
-        <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-brand font-mono text-[11px] font-bold text-white">
-          RS
+      <div className="flex flex-shrink-0 items-center justify-between gap-1.5 px-3 py-3 md:px-4 md:pb-5 md:pt-0">
+        <div className="flex min-w-0 items-center gap-2">
+          <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-brand font-mono text-[11px] font-bold text-white">
+            RS
+          </div>
+          <div className="truncate whitespace-nowrap text-sm font-extrabold text-white">RideSentinel</div>
         </div>
-        <div className="whitespace-nowrap text-sm font-extrabold text-white">RideSentinel</div>
+        <button
+          onClick={handleLogOut}
+          title="Log out"
+          aria-label="Log out"
+          className="flex flex-shrink-0 items-center justify-center rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-800 hover:text-white md:hidden"
+        >
+          <LogOut size={16} strokeWidth={2.4} />
+        </button>
       </div>
 
       <div className="flex flex-shrink-0 gap-0.5 px-2 pb-2 md:flex-col md:px-0 md:pb-0">
@@ -73,6 +92,13 @@ export function AdminSidebar({ active }: { active: string }) {
         <div className="border-t border-slate-800 px-5 pt-3.5">
           <div className="text-xs text-slate-500">Signed in as</div>
           <div className="truncate text-[13px] font-semibold text-slate-200">{me?.displayName ?? '…'}</div>
+          <button
+            onClick={handleLogOut}
+            className="mt-3 flex items-center gap-1.5 text-[12.5px] font-semibold text-slate-400 transition-colors hover:text-white"
+          >
+            <LogOut size={13} strokeWidth={2.4} />
+            Log out
+          </button>
         </div>
       </div>
     </div>
